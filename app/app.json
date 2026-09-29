@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Prompt",
+    "slug": "prompt",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "prompt",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.visheshanand.prompt",
+      "supportsTablet": false,
+      "appleTeamId": "49MGNY54WF",
+      "icon": "./assets/expo.icon"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FBF8F4",
+          "dark": { "backgroundColor": "#16130F" },
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 76
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
