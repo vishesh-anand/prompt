@@ -37,7 +37,7 @@ It is for people who know what they want to say, but it comes out messy when the
 
 ### 4. Recording
 - Tap to start, tap to stop. Stops automatically at 60 seconds.
-- A live sound wave while you speak, so you know it's recording.
+- A soft glowing circle that grows and shrinks with your voice, so you know it's recording (see DESIGN.md).
 - Answers under 10 seconds are not scored. Show a friendly "say a bit more" message.
 
 ### 5. Feedback (after each answer)
