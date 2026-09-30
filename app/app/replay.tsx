@@ -1,22 +1,23 @@
-import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, Screen, Text, space } from '@/design';
+import { getLastTake } from '@/features/recording/lastTake';
+import type { Take } from '@/features/recording/useRecording';
 import { useReplay } from '@/features/recording/useReplay';
 
 // Temporary: replaced by the real feedback screen in build steps 3 to 5.
 export default function Replay() {
-  const { uri } = useLocalSearchParams<{ uri?: string }>();
-  // This screen can be opened by a prompt:// link, so only accept a recording saved on this phone.
-  if (!uri?.startsWith('file://')) return <Redirect href="/record" />;
-  return <ReplayScreen uri={uri} />;
+  const take = getLastTake();
+  // Nothing recorded (for example, opened from a prompt:// link): go record something.
+  if (!take) return <Redirect href="/record" />;
+  return <ReplayScreen take={take} />;
 }
 
-function ReplayScreen({ uri }: { uri: string }) {
+function ReplayScreen({ take }: { take: Take }) {
   const router = useRouter();
-  const { durationMs } = useLocalSearchParams<{ durationMs?: string }>();
-  const { playing, toggle } = useReplay(uri);
-  const seconds = Math.round(Number(durationMs) / 1000);
+  const { playing, toggle } = useReplay(take.uri);
+  const seconds = Math.round(take.durationMs / 1000);
 
   return (
     <Screen>

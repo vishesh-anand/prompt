@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Button, Screen, Text, space } from '@/design';
 import { RecordingCircle } from '@/features/recording/RecordingCircle';
+import { setLastTake } from '@/features/recording/lastTake';
 import { question } from '@/features/recording/question';
 import { tooShortLength } from '@/features/recording/tooShortLength';
 import { useMicPermission } from '@/features/recording/useMicPermission';
@@ -17,7 +18,8 @@ export default function Record() {
 
   useEffect(() => {
     if (take && !take.tooShort) {
-      router.replace({ pathname: '/replay', params: { uri: take.uri, durationMs: String(take.durationMs) } });
+      setLastTake(take);
+      router.replace('/replay');
     }
   }, [take, router]);
 
