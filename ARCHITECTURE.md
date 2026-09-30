@@ -42,6 +42,7 @@ Supabase
 - Expo Router for screens (file-based, like Next.js)
 - `@expo/ui` SwiftUI components for all standard UI
 - Reanimated for all animation (runs on the UI thread)
+- `react-native-svg` for the thin progress ring around the recording circle (Reanimated animates it)
 - Skia only if Reanimated can't achieve the recording circle
 - `expo-audio` for recording (with live loudness for the circle) and playback
 - `expo-apple-authentication`, `expo-haptics`, `expo-notifications`
@@ -218,4 +219,4 @@ Evals are built alongside step 4 and grow with steps 5 and 6.
 ## Open decisions
 
 - **Voice-to-text provider.** Test 2 to 3 providers on 5 of our own recordings. Pick the one that keeps the most filler words and handles Indian English accents best.
-- **Recording circle:** Reanimated alone, or Skia. Try Reanimated first.
+- **Recording circle:** Reanimated for the circle, `react-native-svg` for the ring. Skia only if it can't look smooth on a real phone.

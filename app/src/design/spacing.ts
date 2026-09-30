@@ -20,3 +20,9 @@ export const radius = {
 } as const;
 
 export const recordButtonSize = 88;
+
+// The recording circle. The ring sits `space.md` outside the core at its biggest, so they never overlap.
+export const recordCircle = {
+  core: 176,
+  ringStroke: 3,
+} as const;
