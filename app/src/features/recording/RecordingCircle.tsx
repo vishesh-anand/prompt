@@ -6,13 +6,13 @@ import Animated, {
   cancelAnimation,
   useAnimatedProps,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 
 import { recordCircle, recordingMotion, space, useTheme } from '@/design';
+import { useReduceMotion } from '@/hooks/useReduceMotion';
 
 import { maxAnswerMs } from './limits';
 
@@ -32,10 +32,10 @@ type Props = {
 // The soft coral circle. Grows and settles with your voice; a thin ring fills over the 60 seconds.
 export function RecordingCircle({ recording, level, onPress }: Props) {
   const { colors } = useTheme();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useReduceMotion();
 
   // Reanimated would otherwise skip these animations under Reduce Motion. We handle it ourselves:
-  // no scaling, and the glow fades instead. The ring keeps filling because it shows the time left.
+  // nothing scales, and the coral circle fades with your voice instead. The ring keeps filling because it shows the time left.
   const smoothed = useSharedValue(0);
   const progress = useSharedValue(0);
   const lastLevel = useRef(0);
@@ -60,15 +60,16 @@ export function RecordingCircle({ recording, level, onPress }: Props) {
     }
   }, [recording, progress]);
 
+  // Reduce Motion: nothing moves. The halo stays put and the coral circle fades brighter with your voice.
   const coreStyle = useAnimatedStyle(() => ({
     transform: [{ scale: reduceMotion ? 1 : 1 + (recordingMotion.coreMaxScale - 1) * smoothed.get() }],
+    opacity: reduceMotion ? recordingMotion.reducedCoreRestOpacity + (1 - recordingMotion.reducedCoreRestOpacity) * smoothed.get() : 1,
   }));
 
   const glowStyle = useAnimatedStyle(() => {
+    if (reduceMotion) return { transform: [{ scale: recordingMotion.reducedGlowScale }] };
     const scale = recordingMotion.glowRestScale + (recordingMotion.glowMaxScale - recordingMotion.glowRestScale) * smoothed.get();
-    return reduceMotion
-      ? { transform: [{ scale: recordingMotion.glowRestScale }], opacity: recordingMotion.glowRestOpacity + (1 - recordingMotion.glowRestOpacity) * smoothed.get() }
-      : { transform: [{ scale }], opacity: 1 };
+    return { transform: [{ scale }] };
   });
 
   const ringProps = useAnimatedProps(() => ({

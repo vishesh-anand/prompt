@@ -14,6 +14,7 @@ export const recordingMotion = {
   coreMaxScale: 1.2,
   glowRestScale: 1.1,
   glowMaxScale: 1.8,
-  // Reduce Motion: the glow fades in and out instead of growing.
-  glowRestOpacity: 0.4,
+  // Reduce Motion: the halo stays this size, and the coral circle fades between this opacity and full.
+  reducedGlowScale: 1.4,
+  reducedCoreRestOpacity: 0.55,
 } as const;
