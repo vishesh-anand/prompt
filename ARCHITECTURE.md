@@ -40,7 +40,7 @@ Supabase
 **App**
 - Expo (latest SDK), TypeScript in strict mode
 - Expo Router for screens (file-based, like Next.js)
-- `@expo/ui` SwiftUI components for all standard UI
+- `@expo/ui` SwiftUI components for all standard UI. One exception: the Sign in with Apple button is Apple's own native button from `expo-apple-authentication`, because Apple requires it.
 - Reanimated for all animation (runs on the UI thread)
 - `react-native-svg` for the thin progress ring around the recording circle (Reanimated animates it)
 - Skia only if Reanimated can't achieve the recording circle
@@ -96,7 +96,7 @@ Rule: a screen file only arranges things on screen. Logic lives in `src/features
 
 ## Data
 
-All tables use Row Level Security: a person can only ever read or change their own rows.
+All tables use Row Level Security: a person can only ever read or change their own rows. The one exception is **questions**: it has no owner, so it is read-only for every signed-in person (only active questions, no writes from the app). Signed-out visitors can read nothing.
 
 **profiles**
 - `id` (same as the auth user), `reminder_time`, `timezone`
@@ -125,7 +125,7 @@ All tables use Row Level Security: a person can only ever read or change their o
 **weekly_notes**
 - `user_id`, `week_start`, `text`
 
-Streaks, charts, and "which questions have I seen" are all calculated from `answers`. No separate tables for them.
+Streaks, charts, and "which questions have I seen" are all calculated from `answers`. No separate tables for them. Answers under 10 seconds are never uploaded (see the pipeline rules), so they have no row and do not count toward the streak.
 
 ## The feedback pipeline
 
@@ -141,7 +141,7 @@ Rules:
 - Each stage is its own file with a typed input and output. Stages don't know about each other.
 - Each stage can be re-run safely. If the pipeline stops halfway, it picks up from the last saved stage.
 - If a stage fails twice, `status` becomes `failed` and the app shows a calm retry option. The recording is never lost.
-- Answers under 10 seconds skip stages 3 to 5.
+- Answers under 10 seconds are never uploaded: the app shows "say a bit more", keeps nothing, and the take does not count toward the streak. The pipeline only ever sees answers of 10 seconds or more.
 - The 10-answers-per-day limit is checked at the start of `process-answer`.
 
 ## Swappable providers

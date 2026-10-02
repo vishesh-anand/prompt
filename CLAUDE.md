@@ -28,9 +28,9 @@ Update this section as commands change.
 - Add a library: `cd app && npx expo install <package>` (never `npm i`, so versions match the SDK)
 - Type check: `cd app && npx tsc --noEmit`
 - Lint: `cd app && npx expo lint`
-- One-time backend setup (hosted Supabase project, no local Docker): `brew install supabase/tap/supabase`, `supabase login`, then `supabase link --project-ref <ref>` from the repo root. Put the project URL and publishable key in `app/.env.local` (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`). Never the service-role key.
-- Push database changes to the hosted project: `supabase db push` (new files in `supabase/migrations/` only)
-- Deploy edge functions: `supabase functions deploy <name>`
+- One-time backend setup (hosted Supabase project, no local Docker): `npx supabase login` (run it in a real Terminal window, not through Claude's `!` prefix, because it opens a browser), then `npx supabase link --project-ref <ref>` from the repo root. Put the project URL and publishable key in `app/.env.local` (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`). Never the service-role key.
+- Push database changes to the hosted project: `npx supabase db push` (new files in `supabase/migrations/` only)
+- Deploy edge functions: `npx supabase functions deploy <name>`
 - Backend tests: `deno test supabase/functions`
 - Evals: `npm run evals` (from `/evals`)
 
