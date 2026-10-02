@@ -11,22 +11,28 @@
       "bundleIdentifier": "com.visheshanand.prompt",
       "supportsTablet": false,
       "appleTeamId": "49MGNY54WF",
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "usesAppleSignIn": true
     },
     "plugins": [
       "expo-router",
+      "expo-apple-authentication",
       [
         "expo-splash-screen",
         {
           "backgroundColor": "#FBF8F4",
-          "dark": { "backgroundColor": "#16130F" },
+          "dark": {
+            "backgroundColor": "#16130F"
+          },
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
       ],
       [
         "expo-audio",
-        { "microphonePermission": "Prompt listens to your spoken answers so it can give you feedback." }
+        {
+          "microphonePermission": "Prompt listens to your spoken answers so it can give you feedback."
+        }
       ]
     ],
     "experiments": {

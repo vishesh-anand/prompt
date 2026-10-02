@@ -3,43 +3,54 @@ import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, Screen, Text, space } from '@/design';
+import { useAnswerFlow } from '@/features/answers/useAnswerFlow';
 import { RecordingCircle } from '@/features/recording/RecordingCircle';
-import { setLastTake } from '@/features/recording/lastTake';
-import { question } from '@/features/recording/question';
 import { tooShortLength } from '@/features/recording/tooShortLength';
 import { useMicPermission } from '@/features/recording/useMicPermission';
-import { useRecording } from '@/features/recording/useRecording';
 
 export default function Record() {
   const router = useRouter();
   const mic = useMicPermission();
-  const { phase, level, take, failed, toggle, reset } = useRecording();
+  const { question, recording, saveStatus, answerId, retry } = useAnswerFlow();
+  const { phase, level, take, failed, toggle, reset } = recording;
   const isRecording = phase === 'recording';
+  const saving = take && !take.tooShort;
 
   useEffect(() => {
-    if (take && !take.tooShort) {
-      setLastTake(take);
-      router.replace('/replay');
-    }
-  }, [take, router]);
+    if (answerId) router.replace({ pathname: '/feedback/[answerId]', params: { answerId } });
+  }, [answerId, router]);
 
   return (
     <Screen>
       {/* A stray back-swipe shouldn't cut an answer short. */}
-      <Stack.Screen options={{ gestureEnabled: phase === 'idle' }} />
-      <Text variant="question">{question}</Text>
+      <Stack.Screen options={{ gestureEnabled: phase === 'idle' && !saving }} />
+      {question.data ? <Text variant="question">{question.data.text}</Text> : null}
       <View style={styles.center}>
         {mic.status === 'denied' ? (
           <View style={styles.message}>
             <Text variant="body">{"Prompt can't hear you yet. Turn on the microphone in Settings, then come back."}</Text>
             <Button label="Open Settings" onPress={mic.openSettings} />
           </View>
+        ) : question.isError ? (
+          <View style={styles.message}>
+            <Text variant="body">{"Today's question didn't load. Check your connection and try again."}</Text>
+            <Button label="Try again" onPress={() => void question.refetch()} />
+          </View>
+        ) : saving && saveStatus === 'error' ? (
+          <View style={styles.message}>
+            <Text variant="body">{"That didn't upload. Your recording is saved. Tap to try again."}</Text>
+            <Button label="Try again" onPress={retry} />
+          </View>
+        ) : saving ? (
+          <Text variant="body" color="textSecondary">
+            Saving your answer.
+          </Text>
         ) : mic.status === 'granted' && take?.tooShort ? (
           <View style={styles.message}>
             <Text variant="body">{`${tooShortLength(take.durationMs)} Say a bit more: aim for at least 10.`}</Text>
             <Button label="Try again" onPress={reset} />
           </View>
-        ) : mic.status === 'granted' ? (
+        ) : mic.status === 'granted' && question.data ? (
           <>
             <RecordingCircle recording={isRecording} level={level} onPress={toggle} />
             <View style={styles.hint}>

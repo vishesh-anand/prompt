@@ -5,7 +5,6 @@ import { AppState } from 'react-native';
 
 import { recordingMotion } from '@/design';
 
-import { setLastTake } from './lastTake';
 import { maxAnswerMs, minAnswerMs } from './limits';
 
 export type RecordingPhase = 'idle' | 'starting' | 'recording' | 'stopping';
@@ -23,7 +22,12 @@ function toLevel(db: number | undefined): number {
   return linear ** levelCurve;
 }
 
-export function useRecording() {
+type Options = {
+  // Called if the screen goes away mid-answer, once the recording is safely stopped. Only for takes long enough to score.
+  onLeftMidAnswer: (take: { uri: string; durationMs: number }) => void;
+};
+
+export function useRecording({ onLeftMidAnswer }: Options) {
   const recorder = useAudioRecorder(recorderOptions);
   const state = useAudioRecorderState(recorder, recordingMotion.meterIntervalMs);
   const [phase, setPhase] = useState<RecordingPhase>('idle');
@@ -112,19 +116,24 @@ export function useRecording() {
     return () => subscription.remove();
   }, []);
 
-  // The screen goes away mid-answer: stop, and remember the recording so it isn't lost.
-  // expo-audio also stops and closes the file when it releases the recorder, so this order doesn't matter.
+  // The screen goes away mid-answer: stop, then hand over the recording so it isn't lost.
+  // expo-audio also stops and closes the file when it releases the recorder, so the stop below may find it already closed.
+  // A ref, because this runs after the screen is gone, when an effect event can no longer be called.
+  const leftMidAnswer = useRef(onLeftMidAnswer);
+  useEffect(() => {
+    leftMidAnswer.current = onLeftMidAnswer;
+  }, [onLeftMidAnswer]);
   useEffect(
     () => () => {
       if (phaseRef.current !== 'recording') return;
       const { uri, durationMs } = latest.current;
-      if (uri) setLastTake({ uri, durationMs, tooShort: durationMs < minAnswerMs });
       void (async () => {
         try {
           await recorder.stop();
         } catch {
           // Already released; the file was closed with it.
         }
+        if (uri && durationMs >= minAnswerMs) leftMidAnswer.current({ uri, durationMs });
         try {
           await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true });
         } catch {
