@@ -70,6 +70,7 @@ Before calling any task done: type check, lint, and tests must pass.
 **Data**
 - Never lose a recording. If upload or processing fails, keep it and offer a retry.
 - Database changes only through new files in `supabase/migrations/`. Never edit an old migration.
+- Voice recordings never go in git. Eval audio stays in Supabase storage or a git-ignored folder; only labels and results are committed.
 
 ## Scope
 
