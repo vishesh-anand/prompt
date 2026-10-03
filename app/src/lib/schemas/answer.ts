@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
-// The columns the app reads today. Transcript, metrics and the rest arrive with steps 4 and 5.
+import { metricsSchema } from './metrics';
+
+// The columns the app reads today. Judgement and coaching arrive with step 5.
 export const answerSchema = z.object({
   id: z.string(),
   user_id: z.string(),
@@ -8,6 +10,7 @@ export const answerSchema = z.object({
   audio_path: z.string(),
   duration_ms: z.number(),
   status: z.enum(['uploaded', 'transcribed', 'measured', 'judged', 'coached', 'failed']),
+  metrics: metricsSchema.nullable(),
 });
 
 export type Answer = z.infer<typeof answerSchema>;

@@ -30,8 +30,10 @@ Update this section as commands change.
 - Lint: `cd app && npx expo lint`
 - One-time backend setup (hosted Supabase project, no local Docker): `npx supabase login` (run it in a real Terminal window, not through Claude's `!` prefix, because it opens a browser), then `npx supabase link --project-ref <ref>` from the repo root. Put the project URL and publishable key in `app/.env.local` (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`). Never the service-role key.
 - Push database changes to the hosted project: `npx supabase db push` (new files in `supabase/migrations/` only)
+- Set a backend secret (run in a real Terminal, never paste the key into Claude): `npx supabase secrets set DEEPGRAM_API_KEY=<key>`
 - Deploy edge functions: `npx supabase functions deploy <name>`
 - Backend tests: `deno test supabase/functions`
+- Backend type check: `DEEPGRAM_API_KEY=x deno check $(find supabase/functions -name '*.ts')`
 - Evals: `npm run evals` (from `/evals`)
 
 Before calling any task done: type check, lint, and tests must pass.
