@@ -1,0 +1,4 @@
+# Voice recordings and full transcripts never go in git. Only labels and results do.
+audio/
+out/
+.env

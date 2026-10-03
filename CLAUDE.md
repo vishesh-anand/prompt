@@ -34,7 +34,7 @@ Update this section as commands change.
 - Deploy edge functions: `npx supabase functions deploy <name>`
 - Backend tests: `deno test supabase/functions`
 - Backend type check: `DEEPGRAM_API_KEY=x deno check $(find supabase/functions -name '*.ts')`
-- Evals: `npm run evals` (from `/evals`)
+- Evals: `npm run evals` (from `/evals`). It compares voice-to-text providers on the clips in `evals/labels.json`. Needs keys in `evals/.env` (git-ignored; see `.env.example`). Recordings download into `evals/audio/` (git-ignored).
 
 Before calling any task done: type check, lint, and tests must pass.
 

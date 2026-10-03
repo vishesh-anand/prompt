@@ -1,0 +1,1565 @@
+{
+  "date": "2026-10-03T11:46:36.658Z",
+  "runs": [
+    {
+      "clip": "7edf7d38",
+      "setup": "dg-nova-2",
+      "turnaroundSeconds": 2.441929875,
+      "wordsPerMinute": 125,
+      "pauses": 2,
+      "restarts": 1,
+      "hesitations": {
+        "expected": 6,
+        "found": 5,
+        "caught": 5,
+        "missed": 1,
+        "extra": 0
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 3,
+            "found": 3,
+            "caught": 3,
+            "missed": 0,
+            "extra": 0
+          },
+          "like": {
+            "expected": 2,
+            "found": 2,
+            "caught": 2,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 2,
+            "found": 2,
+            "caught": 2,
+            "missed": 0,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 9,
+          "found": 9,
+          "caught": 9,
+          "missed": 0,
+          "extra": 0
+        }
+      },
+      "fillersFound": {
+        "so": 3,
+        "um": 3,
+        "uh": 2,
+        "basically": 1,
+        "like": 2,
+        "you know": 1,
+        "actually": 2
+      },
+      "spellings": {
+        "um": 3,
+        "uh": 2
+      },
+      "wer": 0.016260162601626018
+    },
+    {
+      "clip": "7edf7d38",
+      "setup": "dg-nova-3",
+      "turnaroundSeconds": 0.6183545420000001,
+      "wordsPerMinute": 125,
+      "pauses": 2,
+      "restarts": 0,
+      "hesitations": {
+        "expected": 6,
+        "found": 3,
+        "caught": 3,
+        "missed": 3,
+        "extra": 0
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 3,
+            "found": 3,
+            "caught": 3,
+            "missed": 0,
+            "extra": 0
+          },
+          "like": {
+            "expected": 2,
+            "found": 2,
+            "caught": 2,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 2,
+            "found": 2,
+            "caught": 2,
+            "missed": 0,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 9,
+          "found": 9,
+          "caught": 9,
+          "missed": 0,
+          "extra": 0
+        }
+      },
+      "fillersFound": {
+        "so": 3,
+        "um": 2,
+        "uh": 1,
+        "basically": 1,
+        "like": 2,
+        "you know": 1,
+        "actually": 2
+      },
+      "spellings": {
+        "um": 2,
+        "uh": 1
+      },
+      "wer": 0.024390243902439025
+    },
+    {
+      "clip": "7edf7d38",
+      "setup": "aai-u2",
+      "turnaroundSeconds": 8.95873225,
+      "wordsPerMinute": 126,
+      "pauses": 1,
+      "restarts": 1,
+      "hesitations": {
+        "expected": 6,
+        "found": 6,
+        "caught": 6,
+        "missed": 0,
+        "extra": 0
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 3,
+            "found": 3,
+            "caught": 3,
+            "missed": 0,
+            "extra": 0
+          },
+          "like": {
+            "expected": 2,
+            "found": 3,
+            "caught": 2,
+            "missed": 0,
+            "extra": 1
+          },
+          "actually": {
+            "expected": 2,
+            "found": 2,
+            "caught": 2,
+            "missed": 0,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 9,
+          "found": 10,
+          "caught": 9,
+          "missed": 0,
+          "extra": 1
+        }
+      },
+      "fillersFound": {
+        "so": 3,
+        "um": 4,
+        "uh": 2,
+        "basically": 1,
+        "like": 3,
+        "you know": 1,
+        "actually": 2
+      },
+      "spellings": {
+        "um": 4,
+        "uh": 2
+      },
+      "wer": 0.024390243902439025
+    },
+    {
+      "clip": "7edf7d38",
+      "setup": "aai-u35",
+      "turnaroundSeconds": 7.705302916000001,
+      "wordsPerMinute": 121,
+      "pauses": 1,
+      "restarts": 1,
+      "hesitations": {
+        "expected": 6,
+        "found": 8,
+        "caught": 6,
+        "missed": 0,
+        "extra": 2
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 3,
+            "found": 3,
+            "caught": 3,
+            "missed": 0,
+            "extra": 0
+          },
+          "like": {
+            "expected": 2,
+            "found": 2,
+            "caught": 2,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 2,
+            "found": 2,
+            "caught": 2,
+            "missed": 0,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 9,
+          "found": 9,
+          "caught": 9,
+          "missed": 0,
+          "extra": 0
+        }
+      },
+      "fillersFound": {
+        "so": 3,
+        "um": 5,
+        "uh": 3,
+        "basically": 1,
+        "like": 2,
+        "you know": 1,
+        "actually": 2
+      },
+      "spellings": {
+        "um": 5,
+        "uh": 3
+      },
+      "wer": 0.016260162601626018
+    },
+    {
+      "clip": "7edf7d38",
+      "setup": "el-scribe",
+      "turnaroundSeconds": 2.420549583,
+      "wordsPerMinute": 126,
+      "pauses": 1,
+      "restarts": 1,
+      "hesitations": {
+        "expected": 6,
+        "found": 6,
+        "caught": 6,
+        "missed": 0,
+        "extra": 0
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 3,
+            "found": 3,
+            "caught": 3,
+            "missed": 0,
+            "extra": 0
+          },
+          "like": {
+            "expected": 2,
+            "found": 2,
+            "caught": 2,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 2,
+            "found": 2,
+            "caught": 2,
+            "missed": 0,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 9,
+          "found": 9,
+          "caught": 9,
+          "missed": 0,
+          "extra": 0
+        }
+      },
+      "fillersFound": {
+        "so": 3,
+        "um": 3,
+        "uh": 3,
+        "basically": 1,
+        "like": 2,
+        "you know": 1,
+        "actually": 2
+      },
+      "spellings": {
+        "um": 3,
+        "uh": 3
+      },
+      "wer": 0.016260162601626018
+    },
+    {
+      "clip": "7747bef0",
+      "setup": "dg-nova-2",
+      "turnaroundSeconds": 2.991884249999999,
+      "wordsPerMinute": 129,
+      "pauses": 1,
+      "restarts": 0,
+      "hesitations": null,
+      "fillers": null,
+      "fillersFound": {
+        "so": 1,
+        "uh": 2,
+        "you know": 2,
+        "like": 2,
+        "actually": 2,
+        "um": 1
+      },
+      "spellings": {
+        "uh": 2,
+        "um": 1
+      },
+      "wer": null
+    },
+    {
+      "clip": "7747bef0",
+      "setup": "dg-nova-3",
+      "turnaroundSeconds": 0.6380675420000007,
+      "wordsPerMinute": 119,
+      "pauses": 1,
+      "restarts": 0,
+      "hesitations": null,
+      "fillers": null,
+      "fillersFound": {
+        "so": 1,
+        "you know": 1,
+        "like": 2,
+        "actually": 2
+      },
+      "spellings": {},
+      "wer": null
+    },
+    {
+      "clip": "7747bef0",
+      "setup": "aai-u2",
+      "turnaroundSeconds": 4.2600848330000005,
+      "wordsPerMinute": 127,
+      "pauses": 0,
+      "restarts": 0,
+      "hesitations": null,
+      "fillers": null,
+      "fillersFound": {
+        "um": 8,
+        "so": 1,
+        "you know": 2,
+        "like": 2,
+        "actually": 2
+      },
+      "spellings": {
+        "um": 8
+      },
+      "wer": null
+    },
+    {
+      "clip": "7747bef0",
+      "setup": "aai-u35",
+      "turnaroundSeconds": 5.264635084000002,
+      "wordsPerMinute": 127,
+      "pauses": 0,
+      "restarts": 0,
+      "hesitations": null,
+      "fillers": null,
+      "fillersFound": {
+        "um": 5,
+        "uh": 2,
+        "you know": 2,
+        "like": 2,
+        "actually": 2
+      },
+      "spellings": {
+        "um": 5,
+        "uh": 2
+      },
+      "wer": null
+    },
+    {
+      "clip": "7747bef0",
+      "setup": "el-scribe",
+      "turnaroundSeconds": 2.525424458000001,
+      "wordsPerMinute": 127,
+      "pauses": 0,
+      "restarts": 0,
+      "hesitations": null,
+      "fillers": null,
+      "fillersFound": {
+        "um": 4,
+        "so": 1,
+        "uh": 2,
+        "you know": 2,
+        "like": 2,
+        "actually": 2
+      },
+      "spellings": {
+        "um": 4,
+        "uh": 2
+      },
+      "wer": null
+    },
+    {
+      "clip": "a431c056",
+      "setup": "dg-nova-2",
+      "turnaroundSeconds": 2.202715375,
+      "wordsPerMinute": 147,
+      "pauses": 0,
+      "restarts": 1,
+      "hesitations": {
+        "expected": 4,
+        "found": 3,
+        "caught": 3,
+        "missed": 1,
+        "extra": 0
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 2,
+            "found": 2,
+            "caught": 2,
+            "missed": 0,
+            "extra": 0
+          },
+          "like": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 6,
+          "found": 6,
+          "caught": 6,
+          "missed": 0,
+          "extra": 0
+        }
+      },
+      "fillersFound": {
+        "so": 2,
+        "um": 2,
+        "uh": 1,
+        "basically": 1,
+        "like": 1,
+        "you know": 1,
+        "actually": 1
+      },
+      "spellings": {
+        "um": 2,
+        "uh": 1
+      },
+      "wer": 0.012345679012345678
+    },
+    {
+      "clip": "a431c056",
+      "setup": "dg-nova-3",
+      "turnaroundSeconds": 0.7841686250000057,
+      "wordsPerMinute": 145,
+      "pauses": 0,
+      "restarts": 1,
+      "hesitations": {
+        "expected": 4,
+        "found": 1,
+        "caught": 1,
+        "missed": 3,
+        "extra": 0
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 2,
+            "found": 2,
+            "caught": 2,
+            "missed": 0,
+            "extra": 0
+          },
+          "like": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 6,
+          "found": 6,
+          "caught": 6,
+          "missed": 0,
+          "extra": 0
+        }
+      },
+      "fillersFound": {
+        "so": 2,
+        "uh": 1,
+        "basically": 1,
+        "like": 1,
+        "you know": 1,
+        "actually": 1
+      },
+      "spellings": {
+        "uh": 1
+      },
+      "wer": 0.037037037037037035
+    },
+    {
+      "clip": "a431c056",
+      "setup": "aai-u2",
+      "turnaroundSeconds": 3.906885957999999,
+      "wordsPerMinute": 149,
+      "pauses": 0,
+      "restarts": 1,
+      "hesitations": {
+        "expected": 4,
+        "found": 3,
+        "caught": 3,
+        "missed": 1,
+        "extra": 0
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 2,
+            "found": 2,
+            "caught": 2,
+            "missed": 0,
+            "extra": 0
+          },
+          "like": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 6,
+          "found": 6,
+          "caught": 6,
+          "missed": 0,
+          "extra": 0
+        }
+      },
+      "fillersFound": {
+        "so": 2,
+        "um": 2,
+        "uh": 1,
+        "basically": 1,
+        "like": 1,
+        "you know": 1,
+        "actually": 1
+      },
+      "spellings": {
+        "um": 2,
+        "uh": 1
+      },
+      "wer": 0.024691358024691357
+    },
+    {
+      "clip": "a431c056",
+      "setup": "aai-u35",
+      "turnaroundSeconds": 5.214004125,
+      "wordsPerMinute": 149,
+      "pauses": 0,
+      "restarts": 1,
+      "hesitations": {
+        "expected": 4,
+        "found": 4,
+        "caught": 4,
+        "missed": 0,
+        "extra": 0
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 2,
+            "found": 2,
+            "caught": 2,
+            "missed": 0,
+            "extra": 0
+          },
+          "like": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 6,
+          "found": 6,
+          "caught": 6,
+          "missed": 0,
+          "extra": 0
+        }
+      },
+      "fillersFound": {
+        "so": 2,
+        "um": 2,
+        "uh": 2,
+        "basically": 1,
+        "like": 1,
+        "you know": 1,
+        "actually": 1
+      },
+      "spellings": {
+        "um": 2,
+        "uh": 2
+      },
+      "wer": 0.012345679012345678
+    },
+    {
+      "clip": "a431c056",
+      "setup": "el-scribe",
+      "turnaroundSeconds": 2.031575167000003,
+      "wordsPerMinute": 149,
+      "pauses": 0,
+      "restarts": 1,
+      "hesitations": {
+        "expected": 4,
+        "found": 4,
+        "caught": 4,
+        "missed": 0,
+        "extra": 0
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 2,
+            "found": 2,
+            "caught": 2,
+            "missed": 0,
+            "extra": 0
+          },
+          "like": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 6,
+          "found": 6,
+          "caught": 6,
+          "missed": 0,
+          "extra": 0
+        }
+      },
+      "fillersFound": {
+        "so": 2,
+        "um": 2,
+        "uh": 2,
+        "basically": 1,
+        "like": 1,
+        "you know": 1,
+        "actually": 1
+      },
+      "spellings": {
+        "um": 2,
+        "uh": 2
+      },
+      "wer": 0.012345679012345678
+    },
+    {
+      "clip": "b31083c8",
+      "setup": "dg-nova-2",
+      "turnaroundSeconds": 2.538567958,
+      "wordsPerMinute": 97,
+      "pauses": 3,
+      "restarts": 0,
+      "hesitations": {
+        "expected": 3,
+        "found": 3,
+        "caught": 3,
+        "missed": 0,
+        "extra": 0
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 4,
+          "found": 4,
+          "caught": 4,
+          "missed": 0,
+          "extra": 0
+        }
+      },
+      "fillersFound": {
+        "um": 2,
+        "uh": 1,
+        "basically": 1,
+        "so": 1,
+        "actually": 1,
+        "you know": 1
+      },
+      "spellings": {
+        "um": 2,
+        "uh": 1
+      },
+      "wer": 0.03333333333333333
+    },
+    {
+      "clip": "b31083c8",
+      "setup": "dg-nova-3",
+      "turnaroundSeconds": 0.5671659159999981,
+      "wordsPerMinute": 97,
+      "pauses": 4,
+      "restarts": 0,
+      "hesitations": {
+        "expected": 3,
+        "found": 2,
+        "caught": 2,
+        "missed": 1,
+        "extra": 0
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 1,
+            "found": 2,
+            "caught": 1,
+            "missed": 0,
+            "extra": 1
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 4,
+          "found": 5,
+          "caught": 4,
+          "missed": 0,
+          "extra": 1
+        }
+      },
+      "fillersFound": {
+        "um": 1,
+        "uh": 1,
+        "basically": 1,
+        "so": 2,
+        "actually": 1,
+        "you know": 1
+      },
+      "spellings": {
+        "um": 1,
+        "uh": 1
+      },
+      "wer": 0.03333333333333333
+    },
+    {
+      "clip": "b31083c8",
+      "setup": "aai-u2",
+      "turnaroundSeconds": 2.5770477909999974,
+      "wordsPerMinute": 99,
+      "pauses": 3,
+      "restarts": 0,
+      "hesitations": {
+        "expected": 3,
+        "found": 3,
+        "caught": 3,
+        "missed": 0,
+        "extra": 0
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 1,
+            "found": 0,
+            "caught": 0,
+            "missed": 1,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 4,
+          "found": 3,
+          "caught": 3,
+          "missed": 1,
+          "extra": 0
+        }
+      },
+      "fillersFound": {
+        "um": 3,
+        "basically": 1,
+        "actually": 1,
+        "you know": 1
+      },
+      "spellings": {
+        "um": 3
+      },
+      "wer": 0
+    },
+    {
+      "clip": "b31083c8",
+      "setup": "aai-u35",
+      "turnaroundSeconds": 5.168800000000003,
+      "wordsPerMinute": 99,
+      "pauses": 3,
+      "restarts": 0,
+      "hesitations": {
+        "expected": 3,
+        "found": 3,
+        "caught": 3,
+        "missed": 0,
+        "extra": 0
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 1,
+            "found": 0,
+            "caught": 0,
+            "missed": 1,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 4,
+          "found": 3,
+          "caught": 3,
+          "missed": 1,
+          "extra": 0
+        }
+      },
+      "fillersFound": {
+        "um": 2,
+        "uh": 1,
+        "basically": 1,
+        "actually": 1,
+        "you know": 1
+      },
+      "spellings": {
+        "um": 2,
+        "uh": 1
+      },
+      "wer": 0
+    },
+    {
+      "clip": "b31083c8",
+      "setup": "el-scribe",
+      "turnaroundSeconds": 1.8130307079999912,
+      "wordsPerMinute": 99,
+      "pauses": 3,
+      "restarts": 0,
+      "hesitations": {
+        "expected": 3,
+        "found": 3,
+        "caught": 3,
+        "missed": 0,
+        "extra": 0
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 1,
+            "found": 0,
+            "caught": 0,
+            "missed": 1,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 4,
+          "found": 3,
+          "caught": 3,
+          "missed": 1,
+          "extra": 0
+        }
+      },
+      "fillersFound": {
+        "um": 2,
+        "uh": 1,
+        "basically": 1,
+        "actually": 1,
+        "you know": 1
+      },
+      "spellings": {
+        "um": 2,
+        "uh": 1
+      },
+      "wer": 0
+    },
+    {
+      "clip": "06ced784",
+      "setup": "dg-nova-2",
+      "turnaroundSeconds": 2.5942760419999975,
+      "wordsPerMinute": 132,
+      "pauses": 0,
+      "restarts": 0,
+      "hesitations": {
+        "expected": 4,
+        "found": 4,
+        "caught": 4,
+        "missed": 0,
+        "extra": 0
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "like": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 5,
+          "found": 5,
+          "caught": 5,
+          "missed": 0,
+          "extra": 0
+        }
+      },
+      "fillersFound": {
+        "uh": 2,
+        "um": 2,
+        "so": 1,
+        "like": 1,
+        "actually": 1,
+        "basically": 1,
+        "you know": 1
+      },
+      "spellings": {
+        "uh": 2,
+        "um": 2
+      },
+      "wer": 0.045454545454545456
+    },
+    {
+      "clip": "06ced784",
+      "setup": "dg-nova-3",
+      "turnaroundSeconds": 1.0105366669999931,
+      "wordsPerMinute": 132,
+      "pauses": 0,
+      "restarts": 0,
+      "hesitations": {
+        "expected": 4,
+        "found": 4,
+        "caught": 4,
+        "missed": 0,
+        "extra": 0
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "like": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 5,
+          "found": 5,
+          "caught": 5,
+          "missed": 0,
+          "extra": 0
+        }
+      },
+      "fillersFound": {
+        "uh": 2,
+        "um": 2,
+        "so": 1,
+        "like": 1,
+        "actually": 1,
+        "basically": 1,
+        "you know": 1
+      },
+      "spellings": {
+        "uh": 2,
+        "um": 2
+      },
+      "wer": 0.045454545454545456
+    },
+    {
+      "clip": "06ced784",
+      "setup": "aai-u2",
+      "turnaroundSeconds": 3.858250332999989,
+      "wordsPerMinute": 133,
+      "pauses": 0,
+      "restarts": 0,
+      "hesitations": {
+        "expected": 4,
+        "found": 5,
+        "caught": 4,
+        "missed": 0,
+        "extra": 1
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "like": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 5,
+          "found": 5,
+          "caught": 5,
+          "missed": 0,
+          "extra": 0
+        }
+      },
+      "fillersFound": {
+        "uh": 2,
+        "um": 3,
+        "so": 1,
+        "like": 1,
+        "actually": 1,
+        "basically": 1,
+        "you know": 1
+      },
+      "spellings": {
+        "uh": 2,
+        "um": 3
+      },
+      "wer": 0.045454545454545456
+    },
+    {
+      "clip": "06ced784",
+      "setup": "aai-u35",
+      "turnaroundSeconds": 5.044833624999999,
+      "wordsPerMinute": 134,
+      "pauses": 0,
+      "restarts": 0,
+      "hesitations": {
+        "expected": 4,
+        "found": 4,
+        "caught": 4,
+        "missed": 0,
+        "extra": 0
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "like": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 5,
+          "found": 5,
+          "caught": 5,
+          "missed": 0,
+          "extra": 0
+        }
+      },
+      "fillersFound": {
+        "uh": 2,
+        "um": 2,
+        "so": 1,
+        "like": 1,
+        "actually": 1,
+        "basically": 1,
+        "you know": 1
+      },
+      "spellings": {
+        "uh": 2,
+        "um": 2
+      },
+      "wer": 0.045454545454545456
+    },
+    {
+      "clip": "06ced784",
+      "setup": "el-scribe",
+      "turnaroundSeconds": 1.7847739589999982,
+      "wordsPerMinute": 133,
+      "pauses": 0,
+      "restarts": 0,
+      "hesitations": {
+        "expected": 4,
+        "found": 4,
+        "caught": 4,
+        "missed": 0,
+        "extra": 0
+      },
+      "fillers": {
+        "byWord": {
+          "so": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "like": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "actually": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "basically": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          },
+          "you know": {
+            "expected": 1,
+            "found": 1,
+            "caught": 1,
+            "missed": 0,
+            "extra": 0
+          }
+        },
+        "all": {
+          "expected": 5,
+          "found": 5,
+          "caught": 5,
+          "missed": 0,
+          "extra": 0
+        }
+      },
+      "fillersFound": {
+        "uh": 2,
+        "um": 2,
+        "so": 1,
+        "like": 1,
+        "actually": 1,
+        "basically": 1,
+        "you know": 1
+      },
+      "spellings": {
+        "uh": 2,
+        "um": 2
+      },
+      "wer": 0.045454545454545456
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "_help": "One entry per recording. hesitations = how many um/uh/ah sounds you really made, counted as one group. fillers = your count of each other filler word. reference = the words you said, optional (it enables the word-mistake score). Use null for anything you haven't counted yet. pauses = how many silent gaps of 2 seconds or more you left on purpose. restarts = how many times you repeated a phrase.",
+  "clips": [
+    {
+      "answerId": "7edf7d38-6ddf-41c3-9e85-50ecdac97687",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/7edf7d38-6ddf-41c3-9e85-50ecdac97687.m4a",
+      "note": "Scripted running speech, 60 s. Counts come from the script, so confirm them by listening. The recording auto-stopped after 'best decision', so the reference stops there too.",
+      "hesitations": 6,
+      "fillers": {
+        "so": 3,
+        "like": 2,
+        "actually": 2,
+        "basically": 1,
+        "you know": 1
+      },
+      "reference": "So, I want to talk about why I started running. Um, a year ago I was, uh, honestly so tired all the time. Basically, I sat at a desk for ten hours a day. So I decided to try something small. I I went outside for, like, ten minutes. It looked like rain, but I went anyway. Uh, the first week was hard, you know, my legs hurt and I felt like quitting. But actually, something changed. Um, I started to like the quiet mornings. I actually slept better, and, uh, my head felt clearer. Do you know what surprised me most? It wasn't the fitness. It was, like, the habit itself. So now I run three times a week, um, and I honestly think it's the best decision",
+      "pauses": null,
+      "restarts": null
+    },
+    {
+      "answerId": "7747bef0-6a61-4a58-9b83-9a7294d3b7b9",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/7747bef0-6a61-4a58-9b83-9a7294d3b7b9.m4a",
+      "note": "Natural talk about philosophy, 60 s. Listen back and count by hand.",
+      "hesitations": null,
+      "fillers": null,
+      "reference": null,
+      "pauses": null,
+      "restarts": null
+    },
+    {
+      "answerId": "a431c056-182b-425f-9137-a5663889cf72",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/a431c056-182b-425f-9137-a5663889cf72.m4a",
+      "note": "Clip A: scripted, read fast.",
+      "hesitations": 4,
+      "fillers": {
+        "so": 2,
+        "like": 1,
+        "actually": 1,
+        "basically": 1,
+        "you know": 1
+      },
+      "pauses": null,
+      "restarts": 1,
+      "reference": "So the quick version of my week is this. Um, Monday I fixed a bug in the login page, uh, and it took basically all morning. Then on Tuesday I, I reviewed three pull requests, and honestly it was, like, a lot of reading. Wednesday was meetings, you know, the usual planning stuff. Uh, Thursday I actually shipped the new settings screen. And Friday, um, I wrote the notes, so the whole team could follow what changed. So yeah, busy week, but a good one."
+    },
+    {
+      "answerId": "b31083c8-9c81-47d6-950f-02bee4e23a34",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/b31083c8-9c81-47d6-950f-02bee4e23a34.m4a",
+      "note": "Clip B: scripted, read slowly with three 3-second silent pauses.",
+      "hesitations": 3,
+      "fillers": {
+        "so": 1,
+        "basically": 1,
+        "actually": 1,
+        "you know": 1
+      },
+      "pauses": 3,
+      "restarts": null,
+      "reference": "Let me think about this for a moment. Um, the hardest part of my job is, uh, saying no. Basically, people ask me for help all day. So I want to say yes to everyone. But actually, if I say yes to everything, nothing gets done well. Um, so I am learning to say, you know, not this week, but maybe next week."
+    },
+    {
+      "answerId": "06ced784-b1a8-4618-b21c-74c8cdced481",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/06ced784-b1a8-4618-b21c-74c8cdced481.m4a",
+      "note": "Clip C: scripted, normal pace, includes two 'ah' sounds that Measure may not recognise.",
+      "hesitations": 4,
+      "fillers": {
+        "so": 1,
+        "like": 1,
+        "actually": 1,
+        "basically": 1,
+        "you know": 1
+      },
+      "pauses": null,
+      "restarts": null,
+      "reference": "I think the best advice I got at work was, ah, to write things down. Early on I kept everything in my head, and, um, honestly that was a mistake. So my manager told me, like, just keep a simple notes file. It looked like extra work at first, but it actually saved me hours. Now every meeting I take notes, and ahh, I send a short summary afterwards. Basically, it makes me look organised, you know, even on a bad day. Uh, I would tell anyone starting out to try it."
+    }
+  ]
+}

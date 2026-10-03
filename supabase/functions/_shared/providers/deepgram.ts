@@ -3,10 +3,9 @@ import { z } from 'npm:zod@4';
 import type { Transcript } from '../schemas/metrics.ts';
 import type { Transcriber } from './transcriber.ts';
 
-// Provisional provider until the comparison in /evals (build step 4, part B).
 // filler_words keeps um and uh; punctuate gives "So," so Measure can tell where sentences start.
+// nova-2 is the model the pipeline uses: nova-3 dropped every um and uh on a real recording.
 export const deepgramModel = 'nova-2';
-const url = `https://api.deepgram.com/v1/listen?model=${deepgramModel}&language=en-IN&filler_words=true&punctuate=true`;
 
 const responseSchema = z.object({
   results: z.object({
@@ -31,7 +30,10 @@ const responseSchema = z.object({
   }),
 });
 
-export function deepgramTranscriber(apiKey: string, fetchImpl: typeof fetch = fetch): Transcriber {
+type Options = { model?: string; fetchImpl?: typeof fetch };
+
+export function deepgramTranscriber(apiKey: string, { model = deepgramModel, fetchImpl = fetch }: Options = {}): Transcriber {
+  const url = `https://api.deepgram.com/v1/listen?model=${model}&language=en-IN&filler_words=true&punctuate=true`;
   return {
     async transcribe(audio) {
       const response = await fetchImpl(url, {

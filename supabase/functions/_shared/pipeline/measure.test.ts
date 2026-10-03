@@ -14,7 +14,7 @@ function say(sentence: string, { wordSeconds = 0.4, gaps = {} }: { wordSeconds?:
       clock += gaps[i] ?? 0;
       const start = clock;
       clock += wordSeconds;
-      return { text: token.toLowerCase().replace(/[^a-z']/g, ''), punctuated: token, start, end: clock };
+      return { text: token.toLowerCase().replace(/[^a-z0-9']/g, ''), punctuated: token, start, end: clock };
     });
   return { words };
 }
@@ -87,6 +87,11 @@ Deno.test('pace ignores um and uh, and silence before and after is not part of i
   assertEquals(spoken.wordCount, 20);
   // 20 spoken words over (22 * 0.4)s from first to last word.
   assertEquals(spoken.pace.wordsPerMinute, Math.round((20 / 8.8) * 60));
+});
+
+Deno.test('numbers count as words toward speed', () => {
+  const sentence = 'I sat at a desk for 10 hours a day and then went home';
+  assertEquals(measure({ transcript: say(sentence) }).wordCount, 14);
 });
 
 Deno.test('too few words give no speed', () => {

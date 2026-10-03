@@ -2,7 +2,7 @@ import type { Metrics, Transcript } from '../schemas/metrics.ts';
 
 // Stage 2: Measure. Plain code, no AI, no network. The same transcript always gives the same numbers.
 // Saved on every answer in pipeline_version, so bump it when any rule below changes.
-export const measureVersion = 2;
+export const measureVersion = 3;
 
 // Speed bands, in words per minute. Everyday speech is roughly 120 to 160. These are first guesses
 // to tune against real recordings in Part B.
@@ -35,7 +35,7 @@ const sentenceEnd = /[.?!]["')\]]*$/;
 const endsWithPunctuation = /[,;:.?!\u2014-]["')\]]*$/;
 
 function normalize(word: string): string {
-  return word.toLowerCase().replace(/[^a-z']/g, '');
+  return word.toLowerCase().replace(/[^a-z0-9']/g, '');
 }
 
 // um, umm, uhm, uh, uhh. These are noises, not words, so they don't count toward speed.

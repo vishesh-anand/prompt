@@ -29,7 +29,7 @@ Supabase
 | App | Expo + TypeScript, iOS first | Readable for us, native feel via @expo/ui, Android later |
 | Backend | Supabase | Database, storage, auth, and server code in one place |
 | Judge and coach AI | Claude, behind a swappable interface | Best at strict rubrics and a consistent tone |
-| Voice to text | Decided by a test (see "Open decisions") | Must keep filler words and give word timings |
+| Voice to text | ElevenLabs Scribe v2, chosen by a test (`evals/results/transcribers.md`) | Caught every um and uh in our recordings, repeatably, and is fast and cheap |
 | Feedback delivery | In stages, as each part finishes | Numbers in seconds, AI parts shortly after |
 | Audio retention | 30 days, plus the first recording forever | Replay and day-one comparison without hoarding voices |
 | Coach memory | A short "coach's notebook" per user | Most of the value, easy to inspect and test |
@@ -54,7 +54,7 @@ Supabase
 - Supabase Postgres, Auth, Storage, Realtime
 - Edge functions in TypeScript (Deno)
 - Anthropic API for judge, coach, notebook, and weekly note
-- Voice-to-text provider: to be decided
+- Voice-to-text provider: ElevenLabs Scribe v2 (see Decisions)
 
 ## Folder structure
 
@@ -218,5 +218,5 @@ Evals are built alongside step 4 and grow with steps 5 and 6.
 
 ## Open decisions
 
-- **Voice-to-text provider.** Provisionally Deepgram Nova-3 (`en-IN`) while building step 4; the comparison below decides. Test 2 to 3 providers on 5 of our own recordings. Pick the one that keeps the most filler words and handles Indian English accents best.
+- **Voice-to-text provider: decided (2026-10-03), ElevenLabs Scribe v2.** Tested on 4 labelled recordings of one speaker (17 um/uh sounds): Scribe caught 17, Deepgram Nova-2 15, Nova-3 10. AssemblyAI Universal-3.5 Pro also caught 17 but gave different counts on repeat runs of the same audio. Revisit with more speakers and natural (unscripted) clips once beta testers are recording, and check ElevenLabs' data-retention terms before the privacy note is written.
 - **Recording circle:** Reanimated for the circle, `react-native-svg` for the ring. Skia only if it can't look smooth on a real phone.
