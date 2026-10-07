@@ -1,9 +1,14 @@
 import type { Metrics, Transcript } from '../supabase/functions/_shared/schemas/metrics.ts';
 
+// Your 0, 1 or 2 for one of the three marks, with the words you quoted to justify it. Null until you've scored it.
+export type HandMark = { score: 0 | 1 | 2 | null; quote: string | null };
+
 export type Clip = {
   answerId: string;
   audioPath: string;
   note: string;
+  question?: string; // what you actually talked about
+  judge?: { guideVersion: number; mainPoint: HandMark; reasonOrExample: HandMark; ending: HandMark };
   hesitations: number | null;
   fillers: Record<string, number> | null;
   pauses?: number | null; // silent gaps of 2 seconds or more you left on purpose

@@ -34,7 +34,12 @@ Update this section as commands change.
 - Deploy edge functions: `npx supabase functions deploy <name>`
 - Backend tests: `deno test supabase/functions`
 - Backend type check: `DEEPGRAM_API_KEY=x deno check $(find supabase/functions -name '*.ts')`
-- Evals: `npm run evals` (from `/evals`). It compares voice-to-text providers on the clips in `evals/labels.json`. Needs keys in `evals/.env` (git-ignored; see `.env.example`). Recordings download into `evals/audio/` (git-ignored).
+- Evals (from `/evals`, keys in `evals/.env`, git-ignored; see `.env.example`):
+  - `npm run evals` compares voice-to-text providers on the clips in `evals/labels.json`. Recordings download into `evals/audio/` (git-ignored).
+  - `npm run evals:judge` checks the judge against your hand scores (agreement, same score run to run, speed, cost). Writes `evals/results/judge.md`.
+  - `npm run evals:coach` checks the coach: the better version adds nothing, the tip follows the voice rules, cost per answer. Writes `evals/results/coach.md`. Full tips and rewrites stay in git-ignored `evals/out/`.
+  - Add `-- --limit 1` to try one clip first. The AI evals call the Anthropic API and need `ANTHROPIC_API_KEY` in `evals/.env`.
+- Set the Anthropic key for the backend (real Terminal, never paste the key into Claude): `npx supabase secrets set ANTHROPIC_API_KEY=<key>`.
 
 Before calling any task done: type check, lint, and tests must pass.
 

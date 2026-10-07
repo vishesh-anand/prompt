@@ -1,5 +1,5 @@
 {
-  "_help": "One entry per recording. hesitations = how many um/uh/ah sounds you really made, counted as one group. fillers = your count of each other filler word. reference = the words you said, optional (it enables the word-mistake score). Use null for anything you haven't counted yet. pauses = how many silent gaps of 2 seconds or more you left on purpose. restarts = how many times you repeated a phrase.",
+  "_help": "One entry per recording. hesitations = how many um/uh/ah sounds you really made, counted as one group. fillers = your count of each other filler word. reference = the words you said, optional (it enables the word-mistake score). Use null for anything you haven't counted yet. pauses = how many silent gaps of 2 seconds or more you left on purpose. restarts = how many times you repeated a phrase. judge = your 0/1/2 score and one quoted phrase for each of the three things, using the guide in supabase/functions/_shared/prompts/judge.ts (guideVersion says which version). mainPoint is scored for clarity only. question = what you actually talked about.",
   "clips": [
     {
       "answerId": "7edf7d38-6ddf-41c3-9e85-50ecdac97687",
@@ -73,6 +73,249 @@
       "pauses": null,
       "restarts": null,
       "reference": "I think the best advice I got at work was, ah, to write things down. Early on I kept everything in my head, and, um, honestly that was a mistake. So my manager told me, like, just keep a simple notes file. It looked like extra work at first, but it actually saved me hours. Now every meeting I take notes, and ahh, I send a short summary afterwards. Basically, it makes me look organised, you know, even on a bad day. Uh, I would tell anyone starting out to try it."
+    },
+    {
+      "answerId": "33e3bb77-4f9b-4637-81e4-f5892a965610",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/33e3bb77-4f9b-4637-81e4-f5892a965610.m4a",
+      "note": "Natural. Answered normally, no steering.",
+      "question": "What is a skill you would like to learn, and why?",
+      "hesitations": 0,
+      "fillers": {},
+      "reference": null,
+      "pauses": null,
+      "restarts": null,
+      "judge": {
+        "guideVersion": 1,
+        "mainPoint": {
+          "score": 2,
+          "quote": "One of the skills that I want to have is doing surfing."
+        },
+        "reasonOrExample": {
+          "score": 0,
+          "quote": "One of the skills that I want to have is doing surfing."
+        },
+        "ending": {
+          "score": 1,
+          "quote": "you need to learn on how to stay afloat in waters that are much deeper than your height."
+        }
+      }
+    },
+    {
+      "answerId": "48ec573e-d896-4e57-8444-303bf0b02c83",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/48ec573e-d896-4e57-8444-303bf0b02c83.m4a",
+      "note": "Natural. Habit: lots of background first, point late.",
+      "question": "Tell me about a time something went wrong at work or school.",
+      "hesitations": 1,
+      "fillers": {},
+      "reference": null,
+      "pauses": null,
+      "restarts": null,
+      "judge": {
+        "guideVersion": 1,
+        "mainPoint": {
+          "score": 1,
+          "quote": "But there are always some times where things cannot always go your way at work."
+        },
+        "reasonOrExample": {
+          "score": 1,
+          "quote": "that was one time when I merged a change that was supposed to go in dev directly to master, and I didn't realize that it went directly."
+        },
+        "ending": {
+          "score": 0,
+          "quote": "It was too late. Before I realized, it was too late"
+        }
+      }
+    },
+    {
+      "answerId": "1d9ec811-961f-4296-8976-e14bd5215c2e",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/1d9ec811-961f-4296-8976-e14bd5215c2e.m4a",
+      "note": "Natural. Habit: make a point but give no real example.",
+      "question": "What is the best meal you have ever had?",
+      "hesitations": 0,
+      "fillers": {},
+      "reference": null,
+      "pauses": null,
+      "restarts": null,
+      "judge": {
+        "guideVersion": 1,
+        "mainPoint": {
+          "score": 2,
+          "quote": "For me, the best meal was during the time when I was in the restaurant called Rajbhog"
+        },
+        "reasonOrExample": {
+          "score": 0,
+          "quote": "For me, the best meal was during the time when I was in the restaurant called Rajbhog in Hyderabad."
+        },
+        "ending": {
+          "score": 2,
+          "quote": "It was an experience that can't be forgotten."
+        }
+      }
+    },
+    {
+      "answerId": "e5aa7b63-f060-4611-b521-162802a93ddd",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/e5aa7b63-f060-4611-b521-162802a93ddd.m4a",
+      "note": "Natural. Habit: ramble and hop between topics.",
+      "question": "What would you change about your daily routine?",
+      "hesitations": 0,
+      "fillers": {},
+      "reference": null,
+      "pauses": null,
+      "restarts": null,
+      "judge": {
+        "guideVersion": 1,
+        "mainPoint": {
+          "score": 0,
+          "quote": "There are a lot of things that can shape the life of a person. One of the things is the daily routine."
+        },
+        "reasonOrExample": {
+          "score": 0,
+          "quote": "The life is, life is really a function of your daily routine."
+        },
+        "ending": {
+          "score": 0,
+          "quote": "Without it, life would be just an arbitrary"
+        }
+      }
+    },
+    {
+      "answerId": "977fb7c5-e8f5-468b-81ed-10cc6c11d608",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/977fb7c5-e8f5-468b-81ed-10cc6c11d608.m4a",
+      "note": "Natural. Habit: do not wrap up, just stop.",
+      "question": "Describe a person who influenced you.",
+      "hesitations": 0,
+      "fillers": {
+        "so": 1
+      },
+      "reference": null,
+      "pauses": null,
+      "restarts": null,
+      "judge": {
+        "guideVersion": 1,
+        "mainPoint": {
+          "score": 2,
+          "quote": "I would say that Naval Ravikant is a person who has influenced me in quite a different ways."
+        },
+        "reasonOrExample": {
+          "score": 0,
+          "quote": "I would say that Naval Ravikant is a person who has influenced me in quite a different ways."
+        },
+        "ending": {
+          "score": 0,
+          "quote": "It's just that Naval, Naval is, has been able to-"
+        }
+      }
+    },
+    {
+      "answerId": "d7648d1c-12e9-45ee-b0a2-6c607ff98673",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/d7648d1c-12e9-45ee-b0a2-6c607ff98673.m4a",
+      "note": "Natural. Habit: think out loud, plenty of fillers.",
+      "question": "Explain how you would teach a friend something you know well.",
+      "hesitations": 3,
+      "fillers": {},
+      "reference": null,
+      "pauses": null,
+      "restarts": null,
+      "judge": {
+        "guideVersion": 1,
+        "mainPoint": {
+          "score": 1,
+          "quote": "if I had to teach something to a friend that I know very well, I would try to go through the basics first."
+        },
+        "reasonOrExample": {
+          "score": 0,
+          "quote": "I would try to go through the basics first."
+        },
+        "ending": {
+          "score": 0,
+          "quote": "Then after he has nailed all the basics, we would then go to applying those basics in real-life scenarios and"
+        }
+      }
+    },
+    {
+      "answerId": "aaee8de1-0fd5-47cf-9757-023c3bc03fdd",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/aaee8de1-0fd5-47cf-9757-023c3bc03fdd.m4a",
+      "note": "Natural. Habit: one specific moment with real details, deliberate closing line.",
+      "question": "Tell me about a trip you remember well.",
+      "hesitations": 0,
+      "fillers": {
+        "so": 3,
+        "actually": 0,
+        "basically": 0,
+        "you know": 0
+      },
+      "reference": null,
+      "pauses": null,
+      "restarts": null,
+      "judge": {
+        "guideVersion": 1,
+        "mainPoint": {
+          "score": 2,
+          "quote": "The trip that I would remember really well is the recent trip to Varkala that I made a week back."
+        },
+        "reasonOrExample": {
+          "score": 2,
+          "quote": " So Varkala has a really good backpacking vibe, party culture, and surfing culture there. So we went primarily for surfing, but since we stayed in Zostel as well, we met a lot of different types of people with different professions."
+        },
+        "ending": {
+          "score": 2,
+          "quote": "So yeah, this is a trip I will re-- I would remember"
+        }
+      }
+    },
+    {
+      "answerId": "e5669315-6ed2-46e7-a675-be528f68491b",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/e5669315-6ed2-46e7-a675-be528f68491b.m4a",
+      "note": "Natural. Habit: general reasons only, end with \"that is about it\".",
+      "question": "What is a hobby or app you would recommend to a friend?",
+      "hesitations": 0,
+      "fillers": {
+        "so": 1
+      },
+      "reference": null,
+      "pauses": null,
+      "restarts": null,
+      "judge": {
+        "guideVersion": 1,
+        "mainPoint": {
+          "score": 2,
+          "quote": "There's an app that I would really recommend to-- for the people to try out."
+        },
+        "reasonOrExample": {
+          "score": 1,
+          "quote": "And it's a really useful and fun app if you like your brain to do any sort of productive work."
+        },
+        "ending": {
+          "score": 1,
+          "quote": "So yeah, that's about it."
+        }
+      }
+    },
+    {
+      "answerId": "21aec571-ab6e-414d-83ec-f2f41b74bad0",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/21aec571-ab6e-414d-83ec-f2f41b74bad0.m4a",
+      "note": "Natural. Habit: one concrete story, never state the advice in one sentence, trail off at the end.",
+      "question": "What advice would you give a new coworker?",
+      "hesitations": 1,
+      "fillers": {},
+      "reference": null,
+      "pauses": null,
+      "restarts": null,
+      "judge": {
+        "guideVersion": 1,
+        "mainPoint": {
+          "score": 0,
+          "quote": "I recently implemented a feature on Security Hub platform, which is one of our apps, where we added observ-observability and metrics"
+        },
+        "reasonOrExample": {
+          "score": 2,
+          "quote": "My responsibility in that case should have been regularly seeing those alerts and see if that was actually something that we should get fixed or whether it was something false positive and the alerts needs to get fixed."
+        },
+        "ending": {
+          "score": 0,
+          "quote": "My responsibility in that case should have been regularly seeing those alerts and see if that was actually something that we should get fixed or whether it was something false positive and the alerts needs to get fixed."
+        }
+      }
     }
   ]
 }

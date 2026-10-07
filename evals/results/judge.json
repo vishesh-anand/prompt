@@ -1,0 +1,1051 @@
+{
+  "date": "2026-10-07T16:01:21.473Z",
+  "guideVersion": 1,
+  "effort": "medium",
+  "runs": [
+    {
+      "model": "sonnet-5",
+      "clip": "33e3bb77-4f9b-4637-81e4-f5892a965610",
+      "run": 1,
+      "scores": {
+        "mainPoint": 2,
+        "reasonOrExample": 2,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 13.2,
+      "seconds": 5.395041458,
+      "inputTokens": 2474,
+      "outputTokens": 397,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "One of the skills that I want to have is doing surfing.",
+          "why": "The answer plainly states surfing as the one skill to learn and stays on that topic."
+        },
+        "reasonOrExample": {
+          "quote": "I had recently enrolled in a beginner surfing lesson, and we primarily surfed in the white waves.",
+          "why": "Gives a specific, concrete example of actually enrolling in lessons and surfing white waves."
+        },
+        "ending": {
+          "quote": "you need to learn on how to stay afloat in waters that are much deeper than your height.",
+          "why": "The recording was cut off by the time limit before reaching a concluding statement."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5",
+      "clip": "33e3bb77-4f9b-4637-81e4-f5892a965610",
+      "run": 2,
+      "scores": {
+        "mainPoint": 2,
+        "reasonOrExample": 2,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 13.2,
+      "seconds": 5.034792582999999,
+      "inputTokens": 2474,
+      "outputTokens": 445,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "One of the skills that I want to have is doing surfing.",
+          "why": "The answer clearly states a single skill she wants to learn and stays focused on it."
+        },
+        "reasonOrExample": {
+          "quote": "I had recently enrolled in a beginner surfing lesson, and we primarily surfed in the white waves",
+          "why": "Gives a specific, concrete example of her actual experience learning to surf."
+        },
+        "ending": {
+          "quote": "you need to learn on how to stay afloat in waters that are much deeper than your height.",
+          "why": "The answer was cut off by the time limit without a concluding wrap-up."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5",
+      "clip": "48ec573e-d896-4e57-8444-303bf0b02c83",
+      "run": 1,
+      "scores": {
+        "mainPoint": 1,
+        "reasonOrExample": 2,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 34.5,
+      "seconds": 7.210527334000002,
+      "inputTokens": 2477,
+      "outputTokens": 534,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "that was one time when I merged a change that was supposed to go in dev directly to master",
+          "why": "A single specific incident is clearly stated as the answer's focus."
+        },
+        "reasonOrExample": {
+          "quote": "it went directly... It was released to prod by one of my teammate inadvertently",
+          "why": "A concrete, specific event is given to support the main point."
+        },
+        "ending": {
+          "quote": "Before I realized, it was too late",
+          "why": "The answer trails off repetitively and was cut short by the time limit without a real wrap-up."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5",
+      "clip": "48ec573e-d896-4e57-8444-303bf0b02c83",
+      "run": 2,
+      "scores": {
+        "mainPoint": 1,
+        "reasonOrExample": 2,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 34.5,
+      "seconds": 6.108099416999997,
+      "inputTokens": 2477,
+      "outputTokens": 502,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "that was one time when I merged a change that was supposed to go in dev directly to master",
+          "why": "Once reached, a single clear incident is stated and the rest supports it."
+        },
+        "reasonOrExample": {
+          "quote": "It was released to prod by one of my teammate inadvertently",
+          "why": "Gives a specific concrete event that backs up the main point."
+        },
+        "ending": {
+          "quote": "Before I realized, it was too late",
+          "why": "The answer was cut off by the time limit without a wrap-up."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5",
+      "clip": "1d9ec811-961f-4296-8976-e14bd5215c2e",
+      "run": 1,
+      "scores": {
+        "mainPoint": 2,
+        "reasonOrExample": 1,
+        "ending": 2
+      },
+      "mainPointAtSeconds": 11.5,
+      "seconds": 6.284118332999999,
+      "inputTokens": 4904,
+      "outputTokens": 492,
+      "failedAttempts": 1,
+      "detail": {
+        "mainPoint": {
+          "quote": "the best meal was during the time when I was in the restaurant called Rajbhog in Hyderabad",
+          "why": "Clearly states one specific best meal experience that the rest of the answer elaborates on."
+        },
+        "reasonOrExample": {
+          "quote": "I like to-- tend to like the type of meals that offer a lot of varieties, a lot of different taste palettes, and a lot of different colors",
+          "why": "Gives general qualities rather than a specific concrete detail like a dish or moment."
+        },
+        "ending": {
+          "quote": "It was an experience that can't be forgotten.",
+          "why": "Wraps up with a concluding statement that sums up the feeling of the meal."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5",
+      "clip": "1d9ec811-961f-4296-8976-e14bd5215c2e",
+      "run": 2,
+      "scores": {
+        "mainPoint": 2,
+        "reasonOrExample": 1,
+        "ending": 2
+      },
+      "mainPointAtSeconds": 11.5,
+      "seconds": 5.585535457999998,
+      "inputTokens": 4904,
+      "outputTokens": 435,
+      "failedAttempts": 1,
+      "detail": {
+        "mainPoint": {
+          "quote": "the best meal was during the time when I was in the restaurant called Rajbhog in Hyderabad",
+          "why": "The answer clearly centers on this one meal at Rajbhog."
+        },
+        "reasonOrExample": {
+          "quote": "a lot of varieties, a lot of different taste palettes, and a lot of different colors",
+          "why": "Support is general description rather than a specific concrete detail or story."
+        },
+        "ending": {
+          "quote": "It was an experience that can't be forgotten.",
+          "why": "The answer closes with a summarizing statement that wraps up the point."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5",
+      "clip": "e5aa7b63-f060-4611-b521-162802a93ddd",
+      "run": 1,
+      "scores": {
+        "mainPoint": 0,
+        "reasonOrExample": 0,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 0,
+      "seconds": 2.9802609999999987,
+      "inputTokens": 2427,
+      "outputTokens": 236,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "There are a lot of things that can shape the life of a person.",
+          "why": "The answer discusses daily routine's importance generally but never states what the speaker would actually change about their own routine."
+        },
+        "reasonOrExample": {
+          "quote": "Daily routine often comprises of the set of activities that you tend to do when you wake up, spend the time in the afternoon, and then go to bed at night.",
+          "why": "No concrete example or reason is given, only an abstract description of what routine is."
+        },
+        "ending": {
+          "quote": "Without it, life would be just an arbitrary",
+          "why": "The answer trails off mid-sentence and was cut off by the time limit."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5",
+      "clip": "e5aa7b63-f060-4611-b521-162802a93ddd",
+      "run": 2,
+      "scores": {
+        "mainPoint": 0,
+        "reasonOrExample": 0,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 11.6,
+      "seconds": 3.799372125000002,
+      "inputTokens": 2427,
+      "outputTokens": 299,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "Daily routine often comprises of the set of activities that you tend to do when you wake up, spend the time in the afternoon, and then go to bed at night.",
+          "why": "The answer never states what the speaker would actually change, only describes what a routine is."
+        },
+        "reasonOrExample": {
+          "quote": "The life is, life is really a function of your daily routine.",
+          "why": "Only a vague general claim with no concrete reason or example given."
+        },
+        "ending": {
+          "quote": "Without it, life would be just an arbitrary",
+          "why": "The answer trails off mid-sentence and was cut off by the time limit."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5",
+      "clip": "977fb7c5-e8f5-468b-81ed-10cc6c11d608",
+      "run": 1,
+      "scores": {
+        "mainPoint": 2,
+        "reasonOrExample": 1,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 0,
+      "seconds": 2.831967499999999,
+      "inputTokens": 2473,
+      "outputTokens": 219,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "I would say that Naval Ravikant is a person who has influenced me in quite a different ways.",
+          "why": "The answer clearly states Naval Ravikant as the influential person and stays on that topic."
+        },
+        "reasonOrExample": {
+          "quote": "It really gives you different perspective that people nowadays won't offer you.",
+          "why": "The support is general about his wisdom and book rather than a specific concrete example or result."
+        },
+        "ending": {
+          "quote": "It's just that Naval, Naval is, has been able to-",
+          "why": "The answer is cut off mid-thought due to the time limit."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5",
+      "clip": "977fb7c5-e8f5-468b-81ed-10cc6c11d608",
+      "run": 2,
+      "scores": {
+        "mainPoint": 2,
+        "reasonOrExample": 1,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 1.1,
+      "seconds": 3.146861125000003,
+      "inputTokens": 2473,
+      "outputTokens": 211,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "Naval Ravikant is a person who has influenced me in quite a different ways",
+          "why": "The answer plainly states who influenced them and stays on that topic."
+        },
+        "reasonOrExample": {
+          "quote": "It really gives you different perspective that people nowadays won't offer you",
+          "why": "The support given is general praise about his book/tweets rather than a specific concrete example of influence."
+        },
+        "ending": {
+          "quote": "It's just that Naval, Naval is, has been able to-",
+          "why": "The answer is cut off mid-sentence due to the time limit."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5",
+      "clip": "d7648d1c-12e9-45ee-b0a2-6c607ff98673",
+      "run": 1,
+      "scores": {
+        "mainPoint": 1,
+        "reasonOrExample": 0,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 9.8,
+      "seconds": 5.919181416,
+      "inputTokens": 2446,
+      "outputTokens": 434,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "I would try to go through the basics first",
+          "why": "The approach is pieced together across several hedged sentences rather than stated as one clear point."
+        },
+        "reasonOrExample": {
+          "quote": "Basics on how to-- on-- of what the things that needs to be done for that particular thing",
+          "why": "Only a generic list of steps is given with no concrete example or specific detail."
+        },
+        "ending": {
+          "quote": "we would then go to applying those basics in real-life scenarios and",
+          "why": "The answer is cut off mid-thought due to the time limit."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5",
+      "clip": "d7648d1c-12e9-45ee-b0a2-6c607ff98673",
+      "run": 2,
+      "scores": {
+        "mainPoint": 1,
+        "reasonOrExample": 0,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 9.8,
+      "seconds": 4.755052208000008,
+      "inputTokens": 2446,
+      "outputTokens": 414,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "I would try to go through the basics first",
+          "why": "The approach is pieced together across several sentences rather than stated in one clear sentence."
+        },
+        "reasonOrExample": {
+          "quote": "Basics on how to-- on-- of what the things that needs to be done for that particular thing",
+          "why": "Only a general list of steps is given with no concrete example or specific detail."
+        },
+        "ending": {
+          "quote": "we would then go to applying those basics in real-life scenarios and",
+          "why": "The answer cuts off mid-thought due to the time limit."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5",
+      "clip": "aaee8de1-0fd5-47cf-9757-023c3bc03fdd",
+      "run": 1,
+      "scores": {
+        "mainPoint": 2,
+        "reasonOrExample": 1,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 0,
+      "seconds": 3.224791041999997,
+      "inputTokens": 2484,
+      "outputTokens": 228,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "The trip that I would remember really well is the recent trip to Varkala that I made a week back.",
+          "why": "The answer clearly centers on this one trip throughout."
+        },
+        "reasonOrExample": {
+          "quote": "There were a lot of activities that we did with these people like karaoke night, going to places with these people. Had a lot of fun time with them.",
+          "why": "Support is mostly general descriptions without a specific concrete event or result."
+        },
+        "ending": {
+          "quote": "So yeah, this is a trip I will re-- I would remember",
+          "why": "The answer trails off mid-sentence and was cut off by the time limit."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5",
+      "clip": "aaee8de1-0fd5-47cf-9757-023c3bc03fdd",
+      "run": 2,
+      "scores": {
+        "mainPoint": 2,
+        "reasonOrExample": 1,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 0,
+      "seconds": 3.0313429170000017,
+      "inputTokens": 2484,
+      "outputTokens": 249,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "The trip that I would remember really well is the recent trip to Varkala that I made a week back.",
+          "why": "Clearly states one trip as the focus and the rest elaborates on it."
+        },
+        "reasonOrExample": {
+          "quote": "There were a lot of activities that we did with these people like karaoke night, going to places with these people.",
+          "why": "Support is general description of activities and vague praise rather than a specific concrete event or result."
+        },
+        "ending": {
+          "quote": "So yeah, this is a trip I will re-- I would remember",
+          "why": "The answer trails off mid-sentence and was cut off by the time limit."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5",
+      "clip": "e5669315-6ed2-46e7-a675-be528f68491b",
+      "run": 1,
+      "scores": {
+        "mainPoint": 2,
+        "reasonOrExample": 1,
+        "ending": 1
+      },
+      "mainPointAtSeconds": 6.1,
+      "seconds": 3.3423605000000096,
+      "inputTokens": 2465,
+      "outputTokens": 262,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "The app name is Matics, and it is a brain exercise app.",
+          "why": "Clearly states one app recommendation and sticks to it throughout."
+        },
+        "reasonOrExample": {
+          "quote": "It's a great app to replace the doom scrolling that you do with Instagram or YouTube Shorts on.",
+          "why": "Gives a personal claim of reduced doom scrolling but no concrete numbers or specific event, so it's general support."
+        },
+        "ending": {
+          "quote": "So yeah, that's about it.",
+          "why": "Ends on a complete thought but closes with an empty filler line rather than a real wrap-up."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5",
+      "clip": "e5669315-6ed2-46e7-a675-be528f68491b",
+      "run": 2,
+      "scores": {
+        "mainPoint": 2,
+        "reasonOrExample": 1,
+        "ending": 1
+      },
+      "mainPointAtSeconds": 6.1,
+      "seconds": 3.029445292000004,
+      "inputTokens": 2465,
+      "outputTokens": 205,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "The app name is Matics, and it is a brain exercise app.",
+          "why": "The answer clearly centers on recommending this one app."
+        },
+        "reasonOrExample": {
+          "quote": "my doom scrolling time has reduced a lot, and I no longer feel a need to doom scroll",
+          "why": "This is a personal result but stated generally without specific details or numbers."
+        },
+        "ending": {
+          "quote": "So yeah, that's about it.",
+          "why": "It ends on a complete thought but closes with an empty filler line rather than a real wrap-up."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5",
+      "clip": "21aec571-ab6e-414d-83ec-f2f41b74bad0",
+      "run": 1,
+      "scores": {
+        "mainPoint": 0,
+        "reasonOrExample": 1,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 41.4,
+      "seconds": 5.633833125000004,
+      "inputTokens": 2456,
+      "outputTokens": 449,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "My responsibility in that case should have been regularly seeing those alerts and see if that was actually something that we should get fixed or whether it was something false positive and the alerts needs to get fixed.",
+          "why": "The answer tells a story about a feature and alerts but never states a clear piece of advice for a new coworker."
+        },
+        "reasonOrExample": {
+          "quote": "the alerts that it gave started to be false positive and my manager pointed that out to me",
+          "why": "There's a specific scenario described, but it isn't connected to any stated advice, so it functions as general narrative rather than clear support."
+        },
+        "ending": {
+          "quote": "whether it was something false positive and the alerts needs to get fixed.",
+          "why": "The answer ends on a detail about alerts without ever wrapping up with actual advice, and time ran out."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5",
+      "clip": "21aec571-ab6e-414d-83ec-f2f41b74bad0",
+      "run": 2,
+      "scores": {
+        "mainPoint": 0,
+        "reasonOrExample": 2,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 0,
+      "seconds": 6.554033249999993,
+      "inputTokens": 2456,
+      "outputTokens": 530,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "I recently implemented a feature on Security Hub platform, which is one of our apps, where we added observ-observability and metrics",
+          "why": "The answer narrates a project experience without ever stating a piece of advice for a coworker."
+        },
+        "reasonOrExample": {
+          "quote": "the alerts that it gave started to be false positive and my manager pointed that out to me",
+          "why": "A specific, concrete incident (false positive alerts flagged by manager) is given as detail."
+        },
+        "ending": {
+          "quote": "whether it was something false positive and the alerts needs to get fixed.",
+          "why": "The answer was cut off by the time limit without a concluding thought."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5.5",
+      "clip": "33e3bb77-4f9b-4637-81e4-f5892a965610",
+      "run": 1,
+      "scores": {
+        "mainPoint": 1,
+        "reasonOrExample": 1,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 13.2,
+      "seconds": 3.5735992079999996,
+      "inputTokens": 2476,
+      "outputTokens": 275,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "One of the skills that I want to have is doing surfing.",
+          "why": "The point is stated, but the answer drifts between surfing and learning to swim, so the main skill is somewhat split."
+        },
+        "reasonOrExample": {
+          "quote": "It looks very cool when you surf in green waters.",
+          "why": "There is a real detail (a beginner lesson) but the reason is general: it looks cool, and it only loosely backs the point."
+        },
+        "ending": {
+          "quote": "you need to learn on how to stay afloat in waters that are much deeper than your height.",
+          "why": "The time limit stopped the recording and the answer has no wrap-up or return to the main point."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5.5",
+      "clip": "33e3bb77-4f9b-4637-81e4-f5892a965610",
+      "run": 2,
+      "scores": {
+        "mainPoint": 1,
+        "reasonOrExample": 1,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 13.2,
+      "seconds": 3.243595583000002,
+      "inputTokens": 2476,
+      "outputTokens": 311,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "One of the skills that I want to have is doing surfing.",
+          "why": "The point is split between surfing and swimming and has to be pieced together from several sentences."
+        },
+        "reasonOrExample": {
+          "quote": "So I had recently enrolled in a beginner surfing lesson, and we primarily surfed in the white waves.",
+          "why": "There is a real example of the beginner lesson, but the reasons given (looking cool, seeing others online) are general and the focus drifts between surfing and swimming."
+        },
+        "ending": {
+          "quote": "But for that, obviously, you need to learn on how to stay afloat in waters that are much deeper than your height.",
+          "why": "The time limit stopped the recording and the answer ends on a last detail with no wrap-up."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5.5",
+      "clip": "48ec573e-d896-4e57-8444-303bf0b02c83",
+      "run": 1,
+      "scores": {
+        "mainPoint": 1,
+        "reasonOrExample": 1,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 33.9,
+      "seconds": 3.179909750000006,
+      "inputTokens": 2479,
+      "outputTokens": 282,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "For me, that was one time when I merged a change that was supposed to go in dev directly to master, and I didn't realize that it went directly... It was released to prod by one of my teammate inadvertently.",
+          "why": "The incident is eventually stated, but only after a long general preamble and it has to be pieced together from several sentences."
+        },
+        "reasonOrExample": {
+          "quote": "I merged a change that was supposed to go in dev directly to master",
+          "why": "There is a concrete event, but it is only started and never shows what went wrong or what resulted, so it stays thin."
+        },
+        "ending": {
+          "quote": "Before I realized, it was too late",
+          "why": "The 60-second limit stopped the answer mid-story with no wrap-up."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5.5",
+      "clip": "48ec573e-d896-4e57-8444-303bf0b02c83",
+      "run": 2,
+      "scores": {
+        "mainPoint": 1,
+        "reasonOrExample": 1,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 33.9,
+      "seconds": 3.0806578750000044,
+      "inputTokens": 2479,
+      "outputTokens": 257,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "For me, that was one time when I merged a change that was supposed to go in dev directly to master, and I didn't realize that it went directly...",
+          "why": "The incident is stated, but only after a long vague preamble and it is hard to piece together what it adds up to."
+        },
+        "reasonOrExample": {
+          "quote": "It was released to prod by one of my teammate inadvertently. It was too late.",
+          "why": "There is a real event, but it lacks concrete detail such as impact, numbers or result, and does not develop beyond the incident."
+        },
+        "ending": {
+          "quote": "Before I realized, it was too late",
+          "why": "The recording was stopped by the time limit and the answer ends without any wrap-up or resolution."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5.5",
+      "clip": "1d9ec811-961f-4296-8976-e14bd5215c2e",
+      "run": 1,
+      "scores": {
+        "mainPoint": 2,
+        "reasonOrExample": 1,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 10,
+      "seconds": 3.391590792000003,
+      "inputTokens": 2454,
+      "outputTokens": 303,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "For me, the best meal was during the time when I was in the restaurant called Rajbhog in Hyderabad.",
+          "why": "The answer states one plain main point: the best meal was at Rajbhog in Hyderabad."
+        },
+        "reasonOrExample": {
+          "quote": "I like to-- tend to like the type of meals that offer a lot of varieties, a lot of different taste palettes, and a lot of different colors.",
+          "why": "It gives reasons (variety, colors, unlimited food), but they are general and name no specific dish or event."
+        },
+        "ending": {
+          "quote": "It was an experience that can't be forgotten.",
+          "why": "The recording was stopped by the time limit, so by the rules the answer counts as cut off, even though the last sentence sounds like a wrap-up."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5.5",
+      "clip": "1d9ec811-961f-4296-8976-e14bd5215c2e",
+      "run": 2,
+      "scores": {
+        "mainPoint": 2,
+        "reasonOrExample": 1,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 10,
+      "seconds": 3.3022385829999985,
+      "inputTokens": 2454,
+      "outputTokens": 302,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "For me, the best meal was during the time when I was in the restaurant called Rajbhog in Hyderabad.",
+          "why": "The answer states plainly that the best meal was at Rajbhog in Hyderabad, and the rest is about that meal."
+        },
+        "reasonOrExample": {
+          "quote": "I like to-- tend to like the type of meals that offer a lot of varieties, a lot of different taste palettes, and a lot of different colors.",
+          "why": "The reasons (variety, colors, unlimited food) are general and name no specific dish, person or event."
+        },
+        "ending": {
+          "quote": "It was an experience that can't be forgotten.",
+          "why": "The 60-second limit stopped the recording, so it is marked as cut off, even though the last line sounds like a wrap-up."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5.5",
+      "clip": "e5aa7b63-f060-4611-b521-162802a93ddd",
+      "run": 1,
+      "scores": {
+        "mainPoint": 0,
+        "reasonOrExample": 0,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 0,
+      "seconds": 2.9433741250000023,
+      "inputTokens": 2429,
+      "outputTokens": 219,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "There are a lot of things that can shape the life of a person. One of the things is the daily routine.",
+          "why": "The answer talks about daily routine in general and never says what the speaker would change."
+        },
+        "reasonOrExample": {
+          "quote": "All of these four things tend to play a very important role on how you would see yourself in the long time.",
+          "why": "There is only a vague general claim with no concrete reason, example, number or event."
+        },
+        "ending": {
+          "quote": "Without it, life would be just an arbitrary",
+          "why": "The recording was stopped by the time limit mid-sentence, so there is no ending."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5.5",
+      "clip": "e5aa7b63-f060-4611-b521-162802a93ddd",
+      "run": 2,
+      "scores": {
+        "mainPoint": 0,
+        "reasonOrExample": 0,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 0,
+      "seconds": 2.7242421250000044,
+      "inputTokens": 2429,
+      "outputTokens": 224,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "There are a lot of things that can shape the life of a person. One of the things is the daily routine.",
+          "why": "The answer talks about daily routine in general and never says what the speaker would change, so there is no clear point."
+        },
+        "reasonOrExample": {
+          "quote": "All of these four things tend to play a very important role on how you would see yourself in the long time.",
+          "why": "There is only a general claim about routine, with no concrete reason, example, number or event."
+        },
+        "ending": {
+          "quote": "Without it, life would be just an arbitrary",
+          "why": "The time limit cut the answer off mid-sentence before any ending."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5.5",
+      "clip": "977fb7c5-e8f5-468b-81ed-10cc6c11d608",
+      "run": 1,
+      "scores": {
+        "mainPoint": 2,
+        "reasonOrExample": 1,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 0,
+      "seconds": 3.196090916000001,
+      "inputTokens": 2475,
+      "outputTokens": 234,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "I would say that Naval Ravikant is a person who has influenced me in quite a different ways.",
+          "why": "The first sentence plainly names one person as the answer and the rest stays on him."
+        },
+        "reasonOrExample": {
+          "quote": "It really gives you different perspective that people nowadays won't offer you.",
+          "why": "It mentions how he was discovered and his book, but the influence is described only in general terms with no specific effect on the speaker."
+        },
+        "ending": {
+          "quote": "It's just that Naval, Naval is, has been able to-",
+          "why": "The recording was stopped by the time limit mid-sentence, so there is no ending."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5.5",
+      "clip": "977fb7c5-e8f5-468b-81ed-10cc6c11d608",
+      "run": 2,
+      "scores": {
+        "mainPoint": 2,
+        "reasonOrExample": 1,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 0,
+      "seconds": 2.9768304579999967,
+      "inputTokens": 2475,
+      "outputTokens": 241,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "I would say that Naval Ravikant is a person who has influenced me in quite a different ways.",
+          "why": "The opening sentence plainly names one person as the answer and the rest stays on him."
+        },
+        "reasonOrExample": {
+          "quote": "It really gives you different perspective that people nowadays won't offer you.",
+          "why": "It gives some specifics (the tweets, the book) but mostly describes Naval and never says how he influenced the speaker."
+        },
+        "ending": {
+          "quote": "It's just that Naval, Naval is, has been able to-",
+          "why": "The recording was stopped by the time limit and the speaker trails off mid-sentence with no ending."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5.5",
+      "clip": "d7648d1c-12e9-45ee-b0a2-6c607ff98673",
+      "run": 1,
+      "scores": {
+        "mainPoint": 1,
+        "reasonOrExample": 0,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 2.7,
+      "seconds": 3.1441110830000105,
+      "inputTokens": 2448,
+      "outputTokens": 246,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "if I had to teach something to a friend that I know very well, I would try to go through the basics first.",
+          "why": "There is a general approach (basics first, then real-life application), but it is hedged and has to be pieced together from several sentences."
+        },
+        "reasonOrExample": {
+          "quote": "Basics on how to-- on-- of what the things that needs to be done for that particular thing.",
+          "why": "It lists steps in the abstract, with no concrete example, reason, person or result behind them."
+        },
+        "ending": {
+          "quote": "we would then go to applying those basics in real-life scenarios and",
+          "why": "The 60-second limit stopped the answer mid-sentence, so there was no ending."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5.5",
+      "clip": "d7648d1c-12e9-45ee-b0a2-6c607ff98673",
+      "run": 2,
+      "scores": {
+        "mainPoint": 1,
+        "reasonOrExample": 0,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 2.7,
+      "seconds": 3.1428010000000066,
+      "inputTokens": 2448,
+      "outputTokens": 252,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "if I had to teach something to a friend that I know very well, I would try to go through the basics first.",
+          "why": "There is a general approach (start with basics), but it is hedged with 'Or maybe even before that' and has to be pieced together from several sentences."
+        },
+        "reasonOrExample": {
+          "quote": "Basics on how to-- on-- of what the things that needs to be done for that particular thing.",
+          "why": "It lists steps only, with no concrete example, event, number or reason for any step."
+        },
+        "ending": {
+          "quote": "we would then go to applying those basics in real-life scenarios and",
+          "why": "The recording was stopped by the time limit and the last words trail off mid-thought with 'and'."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5.5",
+      "clip": "aaee8de1-0fd5-47cf-9757-023c3bc03fdd",
+      "run": 1,
+      "scores": {
+        "mainPoint": 2,
+        "reasonOrExample": 1,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 0,
+      "seconds": 3.8116967499999737,
+      "inputTokens": 2486,
+      "outputTokens": 297,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "The trip that I would remember really well is the recent trip to Varkala that I made a week back.",
+          "why": "The answer states one clear main point, the Varkala trip, and the rest stays on it."
+        },
+        "reasonOrExample": {
+          "quote": "There were a lot of activities that we did with these people like karaoke night, going to places with these people.",
+          "why": "It names some activities (karaoke night, surfing, Zostel), but they are general and there is no specific event, story or result that explains why the trip is memorable."
+        },
+        "ending": {
+          "quote": "So yeah, this is a trip I will re-- I would remember",
+          "why": "The recording was stopped by the time limit and the last sentence breaks off mid-thought."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5.5",
+      "clip": "aaee8de1-0fd5-47cf-9757-023c3bc03fdd",
+      "run": 2,
+      "scores": {
+        "mainPoint": 2,
+        "reasonOrExample": 1,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 0,
+      "seconds": 3.010320250000019,
+      "inputTokens": 2486,
+      "outputTokens": 263,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "The trip that I would remember really well is the recent trip to Varkala that I made a week back.",
+          "why": "The first sentence plainly states the trip the answer is about, and the rest stays on it."
+        },
+        "reasonOrExample": {
+          "quote": "There were a lot of activities that we did with these people like karaoke night, going to places with these people.",
+          "why": "It names some activities such as karaoke night and surfing, but these are fairly general and do not clearly explain why the trip is memorable."
+        },
+        "ending": {
+          "quote": "So yeah, this is a trip I will re-- I would remember",
+          "why": "The answer breaks off mid-sentence when the time limit stopped the recording."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5.5",
+      "clip": "e5669315-6ed2-46e7-a675-be528f68491b",
+      "run": 1,
+      "scores": {
+        "mainPoint": 2,
+        "reasonOrExample": 2,
+        "ending": 1
+      },
+      "mainPointAtSeconds": 0,
+      "seconds": 3.238864916999999,
+      "inputTokens": 2467,
+      "outputTokens": 273,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "There's an app that I would really recommend to-- for the people to try out. The app name is Matics, and it is a brain exercise app.",
+          "why": "The answer names one app and says plainly that it is recommended, and the rest stays on that app."
+        },
+        "reasonOrExample": {
+          "quote": "my doom scrolling time has reduced a lot, and I no longer feel a need to doom scroll",
+          "why": "It gives a concrete description of the app and a personal result, reduced doom scrolling, that backs up the recommendation."
+        },
+        "ending": {
+          "quote": "So yeah, that's about it.",
+          "why": "It ends on a complete sentence but closes with an empty line instead of a real wrap-up."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5.5",
+      "clip": "e5669315-6ed2-46e7-a675-be528f68491b",
+      "run": 2,
+      "scores": {
+        "mainPoint": 2,
+        "reasonOrExample": 1,
+        "ending": 1
+      },
+      "mainPointAtSeconds": 0,
+      "seconds": 3.058786416999996,
+      "inputTokens": 2467,
+      "outputTokens": 250,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "There's an app that I would really recommend to-- for the people to try out. The app name is Matics, and it is a brain exercise app.",
+          "why": "The answer names one app and says plainly what it is, and the rest of the answer is about it."
+        },
+        "reasonOrExample": {
+          "quote": "my doom scrolling time has reduced a lot, and I no longer feel a need to doom scroll",
+          "why": "The personal result is real but has no numbers or specific events, and the rest is general praise like 'really useful and fun'."
+        },
+        "ending": {
+          "quote": "So yeah, that's about it.",
+          "why": "It ends on a complete sentence but closes with an empty line instead of wrapping up."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5.5",
+      "clip": "21aec571-ab6e-414d-83ec-f2f41b74bad0",
+      "run": 1,
+      "scores": {
+        "mainPoint": 0,
+        "reasonOrExample": 1,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 0,
+      "seconds": 3.534749167000002,
+      "inputTokens": 2458,
+      "outputTokens": 305,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "I recently implemented a feature on Security Hub platform, which is one of our apps, where we added observ-observability and metrics",
+          "why": "The question asks for advice, but the answer tells a story and never states a single advice point; the lesson has to be inferred from the last sentence."
+        },
+        "reasonOrExample": {
+          "quote": "the alerts that it gave started to be false positive and my manager pointed that out to me",
+          "why": "There is a real example from the speaker's own work, but it is not tied to a stated piece of advice, so it only loosely supports a point."
+        },
+        "ending": {
+          "quote": "or whether it was something false positive and the alerts needs to get fixed.",
+          "why": "The time limit stopped the recording and the answer closes on a detail without wrapping up or giving a conclusion."
+        }
+      }
+    },
+    {
+      "model": "sonnet-5.5",
+      "clip": "21aec571-ab6e-414d-83ec-f2f41b74bad0",
+      "run": 2,
+      "scores": {
+        "mainPoint": 0,
+        "reasonOrExample": 1,
+        "ending": 0
+      },
+      "mainPointAtSeconds": 0,
+      "seconds": 3.4335783750000117,
+      "inputTokens": 2458,
+      "outputTokens": 288,
+      "failedAttempts": 0,
+      "detail": {
+        "mainPoint": {
+          "quote": "I recently implemented a feature on Security Hub platform, which is one of our apps, where we added observ-observability and metrics",
+          "why": "The answer never states a single piece of advice for a new coworker; it describes a feature and a mistake without saying what they add up to."
+        },
+        "reasonOrExample": {
+          "quote": "the alerts that it gave started to be false positive and my manager pointed that out to me",
+          "why": "There is a real example of false-positive alerts, but it is not tied to a clearly stated piece of advice."
+        },
+        "ending": {
+          "quote": "whether it was something false positive and the alerts needs to get fixed.",
+          "why": "The 60-second limit stopped the recording and the answer has no wrap-up or conclusion."
+        }
+      }
+    }
+  ]
+}

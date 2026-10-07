@@ -3,6 +3,8 @@
   "private": true,
   "scripts": {
     "evals": "deno run --allow-net --allow-read --allow-write --allow-env --allow-run --env-file=.env run.ts",
-    "test": "deno test --allow-read ."
+    "test": "deno test --allow-read .",
+    "evals:judge": "deno run --allow-net --allow-read --allow-write --allow-env --allow-run --env-file=.env judge.ts",
+    "evals:coach": "deno run --allow-net --allow-read --allow-write --allow-env --allow-run --env-file=.env coach.ts"
   }
 }
