@@ -1,0 +1,69 @@
+import type { SavedJudgement } from '../schemas/judgement.ts';
+import type { Metrics } from '../schemas/metrics.ts';
+import { latePointSeconds } from './judge.ts';
+
+// Plain code, no AI: which single thing the tip is about. Claude only writes the tip about this focus.
+// Bump this when any rule below changes, and save it in pipeline_version.
+export const tipFocusVersion = 2;
+
+export type FocusKind = 'main_point' | 'ending' | 'reason_or_example' | 'fillers' | 'speed' | 'restarts' | 'polish';
+
+// `facts` are the real numbers and the person's own words the coach may cite. `judgeNote` is the judge's one-line
+// reason for the mark, so the tip can be about what was actually wrong (late, split, vague) and not just the number.
+export type Focus = { kind: FocusKind; facts: Record<string, unknown> };
+
+type Input = { metrics: Metrics; judgement: SavedJudgement; stoppedByTimeLimit: boolean };
+
+// Fillers per 100 words said, and how many make it severe, moderate or mild. First guesses, to tune on real answers
+// the way the speed bands in measure.ts were.
+export const fillerBands = { severe: 8, moderate: 5, mild: 3 } as const;
+export const restartBands = { moderate: 3, mild: 2 } as const;
+
+// Highest severity wins. On a tie the one earlier in this list wins.
+const order: FocusKind[] = ['main_point', 'ending', 'reason_or_example', 'fillers', 'speed', 'restarts'];
+
+export function fillersPer100Words(metrics: Metrics): number {
+  return metrics.wordCount === 0 ? 0 : (metrics.fillers.total / metrics.wordCount) * 100;
+}
+
+export function chooseFocus({ metrics, judgement, stoppedByTimeLimit }: Input): Focus {
+  const candidates: { kind: FocusKind; severity: number; facts: Record<string, unknown> }[] = [];
+  const add = (kind: FocusKind, severity: number, facts: Record<string, unknown>) => {
+    if (severity > 0) candidates.push({ kind, severity, facts });
+  };
+
+  const { mainPoint, reasonOrExample, ending } = judgement;
+  add('main_point', mainPoint.score === 0 ? 3 : mainPoint.score === 1 ? 2 : 0, {
+    quote: mainPoint.quotes[0],
+    judgeNote: mainPoint.why,
+    startsAtSeconds: judgement.mainPointAtSeconds,
+    cameLate: judgement.mainPointAtSeconds > latePointSeconds,
+  });
+
+  // The 60-second limit stopped the answer, so a missing ending isn't something the person can fix by talking differently.
+  if (!stoppedByTimeLimit) add('ending', ending.score === 0 ? 3 : ending.score === 1 ? 2 : 0, { lastWords: ending.quotes[0], judgeNote: ending.why });
+
+  // The least reliable of the three marks, so it ranks lower than the others.
+  add('reason_or_example', reasonOrExample.score === 0 ? 2 : reasonOrExample.score === 1 ? 1 : 0, { quote: reasonOrExample.quotes[0], judgeNote: reasonOrExample.why });
+
+  const rate = fillersPer100Words(metrics);
+  const topFillers = Object.entries(metrics.fillers.byWord)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3)
+    .map(([word, times]) => ({ word, times }));
+  add('fillers', rate >= fillerBands.severe ? 3 : rate >= fillerBands.moderate ? 2 : rate >= fillerBands.mild ? 1 : 0, {
+    total: metrics.fillers.total,
+    per100Words: Math.round(rate * 10) / 10,
+    mostSaid: topFillers,
+  });
+
+  const { band, wordsPerMinute } = metrics.pace;
+  add('speed', band === 'too_fast' || band === 'too_slow' ? 2 : 0, { band, wordsPerMinute });
+
+  const restarts = metrics.restarts.count;
+  add('restarts', restarts >= restartBands.moderate ? 2 : restarts >= restartBands.mild ? 1 : 0, { count: restarts, atSeconds: metrics.restarts.atSeconds });
+
+  candidates.sort((a, b) => b.severity - a.severity || order.indexOf(a.kind) - order.indexOf(b.kind));
+  const best = candidates[0];
+  return best ? { kind: best.kind, facts: best.facts } : { kind: 'polish', facts: { fillersTotal: metrics.fillers.total } };
+}

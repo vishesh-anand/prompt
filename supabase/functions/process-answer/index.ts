@@ -2,7 +2,8 @@
 import { withSupabase } from 'npm:@supabase/server@1';
 import { z } from 'npm:zod@4';
 
-import { transcriber, transcriberVersion } from '../_shared/providers/index.ts';
+import { makeModel, modelName, transcriber, transcriberVersion } from '../_shared/providers/index.ts';
+import { metricsSchema } from '../_shared/schemas/metrics.ts';
 import { runPipeline } from './runPipeline.ts';
 
 // PRODUCT.md "Limits": at most 10 answers per person per day.
@@ -22,7 +23,7 @@ export default {
     // ctx.supabase only sees the caller's own rows (Row Level Security), so a row someone else owns looks like it doesn't exist.
     const { data: answer, error } = await ctx.supabase
       .from('answers')
-      .select('id, audio_path, status, transcript, metrics, created_at')
+      .select('id, user_id, question_id, audio_path, duration_ms, status, transcript, metrics, judgement, coaching, created_at')
       .eq('id', body.data.answerId)
       .maybeSingle();
     if (error) {
@@ -31,8 +32,10 @@ export default {
     }
     if (!answer) return reply({ error: 'not_found' }, 404);
 
-    // Already done: nothing to run.
-    if (['measured', 'judged', 'coached'].includes(answer.status)) return reply({ status: answer.status }, 200);
+    // Already done: nothing to run. Any earlier stage is picked up again from the last saved result.
+    // An answer with no words stops after Measure, and that is also done.
+    const measured = metricsSchema.safeParse(answer.metrics);
+    if (answer.status === 'coached' || (measured.success && measured.data.wordCount === 0)) return reply({ status: answer.status }, 200);
 
     // Count the answers before this one on the same (UTC) day, so tapping Try again on an answer that
     // was allowed never counts itself. Per-person timezones arrive with the profile in build step 7.
@@ -51,10 +54,8 @@ export default {
 
     // A failed answer goes back to its last good stage, so the screen says "listening" again straight away.
     if (answer.status === 'failed') {
-      const { error: resetError } = await ctx.supabaseAdmin
-        .from('answers')
-        .update({ status: answer.transcript ? 'transcribed' : 'uploaded' })
-        .eq('id', answer.id);
+      const lastGood = answer.coaching ? 'coached' : answer.judgement ? 'judged' : answer.metrics ? 'measured' : answer.transcript ? 'transcribed' : 'uploaded';
+      const { error: resetError } = await ctx.supabaseAdmin.from('answers').update({ status: lastGood }).eq('id', answer.id);
       if (resetError) {
         console.error('process-answer could not reset the status', resetError);
         return reply({ error: 'server_error' }, 500);
@@ -62,7 +63,7 @@ export default {
     }
 
     // Reply now and keep working: leaving the screen or locking the phone doesn't stop processing.
-    EdgeRuntime.waitUntil(runPipeline(ctx.supabaseAdmin, answer, transcriber, transcriberVersion));
+    EdgeRuntime.waitUntil(runPipeline(ctx.supabaseAdmin, answer, { transcriber, transcriberVersion, makeModel, modelName }));
     return reply({ status: 'started' }, 202);
   }),
 };
