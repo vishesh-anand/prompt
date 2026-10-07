@@ -26,7 +26,7 @@ export function useAnswer(answerId: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('answers')
-        .select('id, user_id, question_id, audio_path, duration_ms, status, metrics')
+        .select('id, user_id, question_id, audio_path, duration_ms, status, metrics, judgement, coaching, feedback_flagged')
         .eq('id', answerId)
         .single();
       if (error) throw error;

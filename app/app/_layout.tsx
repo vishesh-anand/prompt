@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
 import { useTheme } from '@/design';
+import { useResumeAnswers } from '@/features/answers/useResumeAnswers';
 import { AuthProvider, useSession } from '@/features/auth/AuthProvider';
 
 // Hold the splash screen until we know whether you're signed in, so a signed-in person never sees the sign-in screen flash by.
@@ -26,6 +27,7 @@ function Routes() {
   const { colors } = useTheme();
   const { session } = useSession();
   const ready = session !== undefined;
+  useResumeAnswers();
 
   useEffect(() => {
     if (ready) void SplashScreen.hideAsync();

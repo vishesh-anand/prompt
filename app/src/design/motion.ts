@@ -18,3 +18,15 @@ export const recordingMotion = {
   reducedGlowScale: 1.4,
   reducedCoreRestOpacity: 0.55,
 } as const;
+
+// Source of truth: DESIGN.md "Feedback reveal". Results appear one at a time, top to bottom.
+export const revealMotion = {
+  // Gap between one result and the next.
+  staggerMs: 120,
+  // Each result fades in over this long (gentle ease), sliding up a little unless Reduce Motion is on.
+  itemMs: 300,
+  // While feedback is prepared: the circle slowly settles and fades. Not a spinner.
+  listeningSettleMs: 2400,
+  listeningStartScale: 1.25,
+  listeningRestOpacity: 0.45,
+} as const;

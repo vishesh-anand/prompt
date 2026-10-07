@@ -26,8 +26,8 @@ const buttonLineHeight = 20.34;
 type Props = {
   label: string;
   onPress: () => void;
-  // primary is the one coral button per screen; secondary is quiet.
-  variant?: 'primary' | 'secondary';
+  // primary is the one coral button per screen; secondary is outlined; quiet is plain text for the least important actions.
+  variant?: 'primary' | 'secondary' | 'quiet';
   accessibilityLabel?: string;
 };
 
@@ -36,6 +36,7 @@ export function Button({ label, onPress, variant = 'primary', accessibilityLabel
   const { colors } = useTheme();
   const { fontScale } = useWindowDimensions();
   const isPrimary = variant === 'primary';
+  const isQuiet = variant === 'quiet';
   const height = Math.ceil(buttonPadding + buttonLineHeight * fontScale);
 
   return (
@@ -45,10 +46,10 @@ export function Button({ label, onPress, variant = 'primary', accessibilityLabel
       <NativeButton
         onPress={onPress}
         modifiers={[
-          buttonStyle(isPrimary ? 'borderedProminent' : 'bordered'),
+          buttonStyle(isPrimary ? 'borderedProminent' : isQuiet ? 'borderless' : 'bordered'),
           buttonBorderShape('roundedRectangle', radius.button),
           controlSize('large'),
-          tint(isPrimary ? colors.accent : colors.textPrimary),
+          tint(isPrimary ? colors.accent : isQuiet ? colors.textSecondary : colors.textPrimary),
           accessibilityLabelModifier(accessibilityLabel ?? label),
         ]}>
         {/* Dark label on coral: white fails contrast (see DESIGN.md, onAccent). */}

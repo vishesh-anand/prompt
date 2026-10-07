@@ -1,8 +1,10 @@
 import { z } from 'zod';
 
+import { coachingSchema } from './coaching';
+import { judgementSchema } from './judgement';
 import { metricsSchema } from './metrics';
 
-// The columns the app reads today. Judgement and coaching arrive with step 5.
+// The columns the app reads today.
 export const answerSchema = z.object({
   id: z.string(),
   user_id: z.string(),
@@ -11,6 +13,12 @@ export const answerSchema = z.object({
   duration_ms: z.number(),
   status: z.enum(['uploaded', 'transcribed', 'measured', 'judged', 'coached', 'failed']),
   metrics: metricsSchema.nullable(),
+  judgement: judgementSchema.nullable(),
+  coaching: coachingSchema.nullable(),
+  feedback_flagged: z.boolean(),
 });
 
 export type Answer = z.infer<typeof answerSchema>;
+
+// Just enough to restart an answer whose processing never finished.
+export const unfinishedAnswerSchema = z.object({ id: z.string() });

@@ -28,9 +28,17 @@ export function useFeedback(answerId: string) {
     }
   }, [status, startProcessing]);
 
+  const metrics = answer.data?.metrics ?? null;
+  const judgement = answer.data?.judgement ?? null;
+  const coaching = answer.data?.coaching ?? null;
+
+  // An answer with no words stops after the measuring stage, and that is as far as it goes.
+  const noWords = metrics?.wordCount === 0;
+  const finished = status === 'coached' || noWords;
+
   // "Stuck" is remembered against the stage and attempt it was seen at, so any progress or retry clears it.
   const [attempt, setAttempt] = useState(0);
-  const waiting = status === 'uploaded' || status === 'transcribed';
+  const waiting = status !== undefined && status !== 'failed' && !finished;
   const waitingKey = `${status}:${attempt}`;
   const [stuckKey, setStuckKey] = useState<string | null>(null);
   useEffect(() => {
@@ -44,18 +52,21 @@ export function useFeedback(answerId: string) {
     startProcessing();
   }, [startProcessing]);
 
-  const metrics = answer.data?.metrics ?? null;
-  const done = status === 'measured' || status === 'judged' || status === 'coached';
+  const problem = status === 'failed' || process.isError || (waiting && stuckKey === waitingKey);
 
+  // Results show as soon as the counted numbers are saved, even if a later stage then stalls.
   let view: FeedbackView = 'listening';
   if (process.error instanceof DailyLimitError) view = 'limit';
-  else if (status === 'failed' || process.isError || (waiting && stuckKey === waitingKey)) view = 'problem';
-  else if (done && metrics) view = metrics.wordCount === 0 ? 'noWords' : 'ready';
+  else if (metrics) view = noWords ? 'noWords' : 'ready';
+  else if (problem) view = 'problem';
+
+  // Some results are on screen but the rest didn't finish.
+  const stalled = view === 'ready' && problem && !finished;
 
   // DESIGN.md: a soft tap when feedback appears.
   useEffect(() => {
     if (view === 'ready') void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
   }, [view]);
 
-  return { answer, view, metrics, retry };
+  return { answer, view, metrics, judgement, coaching, finished: finished && view === 'ready', stalled, retry };
 }
