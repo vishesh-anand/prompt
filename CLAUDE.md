@@ -16,6 +16,9 @@ If a request conflicts with these files, stop and ask. Don't quietly work around
 - **Small, readable changes.** Prefer deleting code to adding it. No speculative features, options, or abstractions "for later."
 - **When something works but feels clumsy,** say so and propose the clean version.
 - **Explain in plain words.** The owner knows React and TypeScript well, but is new to Expo and mobile. Briefly explain anything mobile-specific.
+- **Plans name what's shared.** For each screen or flow, a plan lists what is still mounted underneath it and which shared resources it touches more than once (realtime channels, query keys, the audio session, files on the phone). Step 6's retry crashed because two mounted screens used one realtime channel name.
+- **"Done" reports say what was and wasn't run.** Two lists: exercised (types, lint, unit tests, database test, scripted flows) and not exercised (anything on a real phone, anything that needs a person). Passing tests are never presented as "verified" for a flow they don't cover.
+- **Before calling a step done:** run `/code-review` on the diff, asking "what else is mounted or shared that this change touches?", and run the scripted flows (`e2e/run.sh`) once they exist.
 
 ## Commands
 
