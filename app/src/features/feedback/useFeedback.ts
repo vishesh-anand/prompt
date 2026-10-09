@@ -2,6 +2,7 @@ import * as Haptics from 'expo-haptics';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAnswer } from '@/features/answers/useAnswer';
+import { stoppedByTimeLimit } from '@/features/recording/limits';
 
 import { DailyLimitError, useProcessAnswer } from './useProcessAnswer';
 
@@ -68,5 +69,7 @@ export function useFeedback(answerId: string) {
     if (view === 'ready') void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
   }, [view]);
 
-  return { answer, view, metrics, judgement, coaching, finished: finished && view === 'ready', stalled, retry };
+  const timeRanOut = answer.data ? stoppedByTimeLimit(answer.data.duration_ms) : false;
+
+  return { answer, view, metrics, judgement, coaching, timeRanOut, finished: finished && view === 'ready', stalled, retry };
 }

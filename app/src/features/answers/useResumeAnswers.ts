@@ -12,9 +12,13 @@ import { supabase } from '@/lib/supabase';
 // Waiting this long also means we never start an answer that is being processed right now.
 const unfinishedAfterMs = 2 * 60_000;
 
+// Only answers from the last day are picked up again. An older one is left alone: it is too late to help the person,
+// and it could otherwise reprocess a whole backlog (and spend money) the first time the app opens after an update.
+const resumeWindowMs = 24 * 60 * 60_000;
+
 // If the app closed before the feedback screen could start processing (or while it was running),
-// the answer would sit unfinished forever. Whenever the app opens or comes back to the front,
-// restart those answers quietly. The server picks up from the last stage it saved.
+// the answer would sit unfinished. Whenever the app opens or comes back to the front, restart those from the last
+// 24 hours quietly. The server picks up from the last stage it saved.
 export function useResumeAnswers() {
   const queryClient = useQueryClient();
   const userId = useSession().session?.user.id;
@@ -24,12 +28,13 @@ export function useResumeAnswers() {
     queryKey: ['unfinished', userId],
     enabled: userId !== undefined,
     queryFn: async () => {
-      const cutoff = new Date(Date.now() - unfinishedAfterMs).toISOString();
+      const now = Date.now();
       const { data, error } = await supabase
         .from('answers')
         .select('id')
         .in('status', ['uploaded', 'transcribed', 'measured', 'judged'])
-        .lt('created_at', cutoff);
+        .lt('created_at', new Date(now - unfinishedAfterMs).toISOString())
+        .gte('created_at', new Date(now - resumeWindowMs).toISOString());
       if (error) throw error;
       return z.array(unfinishedAnswerSchema).parse(data);
     },

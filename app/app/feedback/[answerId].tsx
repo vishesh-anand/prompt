@@ -13,7 +13,7 @@ import { useReplay } from '@/features/recording/useReplay';
 export default function Feedback() {
   const { answerId } = useLocalSearchParams<{ answerId: string }>();
   const router = useRouter();
-  const { answer, view, metrics, judgement, coaching, finished, stalled, retry } = useFeedback(answerId);
+  const { answer, view, metrics, judgement, coaching, timeRanOut, finished, stalled, retry } = useFeedback(answerId);
   const flag = useFlagFeedback(answerId);
   const url = useRecordingUrl(answer.data?.audio_path);
   const { playing, toggle } = useReplay(url.data ?? null);
@@ -45,7 +45,7 @@ export default function Feedback() {
 
         {view === 'ready' && metrics ? (
           <>
-            <FeedbackReveal metrics={metrics} judgement={judgement} coaching={coaching} />
+            <FeedbackReveal metrics={metrics} judgement={judgement} coaching={coaching} stoppedByTimeLimit={timeRanOut} />
             {stalled ? <Text variant="body">{"The rest didn't finish. Your recording is saved. Tap to try again."}</Text> : null}
             {!finished && !stalled ? <Text variant="label">{judgement ? 'Writing your tip.' : 'Reading how your answer is built.'}</Text> : null}
           </>

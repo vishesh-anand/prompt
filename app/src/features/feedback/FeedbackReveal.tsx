@@ -11,12 +11,12 @@ import type { Metrics } from '@/lib/schemas/metrics';
 import { describeJudgement } from './describeJudgement';
 import { describeMetrics } from './describeMetrics';
 
-type Props = { metrics: Metrics; judgement: Judgement | null; coaching: Coaching | null };
+type Props = { metrics: Metrics; judgement: Judgement | null; coaching: Coaching | null; stoppedByTimeLimit: boolean };
 
 // The feedback reveal: results appear one at a time, top to bottom, in the order from DESIGN.md: filler words,
 // speed, clear point, the one tip, the better version. Each shows up as soon as the server has saved it, so the
 // counted numbers come first and the written parts follow. With Reduce Motion on, results fade in without moving.
-export function FeedbackReveal({ metrics, judgement, coaching }: Props) {
+export function FeedbackReveal({ metrics, judgement, coaching, stoppedByTimeLimit }: Props) {
   const reduceMotion = useReduceMotion();
   const shownMetrics = describeMetrics(metrics);
 
@@ -46,7 +46,7 @@ export function FeedbackReveal({ metrics, judgement, coaching }: Props) {
       {judgement ? (
         <Animated.View entering={enter(atStart.judgement ? 2 : 0)} style={styles.result}>
           <Text variant="label">Clear point</Text>
-          {describeJudgement(judgement).map((line) => (
+          {describeJudgement(judgement, { stoppedByTimeLimit }).map((line) => (
             <View key={line.label} style={styles.line} accessible accessibilityLabel={`${line.label}: ${line.value}${line.detail ? `. ${line.detail}` : ''}`}>
               <Text variant="body" color="textSecondary">
                 {line.label}
