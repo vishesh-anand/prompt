@@ -32,6 +32,12 @@ Update this section as commands change.
 - Type check: `cd app && npx tsc --noEmit`
 - Lint: `cd app && npx expo lint`
 - App tests (jest-expo, pure logic only, no rendered screens): `cd app && npm test`
+- Scripted end-to-end flows (Maestro, in `/e2e`): they drive the real app on a dedicated "Prompt E2E" simulator and record real answers (real transcription and Claude, a few cents, counted in the 10 a day).
+  - One-time machine setup: `brew install openjdk`, then install Maestro by downloading `https://github.com/mobile-dev-inc/maestro/releases/latest/download/maestro.zip` and copying its `maestro/*` into `~/.maestro` (`e2e/run.sh` puts `~/.maestro/bin` on the PATH itself). Plain `brew install maestro` is a different tool, and the official brew tap refuses to build while the Command Line Tools are older than Xcode.
+  - One-time simulator: `e2e/setup.sh`, then by hand in that simulator: sign in to an Apple Account in Settings, then `e2e/run.sh --build`, open Prompt and sign in with Apple. The login stays on that simulator.
+  - Run: `e2e/run.sh` (add `--build` after changing app code: a Release build with `EXPO_PUBLIC_E2E=1`, JavaScript bundled in, no Metro). Fails on a failed flow or a new Prompt crash report.
+  - The test build swaps the recorder's result for a spoken clip made with `say` (`app/src/features/recording/e2eTake.ts`). The recorder, permission and circle still run; the real microphone is checked by hand on the iPhone each step.
+  - The simulator is iOS 26.2 on purpose: iOS 27 currently quits the app at launch (no UIScene lifecycle yet).
 - One-time backend setup (hosted Supabase project, no local Docker): `npx supabase login` (run it in a real Terminal window, not through Claude's `!` prefix, because it opens a browser), then `npx supabase link --project-ref <ref>` from the repo root. Put the project URL and publishable key in `app/.env.local` (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`). Never the service-role key.
 - Push database changes to the hosted project: `npx supabase db push` (new files in `supabase/migrations/` only)
 - Set a backend secret (run in a real Terminal, never paste the key into Claude): `npx supabase secrets set DEEPGRAM_API_KEY=<key>`

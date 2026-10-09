@@ -1,0 +1,14 @@
+# Shared step: on the record screen, record for a few seconds and stop. In the test build the recorder runs for real,
+# then its result is swapped for a prepared spoken clip (see app/src/features/recording/e2eTake.ts).
+appId: com.visheshanand.prompt
+---
+- extendedWaitUntil:
+    visible: "Start recording"
+    timeout: 30000
+- tapOn: "Start recording"
+- extendedWaitUntil:
+    visible: "Stop recording"
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Stop recording"

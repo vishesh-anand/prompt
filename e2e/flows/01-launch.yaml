@@ -1,0 +1,8 @@
+# Free: no answer is recorded. Checks the app opens signed in, which is what every other flow relies on.
+appId: com.visheshanand.prompt
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Answer today's question"
+    timeout: 30000
+    label: "Home shows (if this fails you are probably signed out: sign in with Apple once on the Prompt E2E simulator, see e2e/setup.sh)"

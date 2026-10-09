@@ -5,6 +5,7 @@ import { AppState } from 'react-native';
 
 import { recordingMotion } from '@/design';
 
+import { e2eTake } from './e2eTake';
 import { maxAnswerMs, minAnswerMs } from './limits';
 
 export type RecordingPhase = 'idle' | 'starting' | 'recording' | 'stopping';
@@ -69,8 +70,9 @@ export function useRecording({ onLeftMidAnswer }: Options) {
     const durationMs = recorder.getStatus().durationMillis;
     try {
       await recorder.stop();
-      const uri = recorder.uri;
-      if (uri) setTake({ uri, durationMs, tooShort: durationMs < minAnswerMs });
+      // Scripted test builds only: use a prepared clip instead of what the simulator's microphone heard.
+      const taken = e2eTake() ?? (recorder.uri ? { uri: recorder.uri, durationMs } : null);
+      if (taken) setTake({ ...taken, tooShort: taken.durationMs < minAnswerMs });
       else setFailed(true);
     } catch {
       setFailed(true);

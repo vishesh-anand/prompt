@@ -1,0 +1,42 @@
+# Three real answers (real transcription and Claude, counted in the 10 a day): a first try, a retry, and a third try.
+# This is the flow that would have caught the step 6 crash: the feedback screen stays mounted under the compare screen.
+appId: com.visheshanand.prompt
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Answer today's question"
+    timeout: 30000
+- tapOn: "Answer today's question"
+
+# First try.
+- runFlow: answer.yaml
+- extendedWaitUntil:
+    visible: "Your one tip"
+    timeout: 120000
+- extendedWaitUntil:
+    visible: "Try again"
+    timeout: 60000
+- assertNotVisible: "That didn't process. Your recording is saved. Tap to try again."
+- assertNotVisible: "See before and after"
+
+# Retry, then look at the before and after.
+- tapOn: "Try again"
+- runFlow: answer.yaml
+- extendedWaitUntil:
+    visible: "See before and after"
+    timeout: 180000
+- tapOn: "See before and after"
+- assertVisible: "Before and after"
+- assertVisible: "First try"
+- assertVisible: "Now"
+
+# Third try, from the compare screen: it compares with the first try again.
+- tapOn: "Try again"
+- runFlow: answer.yaml
+- extendedWaitUntil:
+    visible: "See before and after"
+    timeout: 180000
+- tapOn: "See before and after"
+- assertVisible: "Before and after"
+- assertVisible: "First try"
+- assertVisible: "Now"
