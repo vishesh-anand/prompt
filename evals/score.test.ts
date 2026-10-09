@@ -2,7 +2,7 @@ import { assertAlmostEquals, assertEquals } from 'jsr:@std/assert@1';
 
 import { measure } from '../supabase/functions/_shared/pipeline/measure.ts';
 import type { Transcript } from '../supabase/functions/_shared/schemas/metrics.ts';
-import { rawHesitations, scoreFillers, scoreHesitations, wordErrorRate } from './score.ts';
+import { levelsOff, rawHesitations, scoreFillers, scoreHesitations, wordErrorRate } from './score.ts';
 
 // A transcript from plain text, one word per half second.
 function say(text: string): Transcript {
@@ -59,4 +59,12 @@ Deno.test('word error rate: "10" and "ten" are the same word', () => {
 Deno.test('word error rate: nothing to compare against gives null', () => {
   assertEquals(wordErrorRate(null, say('anything')), null);
   assertEquals(wordErrorRate('um uh', say('anything')), null);
+});
+
+Deno.test('a miss is described as off by one level or off by two levels, in either direction', () => {
+  assertEquals(levelsOff(2, 2), 'exactly right');
+  assertEquals(levelsOff(2, 1), 'off by one level');
+  assertEquals(levelsOff(0, 1), 'off by one level');
+  assertEquals(levelsOff(2, 0), 'off by two levels');
+  assertEquals(levelsOff(0, 2), 'off by two levels');
 });

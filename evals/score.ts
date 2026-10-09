@@ -99,3 +99,11 @@ export function wordErrorRate(reference: string | null, transcript: Transcript):
   }
   return previous[heard.length] / expected.length;
 }
+
+// How far the judge's mark is from the owner's, in the words the reports use. Marks are 0, 1 or 2, so a miss is
+// "off by one level" (your 2, the judge's 1) or "off by two levels" (your 2, the judge's 0).
+export function levelsOff(yours: number, judges: number): string {
+  const diff = Math.abs(yours - judges);
+  if (diff === 0) return 'exactly right';
+  return diff === 1 ? 'off by one level' : `off by ${diff === 2 ? 'two' : diff} levels`;
+}

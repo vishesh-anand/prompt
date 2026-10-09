@@ -2,7 +2,7 @@ import { judge, type JudgeResult, applyPointTiming, findQuoteStart, secondsIntoA
 import { anthropicModel, type Usage } from '../supabase/functions/_shared/providers/anthropic.ts';
 import { judgePrompt } from '../supabase/functions/_shared/prompts/judge.ts';
 import type { Mark } from '../supabase/functions/_shared/schemas/judgement.ts';
-import type { Clip } from './score.ts';
+import { type Clip, levelsOff } from './score.ts';
 import { loadTranscripts, type SavedTranscript } from './transcripts.ts';
 
 // Run from this folder with `npm run evals:judge` (add `-- --limit 1` to try one clip). Sends every clip you scored
@@ -182,7 +182,14 @@ for (const m of models) {
 }
 
 lines.push('', 'Agreement counts each run separately (clips x runs x 3 marks). "Same scores run to run" counts clips where every run gave identical scores on all three marks. Cost uses real token counts, retries included, no prompt caching.', '');
-lines.push('## How far off', '', '| | Exactly right | Off by 1 | Off by 2 |', '|---|---|---|---|');
+lines.push(
+  '## How far off',
+  '',
+  "A mark is off by one level when it is next to yours (your 2, the judge's 1) and off by two levels when it is the opposite end (your 2, the judge's 0).",
+  '',
+  '| | Exactly right | Off by one level | Off by two levels |',
+  '|---|---|---|---|',
+);
 for (const m of models) lines.push(`| ${m.label} | ${perModel[m.id].offBy[0]} | ${perModel[m.id].offBy[1]} | ${perModel[m.id].offBy[2]} |`);
 
 lines.push('', '## Where the judge and you differ', '');
@@ -196,7 +203,9 @@ for (const m of models) {
       const got = these.map((r) => (r.scores ? r.scores[t] : '-'));
       if (got.every((g) => g === mine)) continue;
       const first = these.find((r) => r.detail);
-      rows.push(`- Clip ${clipNumber(clip.answerId)} (${short(clip.answerId)}), ${t}: you ${mine}, judge ${got.join(' then ')}.${first?.detail ? ` Judge quoted "${trim(first.detail[t].quote)}" and said: ${first.detail[t].why}` : ''}`);
+      const labels = these.map((r) => (r.scores ? levelsOff(mine, r.scores[t]) : 'no answer'));
+      const off = labels.every((l) => l === labels[0]) ? `${labels[0]} in every run` : labels.join(', then ');
+      rows.push(`- Clip ${clipNumber(clip.answerId)} (${short(clip.answerId)}), ${t}: you ${mine}, judge ${got.join(' then ')} (${off}).${first?.detail ? ` Judge quoted "${trim(first.detail[t].quote)}" and said: ${first.detail[t].why}` : ''}`);
     }
   }
   lines.push(...(rows.length ? rows : ['No differences.']), '');

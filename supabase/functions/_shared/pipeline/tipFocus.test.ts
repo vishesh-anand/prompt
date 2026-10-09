@@ -46,9 +46,18 @@ Deno.test('an ending that was cut off by the timer is never the focus', () => {
   assertEquals(chooseFocus({ ...input, stoppedByTimeLimit: false }).kind, 'ending');
 });
 
-Deno.test('a weak reason or example ranks below a moderate problem elsewhere', () => {
-  assertEquals(chooseFocus(withJudgement({ reasonOrExample: mark(0), ending: mark(1) })).kind, 'ending');
+Deno.test('reason or example is the lowest priority: it only wins when nothing else is flagged', () => {
+  // Alone, it is still a tip.
   assertEquals(chooseFocus(withJudgement({ reasonOrExample: mark(0) })).kind, 'reason_or_example');
+  assertEquals(chooseFocus(withJudgement({ reasonOrExample: mark(1) })).kind, 'reason_or_example');
+  // Against anything else flagged, even the mildest, it loses.
+  assertEquals(chooseFocus(withJudgement({ reasonOrExample: mark(0), ending: mark(1) })).kind, 'ending');
+  const mildFillers = withMetrics({ fillers: { total: 3, byWord: { like: 3 } } });
+  assertEquals(chooseFocus({ ...mildFillers, judgement: { ...clean.judgement, reasonOrExample: mark(0) } }).kind, 'fillers');
+  const mildRestarts = withMetrics({ restarts: { count: 2, atSeconds: [5, 9] } });
+  assertEquals(chooseFocus({ ...mildRestarts, judgement: { ...clean.judgement, reasonOrExample: mark(0) } }).kind, 'restarts');
+  // A missing reason (0) still ranks above a general one (1) when both are the only thing flagged.
+  assertEquals(chooseFocus(withJudgement({ reasonOrExample: mark(0, 'nothing') })).facts.quote, 'nothing');
 });
 
 Deno.test('fillers are judged per 100 words, with the most said first', () => {

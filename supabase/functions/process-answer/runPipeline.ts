@@ -13,6 +13,7 @@ import type { Transcriber } from '../_shared/providers/transcriber.ts';
 import { coachingSchema } from '../_shared/schemas/coaching.ts';
 import { type SavedJudgement, savedJudgementSchema } from '../_shared/schemas/judgement.ts';
 import { type Metrics, metricsSchema, type Transcript, transcriptSchema } from '../_shared/schemas/metrics.ts';
+import { readNotebook, updateNotebookInOrder } from './notebookStore.ts';
 
 export type AnswerRow = {
   id: string;
@@ -20,6 +21,8 @@ export type AnswerRow = {
   question_id: number;
   audio_path: string;
   duration_ms: number;
+  // When the answer was given, exactly as the database wrote it. The notebook uses it to stay in order.
+  created_at: string;
   transcript: unknown;
   metrics: unknown;
   judgement: unknown;
@@ -111,9 +114,7 @@ export async function runPipeline(admin: SupabaseClient, answer: AnswerRow, prov
     if (!coachingSchema.safeParse(answer.coaching).success) {
       const { data: question, error: questionError } = await admin.from('questions').select('text').eq('id', answer.question_id).single();
       if (questionError) throw questionError;
-      const { data: notebookRow, error: notebookError } = await admin.from('coach_notebooks').select('notes').eq('user_id', answer.user_id).maybeSingle();
-      if (notebookError) throw notebookError;
-      notebookBefore = notebookRow?.notes ?? '';
+      notebookBefore = (await readNotebook(admin, answer.user_id))?.notes ?? '';
 
       const focus = chooseFocus({ metrics, judgement, stoppedByTimeLimit: timeLimit });
       const coaching = await coach(
@@ -130,14 +131,20 @@ export async function runPipeline(admin: SupabaseClient, answer: AnswerRow, prov
     return;
   }
 
-  // The notebook is best effort: the feedback is already saved, and a missed update is harmless.
+  // The notebook is best effort: the feedback is already saved, and a missed update is harmless. It is updated in
+  // the order answers were given, and an answer older than the notebook never changes it (see notebookStore.ts).
   if (freshCoaching) {
+    const { tip } = freshCoaching;
     try {
-      const notes = await updateNotebook({ previousNotes: notebookBefore, judgement, metrics, tip: freshCoaching.tip }, modelFor('notebook'));
-      const { error } = await admin.from('coach_notebooks').upsert({ user_id: answer.user_id, notes, updated_at: new Date().toISOString() });
-      if (error) throw error;
-      // The notebook's tokens are only known now, so they are added to the answer's saved cost.
-      await save({});
+      const outcome = await updateNotebookInOrder(admin, { userId: answer.user_id, answerAt: answer.created_at }, (previousNotes) =>
+        updateNotebook({ previousNotes, judgement, metrics, tip }, modelFor('notebook')),
+      );
+      if (outcome === 'saved') {
+        // The notebook's tokens are only known now, so they are added to the answer's saved cost.
+        await save({});
+      } else {
+        console.log(`process-answer left the notebook alone for ${answer.id}: it has already moved past this answer`);
+      }
     } catch (error) {
       console.error(`process-answer could not update the notebook for ${answer.id}`, error);
     }

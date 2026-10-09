@@ -1,6 +1,6 @@
 import { z } from 'npm:zod@4';
 
-import { coach, tipMaxChars } from '../supabase/functions/_shared/pipeline/coach.ts';
+import { coach } from '../supabase/functions/_shared/pipeline/coach.ts';
 import { judge, stoppedByTimeLimit } from '../supabase/functions/_shared/pipeline/judge.ts';
 import { measure } from '../supabase/functions/_shared/pipeline/measure.ts';
 import { updateNotebook } from '../supabase/functions/_shared/pipeline/notebook.ts';
@@ -9,6 +9,7 @@ import { coachPrompt } from '../supabase/functions/_shared/prompts/coach.ts';
 import { coachCheckPrompt } from '../supabase/functions/_shared/prompts/coachCheck.ts';
 import { notebookPrompt } from '../supabase/functions/_shared/prompts/notebook.ts';
 import { anthropicModel, type Usage } from '../supabase/functions/_shared/providers/anthropic.ts';
+import { maxTipWords, tipWordsTarget, wordCount } from '../supabase/functions/_shared/schemas/coaching.ts';
 import { savedJudgementSchema } from '../supabase/functions/_shared/schemas/judgement.ts';
 import type { Clip } from './score.ts';
 import { newWords } from './novelty.ts';
@@ -78,6 +79,7 @@ type Row = {
   run: number;
   focus: string;
   tipSentences: number;
+  tipWords: number;
   tipProblems: string[];
   lengthRatio: number;
   novelNumbers: string[];
@@ -121,21 +123,21 @@ for (const clip of clips) {
       const sentences = (coaching.tip.match(/[.!?](\s|$)/g) ?? []).length;
       const lower = coaching.tip.toLowerCase();
       const tipProblems = [
-        ...(sentences > 3 ? [`${sentences} sentences`] : []),
-        ...(coaching.tip.length > tipMaxChars ? ['too long'] : []),
+        ...(sentences > 2 ? [`${sentences} sentences`] : []),
+        ...(wordCount(coaching.tip) > maxTipWords ? [`${wordCount(coaching.tip)} words`] : []),
         ...(coaching.tip.includes('!') ? ['exclamation mark'] : []),
         ...bannedPraise.filter((p) => lower.includes(p)).map((p) => `generic praise: "${p}"`),
       ];
       rows.push({
-        clip: short, run, focus: focus.kind, tipSentences: sentences, tipProblems,
+        clip: short, run, focus: focus.kind, tipSentences: sentences, tipWords: wordCount(coaching.tip), tipProblems,
         lengthRatio: coaching.betterVersion.split(/\s+/).length / transcript.words.length,
         novelNumbers: novelty.numbers, novelNames: novelty.names, novelWords: novelty.words.length,
         unsupported: checked.unsupported, tipAddressesFocus: checked.tipAddressesFocus, tipReason: checked.tipReason, seconds,
       });
       examples.push(`## Clip ${short}, run ${run} (focus: ${focus.kind})`, '', `Tip: ${coaching.tip}`, '', `Better version: ${coaching.betterVersion}`, '', `New words: ${novelty.words.join(', ') || 'none'}`, `Tip vs focus: ${checked.tipAddressesFocus ? 'on focus' : 'off focus'} (${checked.tipReason})`, `Checker: ${checked.unsupported.length === 0 ? 'nothing unsupported' : checked.unsupported.map((u) => `"${u.text}" (${u.why})`).join('; ')}`, '');
 
-      // Test the checker once, on the first clip: it has to catch an invented sentence and an invented detail.
-      if (clip === clips[0] && run === 1) {
+      // Test the checker once, on the first reply that comes back: it has to catch an invented sentence and an invented detail.
+      if (controls.length === 0) {
         const invented = `${coaching.betterVersion} I also won a regional award for this last year.`;
         const swapped = coaching.betterVersion.replace(/\.\s/, '. My manager at Google praised it, and 40 people came. ');
         for (const [name, rewrite] of [['an invented sentence at the end', invented], ['an invented detail in the middle', swapped]] as const) {
@@ -144,7 +146,7 @@ for (const clip of clips) {
         }
       }
     } catch (error) {
-      rows.push({ clip: short, run, focus: focus.kind, tipSentences: 0, tipProblems: [], lengthRatio: 0, novelNumbers: [], novelNames: [], novelWords: 0, unsupported: [], tipAddressesFocus: false, tipReason: '', seconds: (performance.now() - started) / 1000, error: error instanceof Error ? error.message : String(error) });
+      rows.push({ clip: short, run, focus: focus.kind, tipSentences: 0, tipWords: 0, tipProblems: [], lengthRatio: 0, novelNumbers: [], novelNames: [], novelWords: 0, unsupported: [], tipAddressesFocus: false, tipReason: '', seconds: (performance.now() - started) / 1000, error: error instanceof Error ? error.message : String(error) });
     }
     const last = rows[rows.length - 1];
     console.log(`${short} run ${run}: focus ${last.focus}${last.error ? ` FAILED ${last.error}` : `, unsupported ${last.unsupported.length}, new numbers/names ${last.novelNumbers.length + last.novelNames.length}, tip problems ${last.tipProblems.length}`}`);
@@ -181,7 +183,8 @@ const lines = [
   `| Better version adds nothing (checker finds no unsupported claim, and no new number or name) | **${clean.length} of ${ok.length}** (${pct(clean.length, ok.length)}) |`,
   `| Checker finds no unsupported claim | ${ok.filter((r) => r.unsupported.length === 0).length} of ${ok.length} |`,
   `| Test of the checker: caught an invented sentence or detail | ${caughtControls} of ${controls.length} |`,
-  `| Tip follows the countable voice rules (one to three sentences, no "!", no generic praise, within ${tipMaxChars} characters) | ${tipsFine.length} of ${ok.length} |`,
+  `| Tip follows the countable voice rules (one or two sentences, at most ${maxTipWords} words, no "!", no generic praise) | ${tipsFine.length} of ${ok.length} |`,
+  `| Tip length (target ${tipWordsTarget} words) | ${ok.length === 0 ? 'n/a' : `${Math.round(ok.reduce((a, r) => a + r.tipWords, 0) / ok.length)} words on average, longest ${Math.max(...ok.map((r) => r.tipWords))}`} |`,
   `| Tip is about the chosen focus (checker's yes or no) | ${onFocus.length} of ${ok.length} |`,
   `| Better version length compared with the answer | ${ok.length === 0 ? 'n/a' : `${Math.round((ok.reduce((a, r) => a + r.lengthRatio, 0) / ok.length) * 100)}% on average`} |`,
   `| Median time for the coach stage | ${median(ok.map((r) => r.seconds))?.toFixed(1) ?? 'n/a'} s |`,
@@ -215,8 +218,8 @@ const problems = ok.flatMap((r) => [
   ...(r.tipAddressesFocus ? [] : [`- Clip ${r.clip} run ${r.run}: checker says the tip is not about the chosen focus (${r.focus}): ${r.tipReason}`]),
 ]);
 lines.push(...(problems.length ? problems : ['None.']), ...rows.filter((r) => r.error).map((r) => `- Clip ${r.clip} run ${r.run} failed: ${r.error}`), '');
-lines.push('## Per clip', '', '| Clip | Focus | Tip sentences | Better version vs answer | New words | Checker unsupported |', '|---|---|---|---|---|---|');
-for (const r of ok) lines.push(`| ${r.clip} run ${r.run} | ${r.focus} | ${r.tipSentences} | ${Math.round(r.lengthRatio * 100)}% | ${r.novelWords} | ${r.unsupported.length} |`);
+lines.push('## Per clip', '', '| Clip | Focus | Tip words | Better version vs answer | New words | Checker unsupported |', '|---|---|---|---|---|---|');
+for (const r of ok) lines.push(`| ${r.clip} run ${r.run} | ${r.focus} | ${r.tipWords} | ${Math.round(r.lengthRatio * 100)}% | ${r.novelWords} | ${r.unsupported.length} |`);
 lines.push('');
 
 await Deno.mkdir('results', { recursive: true });

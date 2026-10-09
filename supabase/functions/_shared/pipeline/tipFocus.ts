@@ -4,7 +4,7 @@ import { latePointSeconds } from './judge.ts';
 
 // Plain code, no AI: which single thing the tip is about. Claude only writes the tip about this focus.
 // Bump this when any rule below changes, and save it in pipeline_version.
-export const tipFocusVersion = 2;
+export const tipFocusVersion = 3;
 
 export type FocusKind = 'main_point' | 'ending' | 'reason_or_example' | 'fillers' | 'speed' | 'restarts' | 'polish';
 
@@ -19,8 +19,9 @@ type Input = { metrics: Metrics; judgement: SavedJudgement; stoppedByTimeLimit: 
 export const fillerBands = { severe: 8, moderate: 5, mild: 3 } as const;
 export const restartBands = { moderate: 3, mild: 2 } as const;
 
-// Highest severity wins. On a tie the one earlier in this list wins.
-const order: FocusKind[] = ['main_point', 'ending', 'reason_or_example', 'fillers', 'speed', 'restarts'];
+// Highest severity wins. On a tie the one earlier in this list wins. Reason or example is last: it is the judge's
+// least reliable mark (evals/results/judge.md), so it only drives the tip when nothing else is worth a tip.
+const order: FocusKind[] = ['main_point', 'ending', 'fillers', 'speed', 'restarts', 'reason_or_example'];
 
 export function fillersPer100Words(metrics: Metrics): number {
   return metrics.wordCount === 0 ? 0 : (metrics.fillers.total / metrics.wordCount) * 100;
@@ -43,8 +44,9 @@ export function chooseFocus({ metrics, judgement, stoppedByTimeLimit }: Input): 
   // The 60-second limit stopped the answer, so a missing ending isn't something the person can fix by talking differently.
   if (!stoppedByTimeLimit) add('ending', ending.score === 0 ? 3 : ending.score === 1 ? 2 : 0, { lastWords: ending.quotes[0], judgeNote: ending.why });
 
-  // The least reliable of the three marks, so it ranks lower than the others.
-  add('reason_or_example', reasonOrExample.score === 0 ? 2 : reasonOrExample.score === 1 ? 1 : 0, { quote: reasonOrExample.quotes[0], judgeNote: reasonOrExample.why });
+  // The least reliable of the three marks, so it ranks below everything else: even the mildest problem elsewhere
+  // (severity 1) beats it. A missing reason (0.5 more than a general one) is still a tip when nothing else is flagged.
+  add('reason_or_example', reasonOrExample.score === 0 ? 1 : reasonOrExample.score === 1 ? 0.5 : 0, { quote: reasonOrExample.quotes[0], judgeNote: reasonOrExample.why });
 
   const rate = fillersPer100Words(metrics);
   const topFillers = Object.entries(metrics.fillers.byWord)

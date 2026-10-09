@@ -1,6 +1,6 @@
 import { coachPrompt } from '../prompts/coach.ts';
 import type { Model } from '../providers/model.ts';
-import { type Coaching, coachingSchema } from '../schemas/coaching.ts';
+import { type Coaching, coachingOutputSchema, wordCount } from '../schemas/coaching.ts';
 import type { Transcript } from '../schemas/metrics.ts';
 import { transcriptText } from './judge.ts';
 import { twice } from './twice.ts';
@@ -9,9 +9,6 @@ import type { Focus } from './tipFocus.ts';
 // Stage 4: Coach. Claude writes one tip about the focus plain code chose, and a tighter version of the
 // person's own answer. Plain code checks the reply before it is saved. Saved in pipeline_version.
 export const coachVersion = coachPrompt.version;
-
-// A tip is two or three short sentences. 350 was too tight: a good three-sentence tip with a quoted phrase ran to 379.
-export const tipMaxChars = 450;
 
 // The coach gets the transcript, the one focus plain code chose (with the facts about it), and the notebook.
 // It is deliberately not given every measurement and mark, because it then mixes in problems that aren't the focus.
@@ -25,14 +22,11 @@ type Input = {
 
 type Options = { onAttemptFailed?: (error: Error) => void };
 
-const wordCount = (text: string) => text.split(/\s+/).filter((w) => w !== '').length;
-
 // Everything plain code can check about a reply. An empty list means it is fine to save.
 export function coachProblems(coaching: Coaching, transcript: Transcript): string[] {
   const problems: string[] = [];
   const tip = coaching.tip.trim();
   if (tip === '') problems.push('the tip is empty');
-  if (tip.length > tipMaxChars) problems.push(`the tip is ${tip.length} characters, more than ${tipMaxChars}`);
   if (tip.split('!').length - 1 > 1) problems.push('the tip has more than one exclamation mark');
   const better = coaching.betterVersion.trim();
   if (better === '') problems.push('the better version is empty');
@@ -41,9 +35,17 @@ export function coachProblems(coaching: Coaching, transcript: Transcript): strin
   return problems;
 }
 
-// One try, plus one more if the model errors or breaks one of the checks above.
+// What went wrong, short enough to hand back to the model. The SDK's error for a reply that doesn't fit the schema
+// is long JSON that ends in a plain "Validation issues:" list, which is the useful part.
+export function problemOf(error: Error): string {
+  const issues = error.message.split('Validation issues:')[1];
+  return (issues ?? error.message).trim().slice(0, 300);
+}
+
+// One try, plus one more if the model errors or breaks one of the checks above. The second try is told why the
+// first reply was refused (for example, a tip over the word limit).
 export function coach(input: Input, model: Model, { onAttemptFailed }: Options = {}): Promise<Coaching> {
-  return twice(async () => {
+  return twice(async (previousError) => {
     const coaching = await model.generate({
       prompt: coachPrompt,
       input: {
@@ -52,8 +54,10 @@ export function coach(input: Input, model: Model, { onAttemptFailed }: Options =
         stoppedByTimeLimit: input.stoppedByTimeLimit,
         focus: input.focus,
         notebook: input.notebook,
+        ...(previousError ? { previousAttemptProblem: problemOf(previousError) } : {}),
       },
-      schema: coachingSchema,
+      // Refuses a tip over the word limit, and the reply is then asked for again.
+      schema: coachingOutputSchema,
     });
     const problems = coachProblems(coaching, input.transcript);
     if (problems.length > 0) throw new Error(`coach reply rejected: ${problems.join('; ')}`);
