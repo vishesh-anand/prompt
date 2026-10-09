@@ -46,6 +46,7 @@ function Routes() {
           <Stack.Screen name="index" />
           <Stack.Screen name="record" />
           <Stack.Screen name="feedback/[answerId]" />
+          <Stack.Screen name="compare/[answerId]" />
           <Stack.Screen name="dev/design" />
         </Stack.Protected>
       </Stack>

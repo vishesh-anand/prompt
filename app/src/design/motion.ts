@@ -30,3 +30,10 @@ export const revealMotion = {
   listeningStartScale: 1.25,
   listeningRestOpacity: 0.45,
 } as const;
+
+// Source of truth: DESIGN.md "Before and after". Numbers count up or down into place, after their row has appeared.
+export const compareMotion = {
+  countMs: 700,
+  // Rows appear top to bottom like the feedback reveal; the count starts once its row is in.
+  countDelayMs: 300,
+} as const;

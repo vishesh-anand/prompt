@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { keepAnswer, type PendingAnswer } from './pendingAnswers';
 import { uploadAnswer } from './uploadAnswer';
 
-type Take = { uri: string; durationMs: number; userId: string; questionId: number };
+type Take = { uri: string; durationMs: number; userId: string; questionId: number; retryOf: string | null };
 
 // Keep the take on the phone, upload it, create the answer row. If anything fails the take stays
 // on the phone, and `retry` uploads that same take again: no second copy, no second row.

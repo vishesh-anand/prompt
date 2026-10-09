@@ -13,7 +13,7 @@ import { useReplay } from '@/features/recording/useReplay';
 export default function Feedback() {
   const { answerId } = useLocalSearchParams<{ answerId: string }>();
   const router = useRouter();
-  const { answer, view, metrics, judgement, coaching, timeRanOut, finished, stalled, retry } = useFeedback(answerId);
+  const { answer, view, metrics, judgement, coaching, timeRanOut, finished, next, stalled, retry } = useFeedback(answerId);
   const flag = useFlagFeedback(answerId);
   const url = useRecordingUrl(answer.data?.audio_path);
   const { playing, toggle } = useReplay(url.data ?? null);
@@ -55,7 +55,12 @@ export default function Feedback() {
       <View style={styles.actions}>
         {view === 'problem' || stalled ? <Button label="Try again" onPress={retry} /> : null}
         {view === 'noWords' ? <Button label="Record again" onPress={() => router.replace('/record')} /> : null}
-        {finished ? <Button label="Try again" onPress={() => router.replace('/record')} /> : null}
+        {next?.kind === 'tryAgain' ? (
+          <Button label="Try again" onPress={() => router.replace({ pathname: '/record', params: next.params })} />
+        ) : null}
+        {next?.kind === 'compare' ? (
+          <Button label="See before and after" onPress={() => router.push({ pathname: '/compare/[answerId]', params: { answerId: next.answerId } })} />
+        ) : null}
         {url.data ? <Button variant="secondary" label={playing ? 'Pause' : 'Play recording'} onPress={toggle} /> : null}
         {finished && coaching ? (
           <Button

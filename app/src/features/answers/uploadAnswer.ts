@@ -18,7 +18,7 @@ export async function uploadAnswer(pending: PendingAnswer): Promise<string> {
 
   const { error: rowError } = await supabase
     .from('answers')
-    .insert({ id: pending.answerId, question_id: pending.questionId, duration_ms: pending.durationMs });
+    .insert({ id: pending.answerId, question_id: pending.questionId, duration_ms: pending.durationMs, retry_of: pending.retryOf });
   if (rowError && rowError.code !== alreadyExists) throw rowError;
 
   removePendingAnswer(pending.answerId);

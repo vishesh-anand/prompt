@@ -14,6 +14,8 @@ import {
   type Space,
   type TextVariant,
 } from '@/design';
+import { CompareView } from '@/features/compare/CompareView';
+import { compareSamples } from '@/features/compare/samples';
 
 // Development only: shows every token and component. Testers never see it.
 // To check dark mode, flip Appearance in Control Center.
@@ -97,6 +99,15 @@ export default function DesignPreview() {
             <Stat value="12 days" label="Streak" />
           </Card>
         </Section>
+
+        <Section title="Before and after">
+          {compareSamples.map((sample) => (
+            <View key={sample.name} style={styles.compareSample}>
+              <Text variant="label">{sample.name}</Text>
+              <CompareView rows={sample.rows} summary={sample.summary} />
+            </View>
+          ))}
+        </Section>
       </View>
     </Screen>
   );
@@ -120,4 +131,5 @@ const styles = StyleSheet.create({
   swatch: { width: space.xxxl, height: space.xl, borderRadius: radius.button, borderWidth: 1 },
   bar: { height: space.sm },
   type: { gap: space.xs },
+  compareSample: { gap: space.xl, paddingBottom: space.xxl },
 });

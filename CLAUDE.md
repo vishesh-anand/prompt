@@ -28,11 +28,13 @@ Update this section as commands change.
 - Add a library: `cd app && npx expo install <package>` (never `npm i`, so versions match the SDK)
 - Type check: `cd app && npx tsc --noEmit`
 - Lint: `cd app && npx expo lint`
+- App tests (jest-expo, pure logic only, no rendered screens): `cd app && npm test`
 - One-time backend setup (hosted Supabase project, no local Docker): `npx supabase login` (run it in a real Terminal window, not through Claude's `!` prefix, because it opens a browser), then `npx supabase link --project-ref <ref>` from the repo root. Put the project URL and publishable key in `app/.env.local` (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`). Never the service-role key.
 - Push database changes to the hosted project: `npx supabase db push` (new files in `supabase/migrations/` only)
 - Set a backend secret (run in a real Terminal, never paste the key into Claude): `npx supabase secrets set DEEPGRAM_API_KEY=<key>`
 - Deploy edge functions: `npx supabase functions deploy <name>`
 - Backend tests: `deno test supabase/functions`
+- Database rules test (hosted project, changes nothing): `npx supabase db query --linked -f supabase/tests/retry_of.sql`. It is one block that always ends in an error; success is the message `RETRY_OF_CHECKS_PASSED`, anything starting with `FAIL` names the broken case.
 - Backend type check: `DEEPGRAM_API_KEY=x deno check $(find supabase/functions -name '*.ts')`
 - Evals (from `/evals`, keys in `evals/.env`, git-ignored; see `.env.example`):
   - `npm run evals` compares voice-to-text providers on the clips in `evals/labels.json`. Recordings download into `evals/audio/` (git-ignored).

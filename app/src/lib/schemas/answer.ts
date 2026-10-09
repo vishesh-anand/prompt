@@ -9,6 +9,8 @@ export const answerSchema = z.object({
   id: z.string(),
   user_id: z.string(),
   question_id: z.number(),
+  // The first attempt this answer retries, or null when this is the first attempt.
+  retry_of: z.string().nullable(),
   audio_path: z.string(),
   duration_ms: z.number(),
   status: z.enum(['uploaded', 'transcribed', 'measured', 'judged', 'coached', 'failed']),

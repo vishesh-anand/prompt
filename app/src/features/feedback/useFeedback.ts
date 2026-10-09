@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAnswer } from '@/features/answers/useAnswer';
 import { stoppedByTimeLimit } from '@/features/recording/limits';
 
+import { nextAction } from './nextAction';
 import { DailyLimitError, useProcessAnswer } from './useProcessAnswer';
 
 // If the answer sits at the same stage this long, the server run was probably cut off. Offer a retry.
@@ -71,5 +72,9 @@ export function useFeedback(answerId: string) {
 
   const timeRanOut = answer.data ? stoppedByTimeLimit(answer.data.duration_ms) : false;
 
-  return { answer, view, metrics, judgement, coaching, timeRanOut, finished: finished && view === 'ready', stalled, retry };
+  const isFinished = finished && view === 'ready';
+  // The one accent button once everything is in: try again after a first attempt, see before and after after a retry.
+  const next = isFinished && answer.data ? nextAction(answer.data) : null;
+
+  return { answer, view, metrics, judgement, coaching, timeRanOut, finished: isFinished, next, stalled, retry };
 }

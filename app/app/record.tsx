@@ -1,4 +1,4 @@
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -11,7 +11,8 @@ import { useMicPermission } from '@/features/recording/useMicPermission';
 export default function Record() {
   const router = useRouter();
   const mic = useMicPermission();
-  const { question, recording, saveStatus, answerId, retry } = useAnswerFlow();
+  const params = useLocalSearchParams<{ questionId?: string; retryOf?: string }>();
+  const { question, recording, saveStatus, answerId, retry } = useAnswerFlow(params);
   const { phase, level, take, failed, toggle, reset } = recording;
   const isRecording = phase === 'recording';
   const saving = take && !take.tooShort;
