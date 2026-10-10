@@ -1,0 +1,32 @@
+# Free. Choosing the other kind shows a different question, and choosing the first kind again brings the first one back.
+# Starts by choosing Work, because Home opens on the kind you practiced last.
+appId: com.visheshanand.prompt
+---
+- launchApp
+- runFlow: onboard.yaml
+- extendedWaitUntil:
+    visible: "Answer today's question"
+    timeout: 30000
+
+- tapOn: "Work"
+- waitForAnimationToEnd
+- copyTextFrom:
+    id: "home-question"
+- evalScript: ${output.work = maestro.copiedText}
+
+- tapOn: "Everyday conversation"
+- waitForAnimationToEnd
+- copyTextFrom:
+    id: "home-question"
+- evalScript: ${output.everyday = maestro.copiedText}
+- assertTrue:
+    condition: ${output.everyday !== output.work}
+    label: "The other kind shows a different question"
+
+- tapOn: "Work"
+- waitForAnimationToEnd
+- copyTextFrom:
+    id: "home-question"
+- assertTrue:
+    condition: ${maestro.copiedText === output.work}
+    label: "Choosing Work again brings the same question back"

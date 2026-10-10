@@ -1,0 +1,27 @@
+# Free. Looks at what the phone has scheduled (test builds have a Reminders button on Home).
+# Run with -e EXPECT_PRACTICED=1 straight after the answering flow, when today's reminder must be gone.
+appId: com.visheshanand.prompt
+env:
+  EXPECT_PRACTICED: "0"
+---
+- launchApp
+- runFlow: onboard.yaml
+- extendedWaitUntil:
+    visible: "Reminders"
+    timeout: 30000
+- tapOn: "Reminders"
+- extendedWaitUntil:
+    visible: "Reminders scheduled: .*"
+    timeout: 15000
+- assertVisible:
+    text: "Reminders scheduled: 30"
+    label: "A month of reminders is scheduled (0 means notifications are off for the app on this simulator)"
+- assertVisible: "Reminder time: [0-9]{2}:[0-9]{2}:00"
+- assertVisible: "Timezone: [A-Za-z_]+/[A-Za-z_]+.*"
+- runFlow:
+    when:
+      true: ${EXPECT_PRACTICED === '1'}
+    commands:
+      - assertVisible:
+          text: "Reminder today: no"
+          label: "You practiced today, so today's reminder is gone"

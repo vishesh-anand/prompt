@@ -1,0 +1,26 @@
+# Free. Only run by `e2e/run.sh --onboarding`, which first clears the account's reminder time so setup shows again.
+# Checks the whole first-time path: setup screen, Continue, the system notification question, and landing on the record
+# screen with a question (the route that must not race the sign-in and setup checks), then that setup does not come back.
+appId: com.visheshanand.prompt
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "When should we remind you?"
+    timeout: 30000
+    label: "First-time setup shows (run.sh --onboarding clears the reminder time first)"
+- assertVisible: "Your first answer becomes your starting point, so you can see how far you come."
+- tapOn: "Continue"
+- tapOn:
+    text: "Allow"
+    optional: true
+- extendedWaitUntil:
+    visible: "Start recording"
+    timeout: 30000
+    label: "Continue goes straight to the record screen"
+- assertVisible: "Tap the circle to start."
+- launchApp
+- extendedWaitUntil:
+    visible: "Answer today's question"
+    timeout: 30000
+    label: "Setup does not come back"
+- assertNotVisible: "When should we remind you?"

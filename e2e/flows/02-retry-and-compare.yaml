@@ -4,9 +4,16 @@
 appId: com.visheshanand.prompt
 ---
 - launchApp
+- runFlow: onboard.yaml
 - extendedWaitUntil:
     visible: "Answer today's question"
     timeout: 30000
+# Starts on Work so the next-question check below is about one list of questions.
+- tapOn: "Work"
+- waitForAnimationToEnd
+- copyTextFrom:
+    id: "home-question"
+- evalScript: ${output.before = maestro.copiedText}
 - tapOn: "Answer today's question"
 
 # First try.
@@ -41,3 +48,18 @@ appId: com.visheshanand.prompt
 - assertVisible: "Before and after"
 - assertVisible: "First try"
 - assertVisible: "Now"
+
+# Done goes back to Home, which now asks a different question and shows the streak.
+- scrollUntilVisible:
+    element: "Done"
+    timeout: 60000
+- tapOn: "Done"
+- extendedWaitUntil:
+    visible: "Answer today's question"
+    timeout: 30000
+- assertVisible: "Streak: .* in a row"
+- copyTextFrom:
+    id: "home-question"
+- assertTrue:
+    condition: ${maestro.copiedText !== output.before}
+    label: "Home moves on to the next question after you answered"

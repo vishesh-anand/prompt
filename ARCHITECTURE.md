@@ -169,8 +169,9 @@ Every stage uses these interfaces, never a provider's own library directly. Swit
 ## Reminders
 
 Handled entirely on the phone:
-- Schedule a daily local notification at the chosen time.
-- When the user finishes today's first answer, cancel today's notification and schedule tomorrow's.
+- Schedule one local notification a day, as one-off date notifications for the next 30 days (iOS keeps at most 64 pending).
+- The whole schedule is rebuilt (cancel all, then schedule) when the app opens or comes to the front, when the reminder time changes, and when an answer is saved. Today's is left out once the user has practiced, so it never fires after they have.
+- The daily answer limit counts from the start of the person's own day, using the timezone saved on their profile (UTC until they have one).
 
 ## Scheduled cleanup
 

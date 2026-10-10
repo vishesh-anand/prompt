@@ -1,0 +1,16 @@
+# Shared step: if the app opens on first-time setup (a new account, or one that was reset), get through it and come
+# back to Home. Does nothing when already set up. The first answer is not recorded; the app is restarted instead.
+appId: com.visheshanand.prompt
+---
+- runFlow:
+    when:
+      visible: "When should we remind you?"
+    commands:
+      - tapOn: "Continue"
+      - tapOn:
+          text: "Allow"
+          optional: true
+      - extendedWaitUntil:
+          visible: "Start recording"
+          timeout: 30000
+      - launchApp

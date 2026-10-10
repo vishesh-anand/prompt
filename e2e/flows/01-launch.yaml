@@ -1,8 +1,14 @@
-# Free: no answer is recorded. Checks the app opens signed in, which is what every other flow relies on.
+# Free: no answer is recorded. Checks the app opens signed in and set up, and Home has what it should.
 appId: com.visheshanand.prompt
 ---
 - launchApp
+- runFlow: onboard.yaml
 - extendedWaitUntil:
     visible: "Answer today's question"
     timeout: 30000
     label: "Home shows (if this fails you are probably signed out: sign in with Apple once on the Prompt E2E simulator, see e2e/setup.sh)"
+- assertVisible: "Work"
+- assertVisible: "Everyday conversation"
+- assertVisible:
+    id: "home-question"
+- assertVisible: "(Your streak starts with today's answer\\.|Streak: .* in a row)"

@@ -35,6 +35,7 @@ Update this section as commands change.
 - Scripted end-to-end flows (Maestro, in `/e2e`): they drive the real app on a dedicated "Prompt E2E" simulator and record real answers (real transcription and Claude, a few cents, counted in the 10 a day).
   - One-time machine setup: `brew install openjdk`, then install Maestro by downloading `https://github.com/mobile-dev-inc/maestro/releases/latest/download/maestro.zip` and copying its `maestro/*` into `~/.maestro` (`e2e/run.sh` puts `~/.maestro/bin` on the PATH itself). Plain `brew install maestro` is a different tool, and the official brew tap refuses to build while the Command Line Tools are older than Xcode.
   - One-time simulator: `e2e/setup.sh`, then by hand in that simulator: sign in to an Apple Account in Settings, then `e2e/run.sh --build`, open Prompt and sign in with Apple. The login stays on that simulator.
+  - Options: `--free` runs only the flows that record no answer (nothing counts against the 10 a day). `--onboarding` first clears the test account's reminder time so first-time setup shows (the simulator shares the owner's Apple Account, so the owner's phone goes through setup once too; needs `E2E_USER_ID` in git-ignored `e2e/.env`).
   - Run: `e2e/run.sh` (add `--build` after changing app code: a Release build with `EXPO_PUBLIC_E2E=1`, JavaScript bundled in, no Metro). Fails on a failed flow or a new Prompt crash report.
   - The test build swaps the recorder's result for a spoken clip made with `say` (`app/src/features/recording/e2eTake.ts`). The recorder, permission and circle still run; the real microphone is checked by hand on the iPhone each step.
   - The simulator is iOS 26.2 on purpose: iOS 27 currently quits the app at launch (no UIScene lifecycle yet).
@@ -42,8 +43,8 @@ Update this section as commands change.
 - Push database changes to the hosted project: `npx supabase db push` (new files in `supabase/migrations/` only)
 - Set a backend secret (run in a real Terminal, never paste the key into Claude): `npx supabase secrets set DEEPGRAM_API_KEY=<key>`
 - Deploy edge functions: `npx supabase functions deploy <name>`
-- Backend tests: `deno test supabase/functions`
-- Database rules test (hosted project, changes nothing): `npx supabase db query --linked -f supabase/tests/retry_of.sql`. It is one block that always ends in an error; success is the message `RETRY_OF_CHECKS_PASSED`, anything starting with `FAIL` names the broken case.
+- Backend tests: `deno test --allow-read supabase/functions`
+- Database rules tests (hosted project, change nothing): `npx supabase db query --linked -f supabase/tests/retry_of.sql` and `-f supabase/tests/step7.sql`. Each is one block that always ends in an error; success is the message `RETRY_OF_CHECKS_PASSED` / `STEP7_CHECKS_PASSED`, anything starting with `FAIL` names the broken case.
 - Backend type check: `DEEPGRAM_API_KEY=x deno check $(find supabase/functions -name '*.ts')`
 - Evals (from `/evals`, keys in `evals/.env`, git-ignored; see `.env.example`):
   - `npm run evals` compares voice-to-text providers on the clips in `evals/labels.json`. Recordings download into `evals/audio/` (git-ignored).
