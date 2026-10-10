@@ -4,6 +4,9 @@
 appId: com.visheshanand.prompt
 ---
 - launchApp
+- tapOn:
+    text: "Not Now"
+    optional: true
 - extendedWaitUntil:
     visible: "When should we remind you?"
     timeout: 30000
@@ -18,6 +21,15 @@ appId: com.visheshanand.prompt
     timeout: 30000
     label: "Continue goes straight to the record screen"
 - assertVisible: "Tap the circle to start."
+# Home must be underneath the record screen (setup replaced itself with Home, then the record screen went on top),
+# so the back swipe lands on Home and Done after the first answer has somewhere to go.
+- swipe:
+    start: 2%, 50%
+    end: 80%, 50%
+- extendedWaitUntil:
+    visible: "Answer today's question"
+    timeout: 15000
+    label: "Swiping back from the first answer lands on Home"
 - launchApp
 - extendedWaitUntil:
     visible: "Answer today's question"
