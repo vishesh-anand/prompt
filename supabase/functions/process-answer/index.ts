@@ -39,10 +39,8 @@ export default {
     // Count the answers before this one on the same day, so tapping Try again on an answer that was allowed never counts
     // itself. The day is the person's own (their saved timezone), and UTC until they have one.
     const { data: profile, error: profileError } = await ctx.supabase.from('profiles').select('timezone').maybeSingle();
-    if (profileError) {
-      console.error('process-answer could not load the profile', profileError);
-      return reply({ error: 'server_error' }, 500);
-    }
+    // No timezone is not an error (UTC is used), so a failed read of it shouldn't stop the answer either. The 24-hour cap below still holds.
+    if (profileError) console.error('process-answer could not load the profile, using UTC days', profileError);
     const dayStart = dayStartIn(profile?.timezone ?? null, new Date(answer.created_at));
     const lastDay = new Date(new Date(answer.created_at).getTime() - 24 * 60 * 60_000);
     const countBefore = (from: Date) =>
