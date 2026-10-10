@@ -1,0 +1,402 @@
+[
+  {
+    "category": "work",
+    "text": "What do you do at work, in a way a friend outside your field would understand?"
+  },
+  {
+    "category": "work",
+    "text": "What did you work on this week, and what comes next?"
+  },
+  {
+    "category": "work",
+    "text": "What is one thing you are good at in your job, and how do you know?"
+  },
+  {
+    "category": "work",
+    "text": "Describe a typical day in your work."
+  },
+  {
+    "category": "work",
+    "text": "What is a tool or habit that makes your work easier?"
+  },
+  {
+    "category": "work",
+    "text": "Tell me about a project you are proud of, and why."
+  },
+  {
+    "category": "work",
+    "text": "Your manager asks how your week went. What do you say?"
+  },
+  {
+    "category": "work",
+    "text": "Introduce yourself to a new team in one minute."
+  },
+  {
+    "category": "work",
+    "text": "What is the best piece of advice a colleague has given you?"
+  },
+  {
+    "category": "work",
+    "text": "Describe a colleague you learned a lot from."
+  },
+  {
+    "category": "work",
+    "text": "What would you change about how your team works, and why?"
+  },
+  {
+    "category": "work",
+    "text": "Explain a recent task to someone who joins the project today."
+  },
+  {
+    "category": "work",
+    "text": "Tell me about a mistake you made at work and what you changed after."
+  },
+  {
+    "category": "work",
+    "text": "Describe a decision you made at work that you would make differently now."
+  },
+  {
+    "category": "work",
+    "text": "What is the hardest part of your job right now?"
+  },
+  {
+    "category": "work",
+    "text": "Pitch an idea to improve how your team works."
+  },
+  {
+    "category": "work",
+    "text": "A colleague disagrees with your plan in a meeting. Make your case."
+  },
+  {
+    "category": "work",
+    "text": "Tell me about a time you had to explain something complicated to someone."
+  },
+  {
+    "category": "work",
+    "text": "Why should someone hire you for the job you do now?"
+  },
+  {
+    "category": "work",
+    "text": "What are you working to get better at this year, and how?"
+  },
+  {
+    "category": "work",
+    "text": "Describe a time you helped a teammate who was stuck."
+  },
+  {
+    "category": "work",
+    "text": "What makes a meeting worth attending?"
+  },
+  {
+    "category": "work",
+    "text": "Tell me about a deadline you nearly missed and how you handled it."
+  },
+  {
+    "category": "work",
+    "text": "Give feedback to a teammate whose work was late. What do you say?"
+  },
+  {
+    "category": "work",
+    "text": "What is a risk you took at work, and what happened?"
+  },
+  {
+    "category": "work",
+    "text": "How do you decide what to work on first when everything feels urgent?"
+  },
+  {
+    "category": "work",
+    "text": "Describe a time you changed your mind at work."
+  },
+  {
+    "category": "work",
+    "text": "Tell me about a time you worked with someone you found difficult."
+  },
+  {
+    "category": "work",
+    "text": "What does good teamwork look like to you?"
+  },
+  {
+    "category": "work",
+    "text": "Explain why your work matters to someone who does not care about it."
+  },
+  {
+    "category": "work",
+    "text": "You are asked to say no to a request from a senior colleague. How do you do it?"
+  },
+  {
+    "category": "work",
+    "text": "Describe a time you had to learn something quickly."
+  },
+  {
+    "category": "work",
+    "text": "What would you tell a new hire on their first day?"
+  },
+  {
+    "category": "work",
+    "text": "Tell me about a time you led without being the boss."
+  },
+  {
+    "category": "work",
+    "text": "What is a goal you are working toward, and what is in the way?"
+  },
+  {
+    "category": "work",
+    "text": "Walk me through how you solved a hard problem recently."
+  },
+  {
+    "category": "work",
+    "text": "What is the most useful thing you learned from a failure?"
+  },
+  {
+    "category": "work",
+    "text": "Describe a time you asked for help and it paid off."
+  },
+  {
+    "category": "work",
+    "text": "How would you explain a delay to a client who is unhappy?"
+  },
+  {
+    "category": "work",
+    "text": "What do you want to be doing in your work in three years?"
+  },
+  {
+    "category": "work",
+    "text": "Tell me about a time you had to persuade someone."
+  },
+  {
+    "category": "work",
+    "text": "What is your approach when you are asked a question you cannot answer?"
+  },
+  {
+    "category": "work",
+    "text": "Describe a time you received tough feedback. What did you do with it?"
+  },
+  {
+    "category": "work",
+    "text": "What is something your team does well that others could copy?"
+  },
+  {
+    "category": "work",
+    "text": "Make the case for a tool or process you think your team should adopt."
+  },
+  {
+    "category": "work",
+    "text": "Tell me about a time you had to deliver bad news."
+  },
+  {
+    "category": "work",
+    "text": "How do you stay focused on a long, hard project?"
+  },
+  {
+    "category": "work",
+    "text": "Describe the best manager you have had and what made them good."
+  },
+  {
+    "category": "work",
+    "text": "Summarize your career so far in one minute."
+  },
+  {
+    "category": "work",
+    "text": "If you could give your team one piece of advice, what would it be?"
+  },
+  {
+    "category": "everyday",
+    "text": "What did you have for breakfast, and is it your usual?"
+  },
+  {
+    "category": "everyday",
+    "text": "Describe your morning routine."
+  },
+  {
+    "category": "everyday",
+    "text": "What is a small thing that made your week better?"
+  },
+  {
+    "category": "everyday",
+    "text": "Tell me about your favorite place to eat and why you go back."
+  },
+  {
+    "category": "everyday",
+    "text": "What is something you are looking forward to?"
+  },
+  {
+    "category": "everyday",
+    "text": "Describe your ideal weekend."
+  },
+  {
+    "category": "everyday",
+    "text": "Recommend a book, show or film to a friend and say why."
+  },
+  {
+    "category": "everyday",
+    "text": "Tell me about a place you would take a visitor to your town."
+  },
+  {
+    "category": "everyday",
+    "text": "What is a hobby you enjoy, and how did you start it?"
+  },
+  {
+    "category": "everyday",
+    "text": "Describe the home you grew up in."
+  },
+  {
+    "category": "everyday",
+    "text": "What is your favorite season, and what do you do in it?"
+  },
+  {
+    "category": "everyday",
+    "text": "Tell me about a meal you cooked that turned out well, or badly."
+  },
+  {
+    "category": "everyday",
+    "text": "What is a song you never get tired of?"
+  },
+  {
+    "category": "everyday",
+    "text": "Describe a friend you have known for a long time."
+  },
+  {
+    "category": "everyday",
+    "text": "What is something you changed your mind about recently?"
+  },
+  {
+    "category": "everyday",
+    "text": "Tell me about the best trip you have taken."
+  },
+  {
+    "category": "everyday",
+    "text": "What is a skill you would like to learn, and why?"
+  },
+  {
+    "category": "everyday",
+    "text": "Describe a stranger who was kind to you."
+  },
+  {
+    "category": "everyday",
+    "text": "What would you do with a free day and no plans?"
+  },
+  {
+    "category": "everyday",
+    "text": "Tell me about a time you got lost."
+  },
+  {
+    "category": "everyday",
+    "text": "What is a tradition in your family or friend group?"
+  },
+  {
+    "category": "everyday",
+    "text": "Describe a teacher who stayed with you."
+  },
+  {
+    "category": "everyday",
+    "text": "What is the best gift you have given or received?"
+  },
+  {
+    "category": "everyday",
+    "text": "Tell me about a time something went wrong and turned out fine."
+  },
+  {
+    "category": "everyday",
+    "text": "What is a habit you are trying to build or break?"
+  },
+  {
+    "category": "everyday",
+    "text": "Describe your favorite room and what you do there."
+  },
+  {
+    "category": "everyday",
+    "text": "Tell me about a time you were nervous and did it anyway."
+  },
+  {
+    "category": "everyday",
+    "text": "What is something you own that you would hate to lose?"
+  },
+  {
+    "category": "everyday",
+    "text": "Explain a game or sport to someone who has never played it."
+  },
+  {
+    "category": "everyday",
+    "text": "What is the best advice you have ever been given?"
+  },
+  {
+    "category": "everyday",
+    "text": "Describe a moment this year you want to remember."
+  },
+  {
+    "category": "everyday",
+    "text": "Tell me about someone you admire and why."
+  },
+  {
+    "category": "everyday",
+    "text": "What do you do when you cannot sleep?"
+  },
+  {
+    "category": "everyday",
+    "text": "Describe a place that makes you feel calm."
+  },
+  {
+    "category": "everyday",
+    "text": "What would you tell your younger self?"
+  },
+  {
+    "category": "everyday",
+    "text": "Tell me about a time you laughed so hard you could not stop."
+  },
+  {
+    "category": "everyday",
+    "text": "What is something most people get wrong about you?"
+  },
+  {
+    "category": "everyday",
+    "text": "Describe how you celebrate a birthday, yours or someone else's."
+  },
+  {
+    "category": "everyday",
+    "text": "What is a rule you live by?"
+  },
+  {
+    "category": "everyday",
+    "text": "Tell me about a time you had to wait a long time for something."
+  },
+  {
+    "category": "everyday",
+    "text": "What is a food you could eat every day?"
+  },
+  {
+    "category": "everyday",
+    "text": "Describe a neighbor, past or present."
+  },
+  {
+    "category": "everyday",
+    "text": "What is something you are proud of that few people know about?"
+  },
+  {
+    "category": "everyday",
+    "text": "Tell me about a time you helped someone you did not know."
+  },
+  {
+    "category": "everyday",
+    "text": "What is a place you want to visit, and what would you do there?"
+  },
+  {
+    "category": "everyday",
+    "text": "Describe a day that did not go as planned."
+  },
+  {
+    "category": "everyday",
+    "text": "What is the most useful thing you have learned outside of school or work?"
+  },
+  {
+    "category": "everyday",
+    "text": "Tell me about a time you disagreed with a friend."
+  },
+  {
+    "category": "everyday",
+    "text": "If you could live anywhere for a year, where would it be and why?"
+  },
+  {
+    "category": "everyday",
+    "text": "What is one thing you would like to be remembered for?"
+  }
+]

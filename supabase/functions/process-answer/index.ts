@@ -4,10 +4,9 @@ import { z } from 'npm:zod@4';
 
 import { makeModel, modelName, transcriber, transcriberVersion } from '../_shared/providers/index.ts';
 import { metricsSchema } from '../_shared/schemas/metrics.ts';
+import { overDailyLimit } from './dailyLimit.ts';
+import { dayStartIn } from './dayStart.ts';
 import { runPipeline } from './runPipeline.ts';
-
-// PRODUCT.md "Limits": at most 10 answers per person per day.
-const dailyLimit = 10;
 
 const bodySchema = z.object({ answerId: z.uuid() });
 
@@ -37,20 +36,27 @@ export default {
     const measured = metricsSchema.safeParse(answer.metrics);
     if (answer.status === 'coached' || (measured.success && measured.data.wordCount === 0)) return reply({ status: answer.status }, 200);
 
-    // Count the answers before this one on the same (UTC) day, so tapping Try again on an answer that
-    // was allowed never counts itself. Per-person timezones arrive with the profile in build step 7.
-    const dayStart = new Date(answer.created_at);
-    dayStart.setUTCHours(0, 0, 0, 0);
-    const { count, error: countError } = await ctx.supabase
-      .from('answers')
-      .select('id', { count: 'exact', head: true })
-      .gte('created_at', dayStart.toISOString())
-      .lt('created_at', answer.created_at);
-    if (countError) {
-      console.error('process-answer could not count today\'s answers', countError);
+    // Count the answers before this one on the same day, so tapping Try again on an answer that was allowed never counts
+    // itself. The day is the person's own (their saved timezone), and UTC until they have one.
+    const { data: profile, error: profileError } = await ctx.supabase.from('profiles').select('timezone').maybeSingle();
+    if (profileError) {
+      console.error('process-answer could not load the profile', profileError);
       return reply({ error: 'server_error' }, 500);
     }
-    if ((count ?? 0) >= dailyLimit) return reply({ error: 'daily_limit' }, 429);
+    const dayStart = dayStartIn(profile?.timezone ?? null, new Date(answer.created_at));
+    const lastDay = new Date(new Date(answer.created_at).getTime() - 24 * 60 * 60_000);
+    const countBefore = (from: Date) =>
+      ctx.supabase
+        .from('answers')
+        .select('id', { count: 'exact', head: true })
+        .gte('created_at', from.toISOString())
+        .lt('created_at', answer.created_at);
+    const [today, lastDayCount] = await Promise.all([countBefore(dayStart), countBefore(lastDay)]);
+    if (today.error || lastDayCount.error) {
+      console.error("process-answer could not count the person's answers", today.error ?? lastDayCount.error);
+      return reply({ error: 'server_error' }, 500);
+    }
+    if (overDailyLimit(today.count ?? 0, lastDayCount.count ?? 0)) return reply({ error: 'daily_limit' }, 429);
 
     // A failed answer goes back to its last good stage, so the screen says "listening" again straight away.
     if (answer.status === 'failed') {
