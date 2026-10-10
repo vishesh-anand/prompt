@@ -6,6 +6,7 @@ Read these before any non-trivial work:
 - @PRODUCT.md — what the app does and does not do
 - @DESIGN.md — how it looks, moves, and talks
 - @ARCHITECTURE.md — how it's built
+- @FOLLOWUPS.md — checks not done yet and things left for later (look here when planning a step)
 
 If a request conflicts with these files, stop and ask. Don't quietly work around them.
 
