@@ -18,7 +18,7 @@ export function useSaveAnswer() {
       kept.current ??= keepAnswer(take);
       return uploadAnswer(kept.current);
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ['pending'] }),
+    onSettled: () => Promise.all([queryClient.invalidateQueries({ queryKey: ['pending'] }), queryClient.invalidateQueries({ queryKey: ['history'] })]),
   });
 
   return {
@@ -35,6 +35,7 @@ export function useSaveAnswer() {
     keepForLater(take: Take) {
       keepAnswer(take);
       void queryClient.invalidateQueries({ queryKey: ['pending'] });
+      void queryClient.invalidateQueries({ queryKey: ['history'] });
     },
   };
 }

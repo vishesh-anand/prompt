@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -12,7 +12,7 @@ export default function Record() {
   const router = useRouter();
   const mic = useMicPermission();
   const params = useLocalSearchParams<{ questionId?: string; retryOf?: string }>();
-  const { question, recording, saveStatus, answerId, retry } = useAnswerFlow(params);
+  const { missingQuestion, question, recording, saveStatus, answerId, retry } = useAnswerFlow(params);
   const { phase, level, take, failed, toggle, reset } = recording;
   const isRecording = phase === 'recording';
   const saving = take && !take.tooShort;
@@ -20,6 +20,8 @@ export default function Record() {
   useEffect(() => {
     if (answerId) router.replace({ pathname: '/feedback/[answerId]', params: { answerId } });
   }, [answerId, router]);
+
+  if (missingQuestion) return <Redirect href="/" />;
 
   return (
     <Screen>

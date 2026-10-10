@@ -6,5 +6,7 @@ export * from './typography';
 export { Button } from './components/Button';
 export { Card } from './components/Card';
 export { Screen } from './components/Screen';
+export { SegmentedControl } from './components/SegmentedControl';
 export { Stat } from './components/Stat';
 export { Text } from './components/Text';
+export { TimePicker } from './components/TimePicker';

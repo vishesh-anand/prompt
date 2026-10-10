@@ -29,7 +29,7 @@ export default function Compare() {
 
       <View style={styles.actions}>
         {tryAgain ? <Button label="Try again" onPress={() => router.replace({ pathname: '/record', params: tryAgain })} /> : null}
-        <Button variant="quiet" label="Done" onPress={() => router.replace('/')} />
+        <Button variant="quiet" label="Done" onPress={() => router.dismissTo('/')} />
       </View>
     </Screen>
   );

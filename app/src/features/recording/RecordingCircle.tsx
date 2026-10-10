@@ -27,10 +27,12 @@ type Props = {
   // Loudness, 0 (silent) to 1 (loud).
   level: number;
   onPress: () => void;
+  // Home uses the circle too, as the way in to today's answer.
+  accessibilityLabel?: string;
 };
 
 // The soft coral circle. Grows and settles with your voice; a thin ring fills over the 60 seconds.
-export function RecordingCircle({ recording, level, onPress }: Props) {
+export function RecordingCircle({ recording, level, onPress, accessibilityLabel }: Props) {
   const { colors } = useTheme();
   const reduceMotion = useReduceMotion();
 
@@ -80,7 +82,7 @@ export function RecordingCircle({ recording, level, onPress }: Props) {
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={recording ? 'Stop recording' : 'Start recording'}
+      accessibilityLabel={accessibilityLabel ?? (recording ? 'Stop recording' : 'Start recording')}
       accessibilityHint="Up to 60 seconds"
       style={styles.box}>
       <Animated.View style={[styles.glow, { backgroundColor: colors.accentSoft }, glowStyle]} />

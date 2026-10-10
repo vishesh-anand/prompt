@@ -54,7 +54,17 @@ export default function Feedback() {
 
       <View style={styles.actions}>
         {view === 'problem' || stalled ? <Button label="Try again" onPress={retry} /> : null}
-        {view === 'noWords' ? <Button label="Record again" onPress={() => router.replace('/record')} /> : null}
+        {view === 'noWords' && answer.data ? (
+          <Button
+            label="Record again"
+            onPress={() =>
+              router.replace({
+                pathname: '/record',
+                params: { questionId: answer.data.question_id, ...(answer.data.retry_of ? { retryOf: answer.data.retry_of } : {}) },
+              })
+            }
+          />
+        ) : null}
         {next?.kind === 'tryAgain' ? (
           <Button label="Try again" onPress={() => router.replace({ pathname: '/record', params: next.params })} />
         ) : null}
@@ -69,7 +79,7 @@ export default function Feedback() {
             onPress={() => (flagged ? undefined : flag.mutate())}
           />
         ) : null}
-        <Button variant={view === 'limit' ? 'primary' : 'quiet'} label="Done" onPress={() => router.replace('/')} />
+        <Button variant={view === 'limit' ? 'primary' : 'quiet'} label="Done" onPress={() => router.dismissTo('/')} />
       </View>
     </Screen>
   );

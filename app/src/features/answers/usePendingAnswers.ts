@@ -19,6 +19,6 @@ export function useUploadPending() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (pending: PendingAnswer) => uploadAnswer(pending),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ['pending'] }),
+    onSettled: () => Promise.all([queryClient.invalidateQueries({ queryKey: ['pending'] }), queryClient.invalidateQueries({ queryKey: ['history'] })]),
   });
 }

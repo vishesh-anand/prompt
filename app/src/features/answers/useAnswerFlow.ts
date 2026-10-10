@@ -35,6 +35,8 @@ export function useAnswerFlow(params: { questionId?: string; retryOf?: string } 
   }, [readyTake, userId, questionId, retryOf, save]);
 
   return {
+    // Opened without a question (an old or mistyped link): nothing to record.
+    missingQuestion: askedFor === undefined,
     question,
     recording,
     saveStatus: save.status,
