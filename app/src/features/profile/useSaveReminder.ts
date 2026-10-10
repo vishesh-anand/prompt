@@ -22,8 +22,10 @@ export function useSaveReminder() {
       // Saying no is fine: the time is still saved and the app works, there just won't be reminders.
       await askForReminderPermission().catch(() => false);
       const next = { reminder_time: formatTime(time), timezone: phoneTimezone() };
-      const { error } = await supabase.from('profiles').update(next).eq('id', userId ?? '');
+      // .select() hands back the rows that changed: none means the update matched nothing, which is a failure, not a save.
+      const { data, error } = await supabase.from('profiles').update(next).eq('id', userId ?? '').select('id');
       if (error) throw error;
+      if (data.length === 0) throw new Error('The profile was not updated');
       return next;
     },
     onSuccess: (next) => queryClient.setQueryData(['profile', userId], next),

@@ -53,9 +53,15 @@ export function useReminders() {
     const key = plan.map((date) => date.getTime()).join();
     if (key === applied.current) return;
     applied.current = key;
-    scheduleReminders(plan).catch(() => {
-      // Only forget this plan if no newer one has been handed over since.
+    // If the phone didn't take the plan (notifications are off, or a call failed), forget it, so the next time the app comes to
+    // the front tries again, for instance after you turn notifications on in Settings. Only forget this plan, not a newer one.
+    const forget = () => {
       if (applied.current === key) applied.current = null;
-    });
+    };
+    scheduleReminders(plan)
+      .then((scheduled) => {
+        if (!scheduled) forget();
+      })
+      .catch(forget);
   }, [reminderTime, history, cameToFront]);
 }

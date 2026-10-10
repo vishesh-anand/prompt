@@ -5,6 +5,7 @@ import { useProfile } from '@/features/profile/useProfile';
 import { defaultCategory, pickQuestion, type Category } from '@/features/questions/pickQuestion';
 import { useQuestions } from '@/features/questions/useQuestions';
 import { streak } from '@/features/streak/streak';
+import { useNow } from '@/features/streak/useNow';
 
 export const categoryOptions: { value: Category; label: string }[] = [
   { value: 'work', label: 'Work' },
@@ -20,6 +21,7 @@ export function useHome() {
   const questions = useQuestions();
   const history = useHistory();
   const [chosen, setChosen] = useState<Category | null>(null);
+  const now = useNow();
 
   // The question and streak come from your answers and your setup, so nothing is shown until all three have loaded: with an
   // empty list a long streak would read as none, and a question you already answered would come up again. A failed
@@ -45,6 +47,6 @@ export function useHome() {
     category,
     chooseCategory: setChosen,
     question,
-    streak: streak(answers, new Date()),
+    streak: streak(answers, now),
   };
 }

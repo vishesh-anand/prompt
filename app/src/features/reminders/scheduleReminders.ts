@@ -8,24 +8,26 @@ export const reminderContent = { title: "Today's question is waiting", body: 'On
 // the app comes to the front) could each cancel and then both schedule, leaving every reminder twice.
 let queue: Promise<unknown> = Promise.resolve();
 
-export function scheduleReminders(dates: Date[]): Promise<void> {
+// Resolves true once the phone holds exactly this plan, false if it could not be scheduled (notifications are off).
+export function scheduleReminders(dates: Date[]): Promise<boolean> {
   const run = queue.then(() => apply(dates));
   queue = run.catch(() => {});
   return run;
 }
 
-async function apply(dates: Date[]) {
+async function apply(dates: Date[]): Promise<boolean> {
   await Notifications.cancelAllScheduledNotificationsAsync();
-  if (dates.length === 0) return;
+  if (dates.length === 0) return true;
   // Asking happens once, in first-time setup. If you said no there, nothing is scheduled.
   const { granted } = await Notifications.getPermissionsAsync();
-  if (!granted) return;
+  if (!granted) return false;
   for (const date of dates) {
     await Notifications.scheduleNotificationAsync({
       content: reminderContent,
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date },
     });
   }
+  return true;
 }
 
 // Asks once, from first-time setup. Saying no is fine: the app works without reminders.

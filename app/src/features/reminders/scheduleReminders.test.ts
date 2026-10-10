@@ -33,7 +33,7 @@ beforeEach(() => {
 
 describe('scheduleReminders', () => {
   it('schedules each date once, as a one-off date reminder with the coach-voice text', async () => {
-    await scheduleReminders(days(10, 11, 12));
+    await expect(scheduleReminders(days(10, 11, 12))).resolves.toBe(true);
     expect(phone.scheduled.map((s) => s.trigger.date)).toEqual(days(10, 11, 12));
     expect(phone.scheduled.every((s) => s.trigger.type === 'date')).toBe(true);
     expect(phone.scheduled.every((s) => s.content === reminderContent)).toBe(true);
@@ -52,14 +52,14 @@ describe('scheduleReminders', () => {
 
   it('an empty plan (practiced, nothing left today) clears everything', async () => {
     await scheduleReminders(days(10, 11));
-    await scheduleReminders([]);
+    await expect(scheduleReminders([])).resolves.toBe(true);
     expect(phone.scheduled).toEqual([]);
   });
 
   it('schedules nothing if you said no to notifications, but still clears old ones', async () => {
     await scheduleReminders(days(10));
     phone.granted = false;
-    await scheduleReminders(days(11, 12));
+    await expect(scheduleReminders(days(11, 12))).resolves.toBe(false);
     expect(phone.scheduled).toEqual([]);
   });
 
