@@ -2,7 +2,7 @@
 # Runs the scripted flows against the real app on the "Prompt E2E" simulator.
 #   e2e/run.sh            run the flows against the app already installed there
 #   e2e/run.sh --build    build the test app (JavaScript bundled in, no Metro needed) and install it first
-# Fails if any flow fails, or if the app wrote a new crash report during the run.
+# Fails if any flow fails, if the app logged an unhandled JavaScript error during the run, or if it wrote a new crash report.
 # The flows record real answers: real transcription and Claude, a few cents, counted in the 10 a day.
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -24,11 +24,23 @@ export PATH="$JAVA_HOME/bin:$HOME/.maestro/bin:$PATH"
 xcrun simctl privacy "$udid" grant microphone com.visheshanand.prompt
 ./make-clips.sh "$udid"
 
+# A JavaScript error that takes the app down (like the step 6 realtime crash) is logged the moment it happens, so this is
+# the reliable check. Crash reports below are only a second net: they can appear a minute after the crash, after this script looks.
+started=$(date "+%Y-%m-%d %H:%M:%S")
+
 crashes="$HOME/Library/Logs/DiagnosticReports"
 before=$(ls "$crashes" 2>/dev/null | grep -c '^Prompt-.*\.ips$' || true)
 
 status=0
 maestro --device "$udid" test flows/01-launch.yaml flows/02-retry-and-compare.yaml --test-output-dir .out || status=$?
+
+js_errors=$(xcrun simctl spawn "$udid" log show --start "$started" --style compact \
+  --predicate 'process == "Prompt" AND eventMessage CONTAINS "Unhandled JS Exception"' 2>/dev/null | grep -c "Unhandled JS Exception" || true)
+if [ "$js_errors" -gt 0 ]; then
+  echo "The app logged $js_errors unhandled JavaScript error(s) during the run. Show them with:"
+  echo "  xcrun simctl spawn \"$udid\" log show --start \"$started\" --predicate 'eventMessage CONTAINS \"Unhandled JS Exception\"'"
+  status=1
+fi
 
 after=$(ls "$crashes" 2>/dev/null | grep -c '^Prompt-.*\.ips$' || true)
 if [ "$after" -gt "$before" ]; then
