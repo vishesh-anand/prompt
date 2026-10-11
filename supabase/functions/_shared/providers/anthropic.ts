@@ -17,12 +17,15 @@ type Options = {
   effort?: Effort;
   onUsage?: (usage: Usage) => void;
   client?: Pick<Anthropic, 'messages'>;
+  // For the client built here (ignored when a client is passed). The SDK defaults are a 10-minute timeout and 2 retries.
+  timeoutMs?: number;
+  maxRetries?: number;
 };
 
 // Room for the thinking as well as the answer: thinking tokens count toward this limit.
 const maxTokens = 16000;
 
-export function anthropicModel(apiKey: string, { model, effort = 'medium', onUsage, client = new Anthropic({ apiKey }) }: Options): Model {
+export function anthropicModel(apiKey: string, { model, effort = 'medium', onUsage, timeoutMs, maxRetries, client = new Anthropic({ apiKey, timeout: timeoutMs, maxRetries }) }: Options): Model {
   return {
     async generate({ prompt, input, schema }) {
       const response = await client.messages.parse({

@@ -73,6 +73,10 @@ export default function Progress() {
                 <Text variant="body" color="textSecondary">
                   {'Your weekly note appears once your answers are scored.'}
                 </Text>
+              ) : p.noteView.kind === 'writing' ? (
+                <Text variant="body" color="textSecondary">
+                  {"Your weekly note isn't ready yet. Look again in a minute."}
+                </Text>
               ) : p.noteView.kind === 'failed' ? (
                 <Text variant="body" color="textSecondary">
                   {"Your weekly note didn't load. It will try again next time you open this tab."}

@@ -15,4 +15,5 @@ const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY');
 if (!anthropicKey) throw new Error('ANTHROPIC_API_KEY is not set. Run `npx supabase secrets set ANTHROPIC_API_KEY=...`.');
 
 export const modelName = 'claude-sonnet-5-5';
-export const makeModel = (onUsage: (usage: Usage) => void) => anthropicModel(anthropicKey, { model: modelName, onUsage });
+export const makeModel = (onUsage: (usage: Usage) => void, limits: { timeoutMs?: number; maxRetries?: number } = {}) =>
+  anthropicModel(anthropicKey, { model: modelName, onUsage, ...limits });

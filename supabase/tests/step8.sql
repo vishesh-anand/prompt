@@ -64,37 +64,37 @@ begin
   perform public.save_weekly_note(ben, wk, 'Ben''s note.', 5, 1, 'm');
 
   -- (k) The claim: the first caller wins, and anyone else within the minute is refused.
-  select public.claim_weekly_note(ann, wk, 60) into won;
+  select public.claim_weekly_note(ann, wk, 60, 20) into won;
   if won is distinct from true then raise exception 'FAIL (k1): the first claim was refused'; end if;
-  select public.claim_weekly_note(ann, wk, 60) into won;
+  select public.claim_weekly_note(ann, wk, 60, 20) into won;
   if won is distinct from false then raise exception 'FAIL (k2): a second claim at once was granted'; end if;
 
   -- (l) Another week, and another person, have their own claim.
-  select public.claim_weekly_note(ann, wk + 7, 60) into won;
+  select public.claim_weekly_note(ann, wk + 7, 60, 20) into won;
   if won is distinct from true then raise exception 'FAIL (l1): next week''s claim was refused'; end if;
-  select public.claim_weekly_note(ben, wk, 60) into won;
+  select public.claim_weekly_note(ben, wk, 60, 20) into won;
   if won is distinct from true then raise exception 'FAIL (l2): another person''s claim was refused'; end if;
 
   -- (m) A claim older than a minute can be taken again (a call that crashed doesn't block the week), and a younger one can't.
   update public.weekly_note_claims set claimed_at = now() - interval '30 seconds' where user_id = ann and week_start = wk;
-  select public.claim_weekly_note(ann, wk, 60) into won;
+  select public.claim_weekly_note(ann, wk, 60, 20) into won;
   if won is distinct from false then raise exception 'FAIL (m1): a 30-second-old claim was taken again'; end if;
   update public.weekly_note_claims set claimed_at = now() - interval '2 minutes' where user_id = ann and week_start = wk;
-  select public.claim_weekly_note(ann, wk, 60) into won;
+  select public.claim_weekly_note(ann, wk, 60, 20) into won;
   if won is distinct from true then raise exception 'FAIL (m2): a 2-minute-old claim was not released'; end if;
-  select public.claim_weekly_note(ann, wk, 60) into won;
+  select public.claim_weekly_note(ann, wk, 60, 20) into won;
   if won is distinct from false then raise exception 'FAIL (m3): the re-taken claim was granted twice'; end if;
 
   -- (o) The bound is checked: nothing, or hours, is refused.
   begin
-    perform public.claim_weekly_note(ann, wk + 28, 0);
+    perform public.claim_weekly_note(ann, wk + 28, 0, 20);
     raise exception 'FAIL (o1): a bound of 0 seconds was accepted';
   exception when others then
     if sqlerrm like 'FAIL%' then raise; end if;
     if sqlerrm not like '%p_min_seconds must be between%' then raise exception 'FAIL (o1): wrong error: % %', sqlstate, sqlerrm; end if;
   end;
   begin
-    perform public.claim_weekly_note(ann, wk + 28, 100000);
+    perform public.claim_weekly_note(ann, wk + 28, 100000, 20);
     raise exception 'FAIL (o2): a bound of a day was accepted';
   exception when others then
     if sqlerrm like 'FAIL%' then raise; end if;
@@ -103,18 +103,44 @@ begin
 
   -- (p) The caller's bound is what is used: a 30-second-old claim is refused at 60 seconds and granted at 10.
   update public.weekly_note_claims set claimed_at = now() - interval '30 seconds' where user_id = ann and week_start = wk;
-  select public.claim_weekly_note(ann, wk, 60) into won;
+  select public.claim_weekly_note(ann, wk, 60, 20) into won;
   if won is distinct from false then raise exception 'FAIL (p1): a 30-second-old claim was taken with a 60-second bound'; end if;
-  select public.claim_weekly_note(ann, wk, 10) into won;
+  select public.claim_weekly_note(ann, wk, 10, 20) into won;
   if won is distinct from true then raise exception 'FAIL (p2): a 30-second-old claim was refused with a 10-second bound'; end if;
 
   -- (q) Claims from weeks that ended more than two weeks ago are removed as a new one is written, and only this person's.
   insert into public.weekly_note_claims (user_id, week_start) values (ann, wk - 60), (ben, wk - 60);
-  perform public.claim_weekly_note(ann, wk, 60);
+  perform public.claim_weekly_note(ann, wk, 60, 20);
   select count(*) into n from public.weekly_note_claims where user_id = ann and week_start = wk - 60;
   if n <> 0 then raise exception 'FAIL (q1): an old claim of Ann''s was not removed'; end if;
   select count(*) into n from public.weekly_note_claims where user_id = ben and week_start = wk - 60;
   if n <> 1 then raise exception 'FAIL (q2): another person''s old claim was removed'; end if;
+
+  -- (r) Attempts per week are capped: with a cap of 3, the 4th attempt is refused even after the minute has passed.
+  select public.claim_weekly_note(ben, wk + 35, 60, 3) into won;
+  if won is distinct from true then raise exception 'FAIL (r1): the first attempt was refused'; end if;
+  update public.weekly_note_claims set claimed_at = now() - interval '2 minutes' where user_id = ben and week_start = wk + 35;
+  select public.claim_weekly_note(ben, wk + 35, 60, 3) into won;
+  update public.weekly_note_claims set claimed_at = now() - interval '2 minutes' where user_id = ben and week_start = wk + 35;
+  select public.claim_weekly_note(ben, wk + 35, 60, 3) into won;
+  if won is distinct from true then raise exception 'FAIL (r2): the third attempt was refused'; end if;
+  update public.weekly_note_claims set claimed_at = now() - interval '2 minutes' where user_id = ben and week_start = wk + 35;
+  select public.claim_weekly_note(ben, wk + 35, 60, 3) into won;
+  if won is distinct from false then raise exception 'FAIL (r3): a fourth attempt went past the cap of 3'; end if;
+  select attempts into n from public.weekly_note_claims where user_id = ben and week_start = wk + 35;
+  if n <> 3 then raise exception 'FAIL (r4): attempts is %, expected 3', n; end if;
+  -- A new week starts with a fresh count.
+  select public.claim_weekly_note(ben, wk + 42, 60, 3) into won;
+  if won is distinct from true then raise exception 'FAIL (r5): the next week did not start fresh'; end if;
+
+  -- (s) The cap is checked too.
+  begin
+    perform public.claim_weekly_note(ann, wk + 49, 60, 0);
+    raise exception 'FAIL (s1): a cap of 0 was accepted';
+  exception when others then
+    if sqlerrm like 'FAIL%' then raise; end if;
+    if sqlerrm not like '%p_max_attempts must be between%' then raise exception 'FAIL (s1): wrong error: % %', sqlstate, sqlerrm; end if;
+  end;
 
   -- Acts as Ann through the phone's login.
   set local role authenticated;
@@ -156,7 +182,7 @@ begin
 
   -- (n) The phone cannot call the claim or read the claims.
   begin
-    perform public.claim_weekly_note(ann, wk + 21, 60);
+    perform public.claim_weekly_note(ann, wk + 21, 60, 20);
     raise exception 'FAIL (n1): the phone called claim_weekly_note';
   exception when others then
     if sqlerrm like 'FAIL%' then raise; end if;

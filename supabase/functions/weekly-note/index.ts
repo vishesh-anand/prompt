@@ -3,7 +3,7 @@ import { withSupabase } from 'npm:@supabase/server@1';
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2';
 
 import { makeModel, modelName } from '../_shared/providers/index.ts';
-import { getWeeklyNote, type Store } from './getWeeklyNote.ts';
+import { getWeeklyNote, modelTimeoutMs, type Store } from './getWeeklyNote.ts';
 
 const answerColumns = 'created_at, retry_of, duration_ms, metrics, judgement';
 
@@ -21,7 +21,9 @@ function storeFor(db: SupabaseClient, admin: SupabaseClient, userId: string): St
       return { timezone: data.timezone, baselineAnswerId: data.baseline_answer_id };
     },
     async answersSince(from) {
-      const { data, error } = await db.from('answers').select(answerColumns).gte('created_at', from.toISOString()).order('created_at');
+      // Newest first with a limit: a week has at most about 70 answers, so more than this is not a real week, and if the
+      // server's row cap ever cut the list it would cut the oldest, never the newest days.
+      const { data, error } = await db.from('answers').select(answerColumns).gte('created_at', from.toISOString()).order('created_at', { ascending: false }).limit(200);
       if (error) fail('weekly-note could not load the answers', error);
       return data;
     },
@@ -40,8 +42,13 @@ function storeFor(db: SupabaseClient, admin: SupabaseClient, userId: string): St
       if (error) fail('weekly-note could not load the saved note', error);
       return data;
     },
-    async claim(weekStart, minSeconds) {
-      const { data, error } = await admin.rpc('claim_weekly_note', { p_user_id: userId, p_week_start: weekStart, p_min_seconds: minSeconds });
+    async claim(weekStart, { minSeconds, maxAttempts }) {
+      const { data, error } = await admin.rpc('claim_weekly_note', {
+        p_user_id: userId,
+        p_week_start: weekStart,
+        p_min_seconds: minSeconds,
+        p_max_attempts: maxAttempts,
+      });
       if (error) fail('weekly-note could not claim the week', error);
       return data === true;
     },
@@ -68,7 +75,7 @@ export default {
     if (!userId) return Response.json({ error: 'unauthorized' }, { status: 401 });
     try {
       const store = storeFor(ctx.supabase, ctx.supabaseAdmin, userId);
-      const reply = await getWeeklyNote({ store, model: makeModel(() => {}), modelName, now: new Date() });
+      const reply = await getWeeklyNote({ store, model: makeModel((u) => console.info('weekly-note model usage', u.model, u.inputTokens, u.outputTokens), { timeoutMs: modelTimeoutMs, maxRetries: 0 }), modelName, now: new Date() });
       return Response.json(reply);
     } catch (error) {
       console.error('weekly-note failed', error);

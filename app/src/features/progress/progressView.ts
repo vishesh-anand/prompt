@@ -31,11 +31,17 @@ export type NoteView =
   | { kind: 'toGo'; practiceDays: number; daysNeeded: number }
   // Enough days, but the answers are still being scored. The note follows.
   | { kind: 'scoring' }
+  // A note is due and is being written, or could not be written yet. Look again shortly.
+  | { kind: 'writing' }
   | { kind: 'failed' };
 
-export function noteView(reply: { practiceDays: number; daysNeeded: number; note: string | null } | null, failed: boolean): NoteView {
+export function noteView(
+  reply: { practiceDays: number; daysNeeded: number; note: string | null; writing: boolean } | null,
+  failed: boolean,
+): NoteView {
   if (reply === null) return failed ? { kind: 'failed' } : { kind: 'loading' };
   if (reply.note !== null) return { kind: 'note', text: reply.note };
+  if (reply.writing) return { kind: 'writing' };
   if (reply.practiceDays >= reply.daysNeeded) return { kind: 'scoring' };
   return { kind: 'toGo', practiceDays: reply.practiceDays, daysNeeded: reply.daysNeeded };
 }

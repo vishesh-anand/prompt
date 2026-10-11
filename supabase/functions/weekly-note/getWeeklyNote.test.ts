@@ -2,7 +2,7 @@ import { assertEquals, assertRejects } from 'jsr:@std/assert@1';
 
 import type { Model, PromptFile } from '../_shared/providers/model.ts';
 import type { AnswerRow } from '../_shared/weeklyFacts.ts';
-import { getWeeklyNote, type SavedNote, type Store } from './getWeeklyNote.ts';
+import { claimSeconds, getWeeklyNote, maxAttemptsPerWeek, modelTimeoutMs, type SavedNote, type Store } from './getWeeklyNote.ts';
 
 const mark = { score: 1, quotes: ['x'], why: 'x' };
 const answer = (iso: string, o: { retry?: boolean } = {}): AnswerRow => ({
@@ -45,7 +45,7 @@ function fakeStore(o: { answers: AnswerRow[]; saved?: SavedNote | null; raceTo?:
       if (calls.savedNoteReads >= 2 && o.savedAfterClaim) return Promise.resolve(o.savedAfterClaim);
       return Promise.resolve(saved);
     },
-    claim: (_week: string, _minSeconds: number) => {
+    claim: (_week: string, _limits: { minSeconds: number; maxAttempts: number }) => {
       calls.claims += 1;
       // Like the database: the first caller wins and every later one is refused (within the minute).
       if (claimed) return Promise.resolve(false);
@@ -79,7 +79,7 @@ Deno.test('two practice days: no note and no model call, and it says how many da
   const { store, calls } = fakeStore({ answers: [mon, tue] });
   const { model, seen } = fakeModel('unused');
   const reply = await getWeeklyNote({ store, model, modelName: 'm', now });
-  assertEquals(reply, { practiceDays: 2, daysNeeded: 3, note: null });
+  assertEquals(reply, { practiceDays: 2, daysNeeded: 3, note: null, writing: false });
   assertEquals(seen.length, 0);
   assertEquals(calls.saves.length, 0);
 });
@@ -103,7 +103,7 @@ Deno.test('the third day writes the note once and saves it with the days it cove
   const { store, calls } = fakeStore({ answers: [mon, tue, wed] });
   const { model, seen } = fakeModel('Your filler words held at 8 a minute. Say your point first.');
   const reply = await getWeeklyNote({ store, model, modelName: 'sonnet', now });
-  assertEquals(reply, { practiceDays: 3, daysNeeded: 3, note: 'Your filler words held at 8 a minute. Say your point first.' });
+  assertEquals(reply, { practiceDays: 3, daysNeeded: 3, note: 'Your filler words held at 8 a minute. Say your point first.', writing: false });
   assertEquals(seen.length, 1);
   assertEquals(calls.saves, [{ daysCovered: 3, text: 'Your filler words held at 8 a minute. Say your point first.', weekStart: '2026-10-05' }]);
 });
@@ -121,7 +121,7 @@ Deno.test('a new practice day rewrites the note', async () => {
   const { store, calls } = fakeStore({ answers: [mon, tue, wed, thu], saved: { text: 'Old note.', days_covered: 3 } });
   const { model, seen } = fakeModel('New note.');
   const reply = await getWeeklyNote({ store, model, modelName: 'm', now });
-  assertEquals(reply, { practiceDays: 4, daysNeeded: 3, note: 'New note.' });
+  assertEquals(reply, { practiceDays: 4, daysNeeded: 3, note: 'New note.', writing: false });
   assertEquals(seen.length, 1);
   assertEquals(calls.saves[0]?.daysCovered, 4);
 });
@@ -163,7 +163,7 @@ Deno.test('a third day that is still being scored makes no note yet, and costs n
   const { store, calls } = fakeStore({ answers: [mon, tue, unscored('2026-10-07T15:00:00Z')] });
   const { model, seen } = fakeModel('unused');
   const reply = await getWeeklyNote({ store, model, modelName: 'm', now });
-  assertEquals(reply, { practiceDays: 3, daysNeeded: 3, note: null });
+  assertEquals(reply, { practiceDays: 3, daysNeeded: 3, note: null, writing: false });
   assertEquals(seen.length, 0);
   assertEquals(calls.saves.length, 0);
 });
@@ -180,7 +180,7 @@ Deno.test('a fourth day still being scored keeps the saved note, and is picked u
   const first = fakeStore({ answers: [mon, tue, wed, pending], saved: { text: 'Three days.', days_covered: 3 } });
   const m1 = fakeModel('unused');
   const waiting = await getWeeklyNote({ store: first.store, model: m1.model, modelName: 'm', now });
-  assertEquals(waiting, { practiceDays: 4, daysNeeded: 3, note: 'Three days.' });
+  assertEquals(waiting, { practiceDays: 4, daysNeeded: 3, note: 'Three days.', writing: false });
   assertEquals(m1.seen.length, 0);
 
   const second = fakeStore({ answers: [mon, tue, wed, thu], saved: { text: 'Three days.', days_covered: 3 } });
@@ -226,7 +226,8 @@ Deno.test('ten requests at once still make one model call', async () => {
 Deno.test('a request that loses the claim and has no saved note gets null, not an error', async () => {
   const { store, calls } = fakeStore({ answers: [mon, tue, wed], alreadyClaimed: true });
   const { model, seen } = fakeModel('unused');
-  assertEquals(await getWeeklyNote({ store, model, modelName: 'm', now }), { practiceDays: 3, daysNeeded: 3, note: null });
+  // Due but not ready: the phone is told a note is on its way, not that answers are being scored.
+  assertEquals(await getWeeklyNote({ store, model, modelName: 'm', now }), { practiceDays: 3, daysNeeded: 3, note: null, writing: true });
   assertEquals(seen.length, 0);
   assertEquals(calls.saves.length, 0);
 });
@@ -265,7 +266,17 @@ Deno.test('a note saved by another request between the check and the claim is re
 Deno.test('the claim is asked for with the one-per-minute bound', async () => {
   const asked: number[] = [];
   const { store } = fakeStore({ answers: [mon, tue, wed] });
-  const withSpy: Store = { ...store, claim: (w, s) => { asked.push(s); return store.claim(w, s); } };
+  const withSpy: Store = { ...store, claim: (w, l) => { asked.push(l.minSeconds * 1000 + l.maxAttempts); return store.claim(w, l); } };
   await getWeeklyNote({ store: withSpy, model: fakeModel('x').model, modelName: 'm', now });
-  assertEquals(asked, [60]);
+  assertEquals(asked, [claimSeconds * 1000 + maxAttemptsPerWeek]);
+});
+
+Deno.test('both model tries finish inside the claim, so a second request can never pay while the first is running', () => {
+  assertEquals(2 * modelTimeoutMs < claimSeconds * 1000, true);
+});
+
+Deno.test('a week that is still being scored is not "writing": nothing is due yet', async () => {
+  const { store } = fakeStore({ answers: [mon, tue, unscored('2026-10-07T15:00:00Z')] });
+  const reply = await getWeeklyNote({ store, model: fakeModel('x').model, modelName: 'm', now });
+  assertEquals(reply.writing, false);
 });
