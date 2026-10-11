@@ -16,6 +16,8 @@ export interface Store {
   answer(id: string): Promise<AnswerRow | null>;
   notebook(): Promise<string>;
   savedNote(weekStart: string): Promise<SavedNote | null>;
+  // Atomic: true for the one caller that may ask the model now. Anyone else, or anyone within a minute, gets false.
+  claim(weekStart: string): Promise<boolean>;
   // Saves only if it covers more days than what is saved, and returns what is saved afterwards.
   saveNote(note: { weekStart: string; text: string; daysCovered: number; promptVersion: number; model: string }): Promise<SavedNote>;
 }
@@ -38,6 +40,9 @@ export async function getWeeklyNote({ store, model, modelName, now }: { store: S
   // Answers still being scored don't count yet: the note waits for three scored days, and is rewritten when another scores.
   if (counted.scoredDays < daysNeeded) return reply(saved?.text ?? null);
   if (saved && saved.days_covered >= counted.scoredDays) return reply(saved.text);
+
+  // A note is due. Only one request may pay for it: the others (a second device, a retry, a loop) get the saved note back.
+  if (!(await store.claim(counted.weekStart))) return reply(saved?.text ?? null);
 
   const start = baselineAnswerId ? await store.answer(baselineAnswerId) : null;
   const facts = weeklyFacts({ timeZone: timezone, now, answers, start });

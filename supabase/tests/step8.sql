@@ -10,6 +10,7 @@ declare
   n integer;
   saved_text text;
   saved_days integer;
+  won boolean;
 begin
   insert into auth.users (id) values (ann), (ben);
 
@@ -62,6 +63,28 @@ begin
   if n <> 2 then raise exception 'FAIL (f): % notes after two weeks', n; end if;
   perform public.save_weekly_note(ben, wk, 'Ben''s note.', 5, 1, 'm');
 
+  -- (k) The claim: the first caller wins, and anyone else within the minute is refused.
+  select public.claim_weekly_note(ann, wk) into won;
+  if won is distinct from true then raise exception 'FAIL (k1): the first claim was refused'; end if;
+  select public.claim_weekly_note(ann, wk) into won;
+  if won is distinct from false then raise exception 'FAIL (k2): a second claim at once was granted'; end if;
+
+  -- (l) Another week, and another person, have their own claim.
+  select public.claim_weekly_note(ann, wk + 7) into won;
+  if won is distinct from true then raise exception 'FAIL (l1): next week''s claim was refused'; end if;
+  select public.claim_weekly_note(ben, wk) into won;
+  if won is distinct from true then raise exception 'FAIL (l2): another person''s claim was refused'; end if;
+
+  -- (m) A claim older than a minute can be taken again (a call that crashed doesn't block the week), and a younger one can't.
+  update public.weekly_note_claims set claimed_at = now() - interval '30 seconds' where user_id = ann and week_start = wk;
+  select public.claim_weekly_note(ann, wk) into won;
+  if won is distinct from false then raise exception 'FAIL (m1): a 30-second-old claim was taken again'; end if;
+  update public.weekly_note_claims set claimed_at = now() - interval '2 minutes' where user_id = ann and week_start = wk;
+  select public.claim_weekly_note(ann, wk) into won;
+  if won is distinct from true then raise exception 'FAIL (m2): a 2-minute-old claim was not released'; end if;
+  select public.claim_weekly_note(ann, wk) into won;
+  if won is distinct from false then raise exception 'FAIL (m3): the re-taken claim was granted twice'; end if;
+
   -- Acts as Ann through the phone's login.
   set local role authenticated;
   perform set_config('request.jwt.claims', json_build_object('sub', ann, 'role', 'authenticated')::text, true);
@@ -100,6 +123,22 @@ begin
     if sqlstate <> '42501' then raise exception 'FAIL (h4): wrong error: % %', sqlstate, sqlerrm; end if;
   end;
 
+  -- (n) The phone cannot call the claim or read the claims.
+  begin
+    perform public.claim_weekly_note(ann, wk + 21);
+    raise exception 'FAIL (n1): the phone called claim_weekly_note';
+  exception when others then
+    if sqlerrm like 'FAIL%' then raise; end if;
+    if sqlstate <> '42501' then raise exception 'FAIL (n1): wrong error: % %', sqlstate, sqlerrm; end if;
+  end;
+  begin
+    perform 1 from public.weekly_note_claims;
+    raise exception 'FAIL (n2): the phone read the claims';
+  exception when others then
+    if sqlerrm like 'FAIL%' then raise; end if;
+    if sqlstate <> '42501' then raise exception 'FAIL (n2): wrong error: % %', sqlstate, sqlerrm; end if;
+  end;
+
   -- Acts as Ben.
   perform set_config('request.jwt.claims', json_build_object('sub', ben, 'role', 'authenticated')::text, true);
 
@@ -114,6 +153,8 @@ begin
   delete from auth.users where id = ann;
   select count(*) into n from public.weekly_notes where user_id = ann;
   if n <> 0 then raise exception 'FAIL (j): % notes left after the account was deleted', n; end if;
+  select count(*) into n from public.weekly_note_claims where user_id = ann;
+  if n <> 0 then raise exception 'FAIL (j2): % claims left after the account was deleted', n; end if;
 
   raise exception 'STEP8_CHECKS_PASSED';
 end $$;
