@@ -39,7 +39,7 @@ export interface Store {
 }
 
 // `writing` is true when a note is due and another request holds the claim, so the phone can say "not ready yet" and not
-// "answers still being scored". `gaveUp` is true when the week's attempts are used up and nothing more will be tried.
+// "answers still being scored". `gaveUp` is true when the week's attempts are used up and nothing is tried again for a while.
 export type WeeklyNoteReply = { practiceDays: number; daysNeeded: number; note: string | null; writing: boolean; gaveUp: boolean };
 
 // The Progress screen calls this every time it is shown. The model is only asked when the week has at least three

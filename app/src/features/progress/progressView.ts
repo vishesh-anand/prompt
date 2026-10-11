@@ -33,7 +33,7 @@ export type NoteView =
   | { kind: 'scoring' }
   // A note is due and is being written, or could not be written yet. Look again shortly.
   | { kind: 'writing' }
-  // The week's attempts are used up. Nothing more will be tried until next week.
+  // The week's attempts are used up. Nothing is tried again until the attempt count starts over (6 hours without an attempt).
   | { kind: 'gaveUp' }
   | { kind: 'failed' };
 

@@ -17,7 +17,8 @@ export type WeeklyFacts = {
   // Of those, the days with at least one first attempt that has been through the judge (so it has a clear point). A note is only written from these, so a
   // day whose answers are still being processed doesn't make a note that can't see them (and is then never redone).
   scoredDays: number;
-  // The days that had a first attempt that could be scored, in order.
+  // Every practice day, in order. A day with no scored first attempt (a retry only, still being processed, no words) has
+  // all-null numbers; `scoredDays` counts the ones that don't.
   days: ({ day: string } & Numbers)[];
   average: Numbers;
   // The first recording's numbers, or null when it has none to compare.

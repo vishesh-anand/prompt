@@ -36,7 +36,12 @@ export function anthropicModel(apiKey: string, { model, effort = 'medium', onUsa
         system: prompt.text,
         messages: [{ role: 'user', content: JSON.stringify(input, null, 2) }],
         output_config: { effort, format: zodOutputFormat(schema) },
-      }, deadlineMs === undefined ? undefined : { signal: AbortSignal.timeout(deadlineMs) });
+      }, deadlineMs === undefined ? undefined : { signal: AbortSignal.timeout(deadlineMs) }).catch((error: unknown) => {
+        // Aborts, rate limits and server errors produce no usage line, so the cost of a bad week would be invisible.
+        // Only the model and the error's name are logged, never the prompt or the answer.
+        console.warn('model call failed', model, error instanceof Error ? error.name : 'unknown');
+        throw error;
+      });
       onUsage?.({ model, inputTokens: response.usage.input_tokens, outputTokens: response.usage.output_tokens });
 
       if (response.stop_reason === 'refusal') throw new Error(`${model} declined to answer`);

@@ -339,3 +339,11 @@ Deno.test('a request still running its last attempt is writing, not given up', a
   const reply = await getWeeklyNote({ store, model: fakeModel('unused').model, modelName: 'm', now });
   assertEquals(reply, { practiceDays: 3, daysNeeded: 3, note: null, writing: true, gaveUp: false });
 });
+
+Deno.test('the function really gives the model call its deadline and no SDK retries', async () => {
+  const index = await Deno.readTextFile(new URL('./index.ts', import.meta.url));
+  // The sums above only hold if the real wiring uses these values.
+  assertEquals(index.includes('deadlineMs: modelTimeoutMs'), true);
+  assertEquals(index.includes('maxRetries: modelRetries'), true);
+  assertEquals(index.includes('timeoutMs: modelTimeoutMs'), true);
+});

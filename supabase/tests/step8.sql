@@ -249,6 +249,38 @@ begin
     if sqlstate <> '42501' then raise exception 'FAIL (n2): wrong error: % %', sqlstate, sqlerrm; end if;
   end;
 
+  -- (n3) Signed-out visitors (anon) cannot call the claim or either save function, or read the claims.
+  set local role anon;
+  begin
+    perform public.claim_weekly_note(ann, wk + 21, 60, 20, 4);
+    raise exception 'FAIL (n3): anon called claim_weekly_note';
+  exception when others then
+    if sqlerrm like 'FAIL%' then raise; end if;
+    if sqlstate <> '42501' then raise exception 'FAIL (n3): wrong error: % %', sqlstate, sqlerrm; end if;
+  end;
+  begin
+    perform public.save_weekly_note(ann, wk + 21, 'x', 3, 1, 'm');
+    raise exception 'FAIL (n4): anon called save_weekly_note';
+  exception when others then
+    if sqlerrm like 'FAIL%' then raise; end if;
+    if sqlstate <> '42501' then raise exception 'FAIL (n4): wrong error: % %', sqlstate, sqlerrm; end if;
+  end;
+  begin
+    perform 1 from public.weekly_notes;
+    raise exception 'FAIL (n5): anon read weekly_notes';
+  exception when others then
+    if sqlerrm like 'FAIL%' then raise; end if;
+    if sqlstate <> '42501' then raise exception 'FAIL (n5): wrong error: % %', sqlstate, sqlerrm; end if;
+  end;
+  begin
+    perform 1 from public.weekly_note_claims;
+    raise exception 'FAIL (n6): anon read weekly_note_claims';
+  exception when others then
+    if sqlerrm like 'FAIL%' then raise; end if;
+    if sqlstate <> '42501' then raise exception 'FAIL (n6): wrong error: % %', sqlstate, sqlerrm; end if;
+  end;
+  set local role authenticated;
+
   -- Acts as Ben.
   perform set_config('request.jwt.claims', json_build_object('sub', ben, 'role', 'authenticated')::text, true);
 

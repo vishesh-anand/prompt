@@ -14,6 +14,8 @@ export default function Progress() {
   // New scores can land while you are on another screen, so look again each time this tab is shown again.
   useRefreshOnShow(refresh);
 
+  const noteText = noteMessage(p.noteView);
+
   return (
     <Screen scroll>
       <View style={styles.page}>
@@ -57,9 +59,9 @@ export default function Progress() {
               <Text variant="label">Weekly note</Text>
               {p.noteView.kind === 'note' ? (
                 <Text variant="betterVersion">{p.noteView.text}</Text>
-              ) : noteMessage(p.noteView) !== null ? (
+              ) : noteText !== null ? (
                 <Text variant="body" color="textSecondary">
-                  {noteMessage(p.noteView)}
+                  {noteText}
                 </Text>
               ) : null}
             </View>
