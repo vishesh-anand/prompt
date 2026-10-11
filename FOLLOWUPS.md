@@ -8,6 +8,10 @@ Things we chose not to do yet, or could not check, so they don't get forgotten. 
 - **A real new signup through setup.** Setup has only run on the owner's account (cleared and repeated). Do it once with a second Apple Account before TestFlight. *When:* step 9, before TestFlight.
 - **Flow 02 on every change that touches Done, Home or the record screen.** It records 3 real answers, so it counts against the 10 a day (see CLAUDE.md "Scripted end-to-end flows"). It passed on the final code. *When:* after any later change to navigation.
 
+- **Step 8 on a real iPhone.** Progress, the tab bar and the chart have only run on the simulator (iOS 26.2). Check by hand on the phone: the tab bar and Done landing on Home, the chart at a large text size, and dark mode. *When:* before step 9.
+- **Progress in dark mode and at large text, and with VoiceOver.** No screenshots were taken in dark mode or at accessibility text sizes, and the chart's spoken summary was only unit-tested. *When:* before TestFlight.
+- **A parallel call against the deployed weekly-note function.** The claim is covered by unit tests (one model call for 2 and 10 concurrent requests, tests fail without the claim), by `step8.sql` and by one real claim and rewrite. Two real requests at the same moment were not sent. *When:* if the weekly note's cost looks wrong in the Anthropic usage page.
+
 ## Left for later
 
 - **History is cut at 1000 rows.** `useHistory` loads every answer, and the server returns at most 1000. Past that, old first attempts vanish, so questions could repeat before all are seen. About 100 days at 10 a day, 1000 days at one a day, so the 4-week beta won't reach it. Fix with a bounded query plus a separate "question ids I have answered" query. Progress (step 8) does not need it: it reads this week's answers with a bounded query. *When:* before the beta runs past a few months.
