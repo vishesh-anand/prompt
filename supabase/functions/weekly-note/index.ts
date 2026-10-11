@@ -84,7 +84,8 @@ export default {
       const reply = await getWeeklyNote({ store, model: makeModel((u) => console.info('weekly-note model usage', u.model, u.inputTokens, u.outputTokens), { timeoutMs: modelTimeoutMs, deadlineMs: modelTimeoutMs, maxRetries: modelRetries }), modelName, now: new Date() });
       return Response.json(reply);
     } catch (error) {
-      console.error('weekly-note failed', error);
+      // Class and status only: a model error's message can echo what was sent. Database errors are logged where they happen.
+      console.error('weekly-note failed', (error as object | null)?.constructor?.name ?? 'unknown', (error as { status?: unknown } | null)?.status ?? '');
       return Response.json({ error: 'server_error' }, { status: 500 });
     }
   }),

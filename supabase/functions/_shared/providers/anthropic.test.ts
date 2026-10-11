@@ -61,7 +61,7 @@ class FakeRateLimitError extends Error {
   status = 429;
 }
 
-Deno.test('a failed call is logged by class and status, never with the prompt or the message, and is rethrown', async () => {
+Deno.test('a failed call is logged by class, name and status, never with the prompt, the input or the message, and is rethrown', async () => {
   const logged: unknown[][] = [];
   const original = console.warn;
   console.warn = (...args: unknown[]) => void logged.push(args);
@@ -72,7 +72,22 @@ Deno.test('a failed call is logged by class and status, never with the prompt or
   } finally {
     console.warn = original;
   }
-  assertEquals(logged, [['model call failed', 'm', 'FakeRateLimitError', 429]]);
+  assertEquals(logged, [['model call failed', 'm', 'FakeRateLimitError', 'Error', 429]]);
+  assertEquals(JSON.stringify(logged).includes(prompt.text), false);
   assertEquals(JSON.stringify(logged).includes('private answer'), false);
   assertEquals(JSON.stringify(logged).includes('secret answer'), false);
+});
+
+Deno.test('a deadline that fires while the body is read is logged as TimeoutError', async () => {
+  const logged: unknown[][] = [];
+  const original = console.warn;
+  console.warn = (...args: unknown[]) => void logged.push(args);
+  try {
+    const timeout = new DOMException('The operation timed out.', 'TimeoutError');
+    const failing = { messages: { parse: () => Promise.reject(timeout) } } as unknown as Pick<Anthropic, 'messages'>;
+    await assertRejects(() => anthropicModel('key', { model: 'm', client: failing }).generate({ prompt, input: 'x', schema }));
+  } finally {
+    console.warn = original;
+  }
+  assertEquals(logged[0].slice(0, 4), ['model call failed', 'm', 'DOMException', 'TimeoutError']);
 });

@@ -6,7 +6,7 @@ export const weeklyNoteReplySchema = z.object({
   practiceDays: z.number(),
   daysNeeded: z.number(),
   note: z.string().nullable(),
-  // A note is due but another request is writing it (or the week's attempts are used). Absent from older replies.
+  // A note is due and another request is writing it (or its cooldown is running). Absent from older replies.
   writing: z.boolean().default(false),
   // The week's attempts are used up and nothing is tried again for a while.
   gaveUp: z.boolean().default(false),

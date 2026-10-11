@@ -40,8 +40,12 @@ export function anthropicModel(apiKey: string, { model, effort = 'medium', onUsa
         // Aborts, rate limits and server errors produce no usage line, so a bad week's failures would be invisible.
         // The SDK gives every error the name "Error", so the class name (APIUserAbortError, RateLimitError, ...) and the
         // HTTP status are logged. Never the prompt, the answer or the error's message, which can echo them.
+        // A deadline that fires while the body is being read is a plain DOMException named "TimeoutError", so both the
+        // class and the name are logged.
         const status = (error as { status?: unknown } | null)?.status;
-        console.warn('model call failed', model, (error as object | null)?.constructor?.name ?? 'unknown', typeof status === 'number' ? status : '');
+        const kind = (error as object | null)?.constructor?.name ?? 'unknown';
+        const name = error instanceof Error ? error.name : '';
+        console.warn('model call failed', model, kind, name === kind ? '' : name, typeof status === 'number' ? status : '');
         throw error;
       });
       onUsage?.({ model, inputTokens: response.usage.input_tokens, outputTokens: response.usage.output_tokens });

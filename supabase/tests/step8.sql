@@ -249,7 +249,9 @@ begin
     if sqlstate <> '42501' then raise exception 'FAIL (n2): wrong error: % %', sqlstate, sqlerrm; end if;
   end;
 
-  -- (n3) Signed-out visitors (anon) cannot call claim_weekly_note or save_weekly_note, or read weekly_notes or weekly_note_claims.
+  -- (n3 to n6) Signed-out visitors (anon) cannot call claim_weekly_note or save_weekly_note, or read weekly_notes or
+  -- weekly_note_claims. They have no login, so the claims left from acting as Ann are cleared first.
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
   set local role anon;
   begin
     perform public.claim_weekly_note(ann, wk + 21, 60, 20, 4);
@@ -280,6 +282,7 @@ begin
     if sqlstate <> '42501' then raise exception 'FAIL (n6): wrong error: % %', sqlstate, sqlerrm; end if;
   end;
   set local role authenticated;
+  perform set_config('request.jwt.claims', json_build_object('sub', ann, 'role', 'authenticated')::text, true);
 
   -- Acts as Ben.
   perform set_config('request.jwt.claims', json_build_object('sub', ben, 'role', 'authenticated')::text, true);

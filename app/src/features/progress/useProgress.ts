@@ -49,7 +49,7 @@ export function useProgress() {
     startNumbers: start.kind === 'ready' ? start.numbers : null,
     start,
     comparison: start.kind === 'ready' ? compareToStart(start.numbers, weekNumbers) : null,
-    noteView: noteView(note.data ?? null, note.isError),
+    noteView: noteView(note.data ?? null, note.isError && !note.isFetching),
     // Called when the tab is shown again: new scores may have landed while you were away.
     refresh,
     reload: () => {
