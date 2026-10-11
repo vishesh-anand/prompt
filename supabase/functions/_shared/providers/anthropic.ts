@@ -20,12 +20,14 @@ type Options = {
   // For the client built here (ignored when a client is passed). The SDK defaults are a 10-minute timeout and 2 retries.
   timeoutMs?: number;
   maxRetries?: number;
+  // One limit for the whole call, body included. The SDK's own timeout stops counting once the reply's headers arrive.
+  deadlineMs?: number;
 };
 
 // Room for the thinking as well as the answer: thinking tokens count toward this limit.
 const maxTokens = 16000;
 
-export function anthropicModel(apiKey: string, { model, effort = 'medium', onUsage, timeoutMs, maxRetries, client = new Anthropic({ apiKey, timeout: timeoutMs, maxRetries }) }: Options): Model {
+export function anthropicModel(apiKey: string, { model, effort = 'medium', onUsage, timeoutMs, maxRetries, deadlineMs, client = new Anthropic({ apiKey, timeout: timeoutMs, maxRetries }) }: Options): Model {
   return {
     async generate({ prompt, input, schema }) {
       const response = await client.messages.parse({
@@ -34,7 +36,7 @@ export function anthropicModel(apiKey: string, { model, effort = 'medium', onUsa
         system: prompt.text,
         messages: [{ role: 'user', content: JSON.stringify(input, null, 2) }],
         output_config: { effort, format: zodOutputFormat(schema) },
-      });
+      }, deadlineMs === undefined ? undefined : { signal: AbortSignal.timeout(deadlineMs) });
       onUsage?.({ model, inputTokens: response.usage.input_tokens, outputTokens: response.usage.output_tokens });
 
       if (response.stop_reason === 'refusal') throw new Error(`${model} declined to answer`);

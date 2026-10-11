@@ -14,6 +14,7 @@ export const maxAttemptsPerWeek = 20;
 // server's retry-after asks, with no ceiling, and the stage already tries twice. The worst case is 2 tries x 20 s = 40 s,
 // and the claim leaves minutes for the database reads and writes. This keeps a second request from paying while the
 // first is still running; a test checks the sums.
+// The deadline covers the whole call, body included (the SDK's own timeout stops at the reply's headers).
 export const modelTimeoutMs = 20_000;
 export const modelRetries = 0;
 export const worstCaseModelMs = 2 * (modelRetries + 1) * modelTimeoutMs;
@@ -31,8 +32,8 @@ export interface Store {
   // Atomic: true for the one caller that may ask the model now. Anyone else, anyone within `minSeconds`, anyone past
   // `maxAttempts` for the week, and anyone when the saved note already covers `daysCovered`, gets false.
   claim(weekStart: string, limits: { minSeconds: number; maxAttempts: number; daysCovered: number }): Promise<boolean>;
-  // How many attempts this week has used (read only after a claim is refused, to tell "someone is writing" from "gave up").
-  attemptsUsed(weekStart: string): Promise<number>;
+  // The week's claim as it stands (read only after a claim is refused, to tell "someone is writing" from "gave up").
+  claimState(weekStart: string): Promise<{ attempts: number; ageSeconds: number } | null>;
   // Saves only if it covers more days than what is saved, and returns what is saved afterwards.
   saveNote(note: { weekStart: string; text: string; daysCovered: number; promptVersion: number; model: string }): Promise<SavedNote>;
 }
@@ -74,15 +75,13 @@ export async function getWeeklyNote({ store, model, modelName, now }: { store: S
     // it, or the week's attempts are used up and nothing more will be tried.
     const current = await store.savedNote(counted.weekStart);
     if (current) return reply(current.text);
-    const gaveUp = (await store.attemptsUsed(counted.weekStart)) >= maxAttemptsPerWeek;
+    // Used up AND past the cooldown: a request that is still running its last attempt is writing, not given up.
+    const state = await store.claimState(counted.weekStart);
+    const gaveUp = state !== null && state.attempts >= maxAttemptsPerWeek && state.ageSeconds >= claimSeconds;
     return reply(null, { writing: !gaveUp, gaveUp });
   }
 
-  // The note may have been written between the check above and winning the claim (a slow request that lost the race a
-  // while ago). Look again, so the same note is never paid for twice.
-  const latest = await store.savedNote(counted.weekStart);
-  if (latest && latest.days_covered >= counted.scoredDays) return reply(latest.text);
-
+  // Winning the claim already means no saved note covers these days: the database checks that in the same statement.
   const facts = weeklyFacts({ timeZone: timezone, now, answers, start });
   const text = await writeWeeklyNote({ facts, notebook }, model);
   const stored = await store.saveNote({ weekStart: facts.weekStart, text, daysCovered: facts.scoredDays, promptVersion: weeklyNoteVersion, model: modelName });

@@ -8,12 +8,14 @@ const schema = z.object({ answer: z.string() });
 const prompt = { name: 'test', version: 1, text: 'You answer questions.' };
 
 type Params = Record<string, unknown>;
+const lastOptions: { value?: { signal?: AbortSignal } } = {};
 
 // A stand-in for the Anthropic client that records the request and returns a canned reply.
 function fakeClient(reply: Record<string, unknown>, seen: Params[] = []) {
   const messages = {
-    parse: (params: Params) => {
+    parse: (params: Params, options?: { signal?: AbortSignal }) => {
       seen.push(params);
+      lastOptions.value = options;
       return Promise.resolve({ usage: { input_tokens: 120, output_tokens: 40 }, stop_reason: 'end_turn', parsed_output: { answer: 'hi' }, ...reply });
     },
   };
@@ -43,4 +45,14 @@ Deno.test('throws instead of returning half an answer', async () => {
   await assertRejects(() => generate({ stop_reason: 'refusal' }), Error, 'declined');
   await assertRejects(() => generate({ stop_reason: 'max_tokens' }), Error, 'ran out of room');
   await assertRejects(() => generate({ parsed_output: null }), Error, 'expected shape');
+});
+
+Deno.test('puts one deadline on the whole call when asked, and none otherwise', async () => {
+  const withDeadline = anthropicModel('key', { model: 'm', deadlineMs: 20_000, client: fakeClient({}) });
+  await withDeadline.generate({ prompt, input: 'x', schema });
+  assertEquals(lastOptions.value?.signal instanceof AbortSignal, true);
+
+  const without = anthropicModel('key', { model: 'm', client: fakeClient({}) });
+  await without.generate({ prompt, input: 'x', schema });
+  assertEquals(lastOptions.value, undefined);
 });

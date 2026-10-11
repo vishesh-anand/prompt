@@ -66,3 +66,23 @@ export function startMessage(start: StartView, comparisonKind: 'rows' | 'none' |
       return comparisonKind === 'rows' ? null : 'Your comparison appears after your first scored answer this week.';
   }
 }
+
+// The plain sentence under "Weekly note" for every state that has no note text, or null when there is nothing to say yet
+// (loading) or the note itself is shown.
+export function noteMessage(view: NoteView): string | null {
+  switch (view.kind) {
+    case 'toGo':
+      return `Your weekly note comes after ${view.daysNeeded} practice days this week. You're on ${view.practiceDays}.`;
+    case 'scoring':
+      return 'Your weekly note appears once your answers are scored.';
+    case 'writing':
+      return "Your weekly note isn't ready yet. It will appear here when it is.";
+    case 'gaveUp':
+      return "Your weekly note couldn't be written yet. Your answers are saved, and it will try again later.";
+    case 'failed':
+      return "Your weekly note didn't load. It will try again next time you open this tab.";
+    case 'loading':
+    case 'note':
+      return null;
+  }
+}

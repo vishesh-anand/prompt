@@ -1,6 +1,6 @@
 import type { WeekAnswer } from '@/lib/schemas/progress';
 
-import { noteView, startMessage, startView } from './progressView';
+import { noteMessage, noteView, startMessage, startView } from './progressView';
 
 const mark = { score: 1 as const, quotes: ['x'], why: 'x' };
 function answer(o: { metrics?: boolean; words?: number } = {}): WeekAnswer {
@@ -102,6 +102,32 @@ describe('startMessage', () => {
   it('never says anything alarming', () => {
     for (const kind of ['none', 'scoring', 'unscorable', 'failed'] as const) {
       expect(startMessage({ kind }, null)).not.toMatch(/!|error|wrong|bad|fail/i);
+    }
+  });
+});
+
+describe('noteMessage', () => {
+  it('has a plain sentence for every state without a note, and nothing for loading or a note', () => {
+    expect(noteMessage({ kind: 'toGo', practiceDays: 2, daysNeeded: 3 })).toBe("Your weekly note comes after 3 practice days this week. You're on 2.");
+    expect(noteMessage({ kind: 'scoring' })).toMatch(/once your answers are scored/);
+    expect(noteMessage({ kind: 'writing' })).toMatch(/isn't ready yet/);
+    expect(noteMessage({ kind: 'gaveUp' })).toMatch(/Your answers are saved/);
+    expect(noteMessage({ kind: 'failed' })).toMatch(/try again/);
+    expect(noteMessage({ kind: 'loading' })).toBeNull();
+    expect(noteMessage({ kind: 'note', text: 'x' })).toBeNull();
+  });
+
+  it('never praises, alarms, or shouts, and tells you what happens next', () => {
+    for (const view of [
+      { kind: 'toGo', practiceDays: 1, daysNeeded: 3 },
+      { kind: 'scoring' },
+      { kind: 'writing' },
+      { kind: 'gaveUp' },
+      { kind: 'failed' },
+    ] as const) {
+      const text = noteMessage(view) ?? '';
+      expect(text).not.toMatch(/!|error|wrong|oops|great|fail/i);
+      expect(text.length).toBeGreaterThan(20);
     }
   });
 });

@@ -26,7 +26,7 @@ const wed = answer('2026-10-07T15:00:00Z');
 const thu = answer('2026-10-08T15:00:00Z');
 const lastSunday = answer('2026-10-04T15:00:00Z');
 
-function fakeStore(o: { answers: AnswerRow[]; saved?: SavedNote | null; raceTo?: SavedNote; baseline?: AnswerRow | null; alreadyClaimed?: boolean; savedAfterClaim?: SavedNote; attempts?: number }) {
+function fakeStore(o: { answers: AnswerRow[]; saved?: SavedNote | null; raceTo?: SavedNote; baseline?: AnswerRow | null; alreadyClaimed?: boolean; savedAfterClaim?: SavedNote; attempts?: number; claimAgeSeconds?: number }) {
   const calls = { saves: [] as { daysCovered: number; text: string; weekStart: string }[], savedNoteReads: 0, claims: 0 };
   let saved = o.saved ?? null;
   let claimed = o.alreadyClaimed ?? false;
@@ -45,10 +45,12 @@ function fakeStore(o: { answers: AnswerRow[]; saved?: SavedNote | null; raceTo?:
       if (calls.savedNoteReads >= 2 && o.savedAfterClaim) return Promise.resolve(o.savedAfterClaim);
       return Promise.resolve(saved);
     },
-    attemptsUsed: () => Promise.resolve(o.attempts ?? 1),
+    claimState: () => Promise.resolve({ attempts: o.attempts ?? 1, ageSeconds: o.claimAgeSeconds ?? 600 }),
     claim: (_week: string, _limits: { minSeconds: number; maxAttempts: number; daysCovered: number }) => {
       calls.claims += 1;
-      // Like the database: the first caller wins and every later one is refused (within the minute).
+      // Like the database: refused when a saved note already covers the days, and the first caller wins after that.
+      const covering = calls.savedNoteReads >= 1 && o.savedAfterClaim ? o.savedAfterClaim : saved;
+      if (covering && covering.days_covered >= _limits.daysCovered) return Promise.resolve(false);
       if (claimed) return Promise.resolve(false);
       claimed = true;
       return Promise.resolve(true);
@@ -251,7 +253,7 @@ Deno.test('if the model fails after winning the claim, the error is thrown and n
   assertEquals(calls.saves.length, 0);
 });
 
-Deno.test('a note saved by another request between the check and the claim is returned, not written again', async () => {
+Deno.test('a note saved by another request between the check and the claim is refused by the claim and returned', async () => {
   const { store, calls } = fakeStore({
     answers: [mon, tue, wed, thu],
     saved: { text: 'Old note.', days_covered: 3 },
@@ -330,4 +332,10 @@ Deno.test('the claim is asked for with the days the note would cover', async () 
   const spy: Store = { ...store, claim: (w, l) => { seen.push(l.daysCovered); return store.claim(w, l); } };
   await getWeeklyNote({ store: spy, model: fakeModel('x').model, modelName: 'm', now });
   assertEquals(seen, [4]);
+});
+
+Deno.test('a request still running its last attempt is writing, not given up', async () => {
+  const { store } = fakeStore({ answers: [mon, tue, wed], alreadyClaimed: true, attempts: maxAttemptsPerWeek, claimAgeSeconds: 10 });
+  const reply = await getWeeklyNote({ store, model: fakeModel('unused').model, modelName: 'm', now });
+  assertEquals(reply, { practiceDays: 3, daysNeeded: 3, note: null, writing: true, gaveUp: false });
 });

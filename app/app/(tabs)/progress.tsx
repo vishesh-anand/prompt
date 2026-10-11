@@ -1,10 +1,9 @@
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, Screen, Stat, Text, space } from '@/design';
 import { ProgressChart } from '@/features/progress/ProgressChart';
-import { startMessage } from '@/features/progress/progressView';
+import { noteMessage, startMessage } from '@/features/progress/progressView';
+import { useRefreshOnShow } from '@/features/progress/useRefreshOnShow';
 import { useProgress } from '@/features/progress/useProgress';
 
 // Streak, this week's chart, the weekly coach note, and how you compare with your first answer.
@@ -12,15 +11,8 @@ export default function Progress() {
   const p = useProgress();
   const { refresh } = p;
 
-  // New scores can land while you are on another screen, so look again each time this tab is shown again. The first time
-  // is skipped: everything is already loading, and a second request would be a second paid note call.
-  const shownBefore = useRef(false);
-  useFocusEffect(
-    useCallback(() => {
-      if (shownBefore.current) refresh();
-      shownBefore.current = true;
-    }, [refresh]),
-  );
+  // New scores can land while you are on another screen, so look again each time this tab is shown again.
+  useRefreshOnShow(refresh);
 
   return (
     <Screen scroll>
@@ -65,25 +57,9 @@ export default function Progress() {
               <Text variant="label">Weekly note</Text>
               {p.noteView.kind === 'note' ? (
                 <Text variant="betterVersion">{p.noteView.text}</Text>
-              ) : p.noteView.kind === 'toGo' ? (
+              ) : noteMessage(p.noteView) !== null ? (
                 <Text variant="body" color="textSecondary">
-                  {`Your weekly note comes after ${p.noteView.daysNeeded} practice days this week. You're on ${p.noteView.practiceDays}.`}
-                </Text>
-              ) : p.noteView.kind === 'scoring' ? (
-                <Text variant="body" color="textSecondary">
-                  {'Your weekly note appears once your answers are scored.'}
-                </Text>
-              ) : p.noteView.kind === 'writing' ? (
-                <Text variant="body" color="textSecondary">
-                  {"Your weekly note isn't ready yet. It will appear here when it is."}
-                </Text>
-              ) : p.noteView.kind === 'gaveUp' ? (
-                <Text variant="body" color="textSecondary">
-                  {"This week's note couldn't be written. Your answers are saved, and a new note can start next week."}
-                </Text>
-              ) : p.noteView.kind === 'failed' ? (
-                <Text variant="body" color="textSecondary">
-                  {"Your weekly note didn't load. It will try again next time you open this tab."}
+                  {noteMessage(p.noteView)}
                 </Text>
               ) : null}
             </View>

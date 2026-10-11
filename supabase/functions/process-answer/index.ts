@@ -1,5 +1,5 @@
 /// <reference types="npm:@supabase/functions-js/src/edge-runtime.d.ts" />
-import { withSupabase } from 'npm:@supabase/server@1';
+import { withSupabase } from 'npm:@supabase/server@1.9.0';
 import { z } from 'npm:zod@4';
 
 import { makeModel, modelName, transcriber, transcriberVersion } from '../_shared/providers/index.ts';

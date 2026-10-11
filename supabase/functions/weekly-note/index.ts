@@ -1,5 +1,5 @@
 /// <reference types="npm:@supabase/functions-js/src/edge-runtime.d.ts" />
-import { withSupabase } from 'npm:@supabase/server@1';
+import { withSupabase } from 'npm:@supabase/server@1.9.0';
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2';
 
 import { makeModel, modelName } from '../_shared/providers/claude.ts';
@@ -42,10 +42,10 @@ function storeFor(db: SupabaseClient, admin: SupabaseClient, userId: string): St
       if (error) fail('weekly-note could not load the saved note', error);
       return data;
     },
-    async attemptsUsed(weekStart) {
-      const { data, error } = await admin.from('weekly_note_claims').select('attempts').eq('user_id', userId).eq('week_start', weekStart).maybeSingle();
-      if (error) fail('weekly-note could not read the attempts', error);
-      return data?.attempts ?? 0;
+    async claimState(weekStart) {
+      const { data, error } = await admin.from('weekly_note_claims').select('attempts, claimed_at').eq('user_id', userId).eq('week_start', weekStart).maybeSingle();
+      if (error) fail('weekly-note could not read the claim', error);
+      return data ? { attempts: data.attempts, ageSeconds: (Date.now() - Date.parse(data.claimed_at)) / 1000 } : null;
     },
     async claim(weekStart, { minSeconds, maxAttempts, daysCovered }) {
       const { data, error } = await admin.rpc('claim_weekly_note', {
@@ -81,7 +81,7 @@ export default {
     if (!userId) return Response.json({ error: 'unauthorized' }, { status: 401 });
     try {
       const store = storeFor(ctx.supabase, ctx.supabaseAdmin, userId);
-      const reply = await getWeeklyNote({ store, model: makeModel((u) => console.info('weekly-note model usage', u.model, u.inputTokens, u.outputTokens), { timeoutMs: modelTimeoutMs, maxRetries: modelRetries }), modelName, now: new Date() });
+      const reply = await getWeeklyNote({ store, model: makeModel((u) => console.info('weekly-note model usage', u.model, u.inputTokens, u.outputTokens), { timeoutMs: modelTimeoutMs, deadlineMs: modelTimeoutMs, maxRetries: modelRetries }), modelName, now: new Date() });
       return Response.json(reply);
     } catch (error) {
       console.error('weekly-note failed', error);
