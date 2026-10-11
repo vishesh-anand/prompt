@@ -78,6 +78,10 @@ describe('noteView', () => {
     expect(noteView({ practiceDays: 3, daysNeeded: 3, note: null, writing: false, gaveUp: true }, false)).toEqual({ kind: 'gaveUp' });
   });
 
+  it('puts a failed refresh ahead of a stale "writing", since nothing is polling any more', () => {
+    expect(noteView({ practiceDays: 3, daysNeeded: 3, note: null, writing: true, gaveUp: false }, true)).toEqual({ kind: 'failed' });
+  });
+
   it('keeps showing a note it had if a later refresh failed', () => {
     expect(noteView({ practiceDays: 4, daysNeeded: 3, note: 'Kept.', writing: false, gaveUp: false }, true)).toEqual({ kind: 'note', text: 'Kept.' });
   });

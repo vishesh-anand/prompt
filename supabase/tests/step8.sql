@@ -249,7 +249,7 @@ begin
     if sqlstate <> '42501' then raise exception 'FAIL (n2): wrong error: % %', sqlstate, sqlerrm; end if;
   end;
 
-  -- (n3) Signed-out visitors (anon) cannot call the claim or either save function, or read the claims.
+  -- (n3) Signed-out visitors (anon) cannot call claim_weekly_note or save_weekly_note, or read weekly_notes or weekly_note_claims.
   set local role anon;
   begin
     perform public.claim_weekly_note(ann, wk + 21, 60, 20, 4);

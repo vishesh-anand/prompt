@@ -43,6 +43,8 @@ export function noteView(
 ): NoteView {
   if (reply === null) return failed ? { kind: 'failed' } : { kind: 'loading' };
   if (reply.note !== null) return { kind: 'note', text: reply.note };
+  // The last look failed, so "it will appear" is no longer a promise anyone is keeping: say it didn't load.
+  if (failed) return { kind: 'failed' };
   if (reply.gaveUp) return { kind: 'gaveUp' };
   if (reply.writing) return { kind: 'writing' };
   if (reply.practiceDays >= reply.daysNeeded) return { kind: 'scoring' };

@@ -37,9 +37,11 @@ export function anthropicModel(apiKey: string, { model, effort = 'medium', onUsa
         messages: [{ role: 'user', content: JSON.stringify(input, null, 2) }],
         output_config: { effort, format: zodOutputFormat(schema) },
       }, deadlineMs === undefined ? undefined : { signal: AbortSignal.timeout(deadlineMs) }).catch((error: unknown) => {
-        // Aborts, rate limits and server errors produce no usage line, so the cost of a bad week would be invisible.
-        // Only the model and the error's name are logged, never the prompt or the answer.
-        console.warn('model call failed', model, error instanceof Error ? error.name : 'unknown');
+        // Aborts, rate limits and server errors produce no usage line, so a bad week's failures would be invisible.
+        // The SDK gives every error the name "Error", so the class name (APIUserAbortError, RateLimitError, ...) and the
+        // HTTP status are logged. Never the prompt, the answer or the error's message, which can echo them.
+        const status = (error as { status?: unknown } | null)?.status;
+        console.warn('model call failed', model, (error as object | null)?.constructor?.name ?? 'unknown', typeof status === 'number' ? status : '');
         throw error;
       });
       onUsage?.({ model, inputTokens: response.usage.input_tokens, outputTokens: response.usage.output_tokens });

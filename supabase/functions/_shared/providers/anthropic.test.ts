@@ -56,3 +56,23 @@ Deno.test('puts one deadline on the whole call when asked, and none otherwise', 
   await without.generate({ prompt, input: 'x', schema });
   assertEquals(lastOptions.value, undefined);
 });
+
+class FakeRateLimitError extends Error {
+  status = 429;
+}
+
+Deno.test('a failed call is logged by class and status, never with the prompt or the message, and is rethrown', async () => {
+  const logged: unknown[][] = [];
+  const original = console.warn;
+  console.warn = (...args: unknown[]) => void logged.push(args);
+  try {
+    const failing = { messages: { parse: () => Promise.reject(new FakeRateLimitError('secret answer text')) } } as unknown as Pick<Anthropic, 'messages'>;
+    const model = anthropicModel('key', { model: 'm', client: failing });
+    await assertRejects(() => model.generate({ prompt, input: 'my private answer', schema }), Error, 'secret answer text');
+  } finally {
+    console.warn = original;
+  }
+  assertEquals(logged, [['model call failed', 'm', 'FakeRateLimitError', 429]]);
+  assertEquals(JSON.stringify(logged).includes('private answer'), false);
+  assertEquals(JSON.stringify(logged).includes('secret answer'), false);
+});
