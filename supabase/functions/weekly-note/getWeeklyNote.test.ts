@@ -1,0 +1,190 @@
+import { assertEquals, assertRejects } from 'jsr:@std/assert@1';
+
+import type { Model, PromptFile } from '../_shared/providers/model.ts';
+import type { AnswerRow } from '../_shared/weeklyFacts.ts';
+import { getWeeklyNote, type SavedNote, type Store } from './getWeeklyNote.ts';
+
+const mark = { score: 1, quotes: ['x'], why: 'x' };
+const answer = (iso: string, o: { retry?: boolean } = {}): AnswerRow => ({
+  created_at: iso,
+  retry_of: o.retry ? 'first' : null,
+  duration_ms: 30_000,
+  metrics: {
+    wordCount: 80,
+    fillers: { total: 4, byWord: {} },
+    pace: { wordsPerMinute: 140, band: 'good' },
+    pauses: { count: 0, longestMs: 0, atSeconds: [] },
+    restarts: { count: 0, atSeconds: [] },
+  },
+  judgement: { mainPoint: mark, reasonOrExample: mark, ending: mark, mainPointAtSeconds: 2 },
+});
+
+// Monday, Tuesday and Wednesday of the New York week of Oct 5, 2026; Thursday; and a Sunday from the week before.
+const mon = answer('2026-10-05T15:00:00Z');
+const tue = answer('2026-10-06T15:00:00Z');
+const wed = answer('2026-10-07T15:00:00Z');
+const thu = answer('2026-10-08T15:00:00Z');
+const lastSunday = answer('2026-10-04T15:00:00Z');
+
+function fakeStore(o: { answers: AnswerRow[]; saved?: SavedNote | null; raceTo?: SavedNote; baseline?: AnswerRow | null }) {
+  const calls = { saves: [] as { daysCovered: number; text: string; weekStart: string }[], savedNoteReads: 0 };
+  let saved = o.saved ?? null;
+  const store: Store = {
+    profile: () => Promise.resolve({ timezone: 'America/New_York', baselineAnswerId: o.baseline ? 'baseline' : null }),
+    answersSince: (from) => Promise.resolve(o.answers.filter((a) => Date.parse(a.created_at) >= from.getTime())),
+    answer: () => Promise.resolve(o.baseline ?? null),
+    notebook: () => Promise.resolve('Says um before the main point.'),
+    savedNote: () => {
+      calls.savedNoteReads += 1;
+      return Promise.resolve(saved);
+    },
+    saveNote: (n) => {
+      calls.saves.push({ daysCovered: n.daysCovered, text: n.text, weekStart: n.weekStart });
+      saved = o.raceTo ?? { text: n.text, days_covered: n.daysCovered };
+      return Promise.resolve(saved);
+    },
+  };
+  return { store, calls };
+}
+
+function fakeModel(...replies: (string | Error)[]) {
+  const seen: { prompt: PromptFile; input: unknown }[] = [];
+  const model: Model = {
+    generate<T>(args: { prompt: PromptFile; input: unknown }) {
+      seen.push({ prompt: args.prompt, input: args.input });
+      const reply = replies[Math.min(seen.length - 1, replies.length - 1)];
+      return reply instanceof Error ? Promise.reject(reply) : Promise.resolve({ text: reply } as T);
+    },
+  };
+  return { model, seen };
+}
+
+const now = new Date('2026-10-10T19:00:00Z'); // Saturday
+
+Deno.test('two practice days: no note and no model call, and it says how many days there are', async () => {
+  const { store, calls } = fakeStore({ answers: [mon, tue] });
+  const { model, seen } = fakeModel('unused');
+  const reply = await getWeeklyNote({ store, model, modelName: 'm', now });
+  assertEquals(reply, { practiceDays: 2, daysNeeded: 3, note: null });
+  assertEquals(seen.length, 0);
+  assertEquals(calls.saves.length, 0);
+});
+
+Deno.test('retries and a second answer on one day do not make another day', async () => {
+  const { store } = fakeStore({ answers: [mon, answer('2026-10-05T18:00:00Z'), answer('2026-10-06T15:00:00Z', { retry: true })] });
+  const { model, seen } = fakeModel('unused');
+  const reply = await getWeeklyNote({ store, model, modelName: 'm', now });
+  assertEquals(reply.practiceDays, 2);
+  assertEquals(seen.length, 0);
+});
+
+Deno.test('last week\'s answers do not count', async () => {
+  const { store } = fakeStore({ answers: [lastSunday, mon, tue] });
+  const { model, seen } = fakeModel('unused');
+  assertEquals((await getWeeklyNote({ store, model, modelName: 'm', now })).practiceDays, 2);
+  assertEquals(seen.length, 0);
+});
+
+Deno.test('the third day writes the note once and saves it with the days it covers', async () => {
+  const { store, calls } = fakeStore({ answers: [mon, tue, wed] });
+  const { model, seen } = fakeModel('Your filler words held at 8 a minute. Say your point first.');
+  const reply = await getWeeklyNote({ store, model, modelName: 'sonnet', now });
+  assertEquals(reply, { practiceDays: 3, daysNeeded: 3, note: 'Your filler words held at 8 a minute. Say your point first.' });
+  assertEquals(seen.length, 1);
+  assertEquals(calls.saves, [{ daysCovered: 3, text: 'Your filler words held at 8 a minute. Say your point first.', weekStart: '2026-10-05' }]);
+});
+
+Deno.test('opening it again the same day makes no model call and returns the same note', async () => {
+  const { store, calls } = fakeStore({ answers: [mon, tue, wed], saved: { text: 'Saved note.', days_covered: 3 } });
+  const { model, seen } = fakeModel('unused');
+  const reply = await getWeeklyNote({ store, model, modelName: 'm', now });
+  assertEquals(reply.note, 'Saved note.');
+  assertEquals(seen.length, 0);
+  assertEquals(calls.saves.length, 0);
+});
+
+Deno.test('a new practice day rewrites the note', async () => {
+  const { store, calls } = fakeStore({ answers: [mon, tue, wed, thu], saved: { text: 'Old note.', days_covered: 3 } });
+  const { model, seen } = fakeModel('New note.');
+  const reply = await getWeeklyNote({ store, model, modelName: 'm', now });
+  assertEquals(reply, { practiceDays: 4, daysNeeded: 3, note: 'New note.' });
+  assertEquals(seen.length, 1);
+  assertEquals(calls.saves[0]?.daysCovered, 4);
+});
+
+Deno.test('the starting point goes to the model when it has been scored', async () => {
+  const baseline = answer('2026-09-01T15:00:00Z');
+  const { store } = fakeStore({ answers: [mon, tue, wed], baseline });
+  const { model, seen } = fakeModel('Note.');
+  await getWeeklyNote({ store, model, modelName: 'm', now });
+  const week = (seen[0]?.input as { week: { start: unknown } }).week;
+  assertEquals(week.start, { fillersPerMinute: 8, wordsPerMinute: 140, clearPoint: 3 });
+});
+
+Deno.test('if the model fails twice the error is thrown and the saved note is left alone', async () => {
+  const { store, calls } = fakeStore({ answers: [mon, tue, wed, thu], saved: { text: 'Old note.', days_covered: 3 } });
+  const { model, seen } = fakeModel(new Error('overloaded'));
+  await assertRejects(() => getWeeklyNote({ store, model, modelName: 'm', now }), Error, 'overloaded');
+  assertEquals(seen.length, 2);
+  assertEquals(calls.saves.length, 0);
+});
+
+Deno.test('if another call saved a note covering more days meanwhile, that note is returned', async () => {
+  const { store } = fakeStore({ answers: [mon, tue, wed], raceTo: { text: 'Newer note.', days_covered: 4 } });
+  const { model } = fakeModel('Mine.');
+  assertEquals((await getWeeklyNote({ store, model, modelName: 'm', now })).note, 'Newer note.');
+});
+
+Deno.test('seven practice days is the most a note can cover', async () => {
+  const days = Array.from({ length: 7 }, (_, i) => answer(`2026-10-${String(5 + i).padStart(2, '0')}T15:00:00Z`));
+  const { store, calls } = fakeStore({ answers: days });
+  const { model } = fakeModel('Full week.');
+  await getWeeklyNote({ store, model, modelName: 'm', now: new Date('2026-10-11T19:00:00Z') });
+  assertEquals(calls.saves[0]?.daysCovered, 7);
+});
+
+const unscored = (iso: string): AnswerRow => ({ ...answer(iso), metrics: null, judgement: null });
+
+Deno.test('a third day that is still being scored makes no note yet, and costs nothing', async () => {
+  const { store, calls } = fakeStore({ answers: [mon, tue, unscored('2026-10-07T15:00:00Z')] });
+  const { model, seen } = fakeModel('unused');
+  const reply = await getWeeklyNote({ store, model, modelName: 'm', now });
+  assertEquals(reply, { practiceDays: 3, daysNeeded: 3, note: null });
+  assertEquals(seen.length, 0);
+  assertEquals(calls.saves.length, 0);
+});
+
+Deno.test('the note is written once the third day has scores, and covers the scored days', async () => {
+  const { store, calls } = fakeStore({ answers: [mon, tue, wed] });
+  const { model } = fakeModel('Note.');
+  await getWeeklyNote({ store, model, modelName: 'm', now });
+  assertEquals(calls.saves[0]?.daysCovered, 3);
+});
+
+Deno.test('a fourth day still being scored keeps the saved note, and is picked up when it scores', async () => {
+  const pending = unscored('2026-10-08T15:00:00Z');
+  const first = fakeStore({ answers: [mon, tue, wed, pending], saved: { text: 'Three days.', days_covered: 3 } });
+  const m1 = fakeModel('unused');
+  const waiting = await getWeeklyNote({ store: first.store, model: m1.model, modelName: 'm', now });
+  assertEquals(waiting, { practiceDays: 4, daysNeeded: 3, note: 'Three days.' });
+  assertEquals(m1.seen.length, 0);
+
+  const second = fakeStore({ answers: [mon, tue, wed, thu], saved: { text: 'Three days.', days_covered: 3 } });
+  const m2 = fakeModel('Four days.');
+  const done = await getWeeklyNote({ store: second.store, model: m2.model, modelName: 'm', now });
+  assertEquals(done.note, 'Four days.');
+  assertEquals(m2.seen.length, 1);
+  assertEquals(second.calls.saves[0]?.daysCovered, 4);
+});
+
+Deno.test('a third day that is measured but not judged makes no note, and is picked up once judged', async () => {
+  const measuredOnly: AnswerRow = { ...answer('2026-10-07T15:00:00Z'), judgement: null };
+  const early = fakeStore({ answers: [mon, tue, measuredOnly] });
+  const m1 = fakeModel('unused');
+  assertEquals((await getWeeklyNote({ store: early.store, model: m1.model, modelName: 'm', now })).note, null);
+  assertEquals(m1.seen.length, 0);
+
+  const later = fakeStore({ answers: [mon, tue, wed] });
+  const m2 = fakeModel('With clear point.');
+  assertEquals((await getWeeklyNote({ store: later.store, model: m2.model, modelName: 'm', now })).note, 'With clear point.');
+});

@@ -49,3 +49,47 @@ Deno.test('Auckland (UTC+13 in summer), Los Angeles late evening', () => {
   assertEquals(start('Pacific/Auckland', '2026-12-31T12:00:00Z'), '2026-12-31T11:00:00.000Z');
   assertEquals(start('America/Los_Angeles', '2026-10-11T06:59:00Z'), '2026-10-10T07:00:00.000Z');
 });
+
+import { dayKeyIn, weekStartIn } from './dayStart.ts';
+
+const week = (tz: string | null, iso: string) => weekStartIn(tz, at(iso)).toISOString();
+
+Deno.test('dayKeyIn is the person\'s calendar day, not the UTC day', () => {
+  assertEquals(dayKeyIn('America/New_York', at('2026-10-11T03:30:00Z')), '2026-10-10');
+  assertEquals(dayKeyIn('Asia/Tokyo', at('2026-10-10T20:00:00Z')), '2026-10-11');
+  assertEquals(dayKeyIn(null, at('2026-10-10T23:59:00Z')), '2026-10-10');
+  assertEquals(dayKeyIn('Not/AZone', at('2026-10-10T23:59:00Z')), '2026-10-10');
+});
+
+Deno.test('the week starts on Monday at midnight in New York', () => {
+  // Saturday Oct 10 2026 -> Monday Oct 5, midnight UTC-4.
+  assertEquals(week('America/New_York', '2026-10-10T15:00:00Z'), '2026-10-05T04:00:00.000Z');
+  // Monday itself, just after midnight local.
+  assertEquals(week('America/New_York', '2026-10-05T04:00:00Z'), '2026-10-05T04:00:00.000Z');
+  // The last minute of Sunday local (03:59Z Monday) is still that week.
+  assertEquals(week('America/New_York', '2026-10-12T03:59:00Z'), '2026-10-05T04:00:00.000Z');
+  // The first minute of the next Monday starts a new week.
+  assertEquals(week('America/New_York', '2026-10-12T04:00:00Z'), '2026-10-12T04:00:00.000Z');
+});
+
+Deno.test('the week holds when clocks go back on Sunday 2026-11-01', () => {
+  // Monday Oct 26 began at UTC-4 midnight. Sunday Nov 1 evening (after the change, UTC-5) is still that week.
+  assertEquals(week('America/New_York', '2026-11-02T04:30:00Z'), '2026-10-26T04:00:00.000Z');
+  // Monday Nov 2 begins at UTC-5 midnight.
+  assertEquals(week('America/New_York', '2026-11-02T05:00:00Z'), '2026-11-02T05:00:00.000Z');
+});
+
+Deno.test('the week holds when clocks go forward on Sunday 2026-03-08', () => {
+  assertEquals(week('America/New_York', '2026-03-09T03:30:00Z'), '2026-03-02T05:00:00.000Z');
+  assertEquals(week('America/New_York', '2026-03-09T04:00:00Z'), '2026-03-09T04:00:00.000Z');
+});
+
+Deno.test('Tokyo is ahead of UTC: Sunday night UTC is already Monday there', () => {
+  // 16:00Z Sunday Oct 11 is 01:00 Monday Oct 12 in Tokyo.
+  assertEquals(week('Asia/Tokyo', '2026-10-11T16:00:00Z'), '2026-10-11T15:00:00.000Z');
+});
+
+Deno.test('no timezone means the UTC week', () => {
+  assertEquals(week(null, '2026-10-10T15:00:00Z'), '2026-10-05T00:00:00.000Z');
+  assertEquals(week('Not/AZone', '2026-10-11T23:59:00Z'), '2026-10-05T00:00:00.000Z');
+});

@@ -1,0 +1,338 @@
+[
+ {
+  "name": "Fillers and clear point improving",
+  "improves": true,
+  "notebook": "Says um before the main point. Main point comes late.",
+  "facts": {
+   "weekStart": "2026-10-05",
+   "practiceDays": 3,
+   "scoredDays": 3,
+   "days": [
+    {
+     "day": "2026-10-05",
+     "fillersPerMinute": 12,
+     "wordsPerMinute": 150,
+     "clearPoint": 3
+    },
+    {
+     "day": "2026-10-07",
+     "fillersPerMinute": 9,
+     "wordsPerMinute": 148,
+     "clearPoint": 4
+    },
+    {
+     "day": "2026-10-09",
+     "fillersPerMinute": 5,
+     "wordsPerMinute": 145,
+     "clearPoint": 5
+    }
+   ],
+   "average": {
+    "fillersPerMinute": 9,
+    "wordsPerMinute": 148,
+    "clearPoint": 4.0
+   },
+   "start": {
+    "fillersPerMinute": 14,
+    "wordsPerMinute": 150,
+    "clearPoint": 2
+   }
+  }
+ },
+ {
+  "name": "Nothing changed",
+  "improves": false,
+  "notebook": "Steady. Fillers are the main habit.",
+  "facts": {
+   "weekStart": "2026-10-05",
+   "practiceDays": 3,
+   "scoredDays": 3,
+   "days": [
+    {
+     "day": "2026-10-05",
+     "fillersPerMinute": 6,
+     "wordsPerMinute": 140,
+     "clearPoint": 3
+    },
+    {
+     "day": "2026-10-06",
+     "fillersPerMinute": 6,
+     "wordsPerMinute": 140,
+     "clearPoint": 3
+    },
+    {
+     "day": "2026-10-08",
+     "fillersPerMinute": 6,
+     "wordsPerMinute": 140,
+     "clearPoint": 3
+    }
+   ],
+   "average": {
+    "fillersPerMinute": 6,
+    "wordsPerMinute": 140,
+    "clearPoint": 3.0
+   },
+   "start": {
+    "fillersPerMinute": 6,
+    "wordsPerMinute": 140,
+    "clearPoint": 3
+   }
+  }
+ },
+ {
+  "name": "Fillers got worse",
+  "improves": false,
+  "notebook": "Few fillers at first.",
+  "facts": {
+   "weekStart": "2026-10-05",
+   "practiceDays": 3,
+   "scoredDays": 3,
+   "days": [
+    {
+     "day": "2026-10-05",
+     "fillersPerMinute": 4,
+     "wordsPerMinute": 140,
+     "clearPoint": 4
+    },
+    {
+     "day": "2026-10-07",
+     "fillersPerMinute": 8,
+     "wordsPerMinute": 142,
+     "clearPoint": 4
+    },
+    {
+     "day": "2026-10-09",
+     "fillersPerMinute": 12,
+     "wordsPerMinute": 138,
+     "clearPoint": 3.5
+    }
+   ],
+   "average": {
+    "fillersPerMinute": 8,
+    "wordsPerMinute": 140,
+    "clearPoint": 4.0
+   },
+   "start": {
+    "fillersPerMinute": 5,
+    "wordsPerMinute": 140,
+    "clearPoint": 4
+   }
+  }
+ },
+ {
+  "name": "Speed came into the good range",
+  "improves": true,
+  "notebook": "Speaks too fast.",
+  "facts": {
+   "weekStart": "2026-10-05",
+   "practiceDays": 3,
+   "scoredDays": 3,
+   "days": [
+    {
+     "day": "2026-10-05",
+     "fillersPerMinute": 5,
+     "wordsPerMinute": 195,
+     "clearPoint": 4
+    },
+    {
+     "day": "2026-10-07",
+     "fillersPerMinute": 5,
+     "wordsPerMinute": 180,
+     "clearPoint": 4
+    },
+    {
+     "day": "2026-10-09",
+     "fillersPerMinute": 5,
+     "wordsPerMinute": 160,
+     "clearPoint": 4.5
+    }
+   ],
+   "average": {
+    "fillersPerMinute": 5,
+    "wordsPerMinute": 178,
+    "clearPoint": 4.0
+   },
+   "start": {
+    "fillersPerMinute": 5,
+    "wordsPerMinute": 200,
+    "clearPoint": 4
+   }
+  }
+ },
+ {
+  "name": "Exactly three days, no starting point",
+  "improves": null,
+  "notebook": "",
+  "facts": {
+   "weekStart": "2026-10-05",
+   "practiceDays": 3,
+   "scoredDays": 3,
+   "days": [
+    {
+     "day": "2026-10-06",
+     "fillersPerMinute": 8,
+     "wordsPerMinute": 130,
+     "clearPoint": 3
+    },
+    {
+     "day": "2026-10-07",
+     "fillersPerMinute": 7,
+     "wordsPerMinute": 132,
+     "clearPoint": 3
+    },
+    {
+     "day": "2026-10-08",
+     "fillersPerMinute": 7,
+     "wordsPerMinute": 128,
+     "clearPoint": 3.5
+    }
+   ],
+   "average": {
+    "fillersPerMinute": 7,
+    "wordsPerMinute": 130,
+    "clearPoint": 3.0
+   },
+   "start": null
+  }
+ },
+ {
+  "name": "Seven days, mixed",
+  "improves": true,
+  "notebook": "Fillers falling, clear point rising.",
+  "facts": {
+   "weekStart": "2026-10-05",
+   "practiceDays": 7,
+   "scoredDays": 7,
+   "days": [
+    {
+     "day": "2026-10-05",
+     "fillersPerMinute": 10,
+     "wordsPerMinute": 150,
+     "clearPoint": 2
+    },
+    {
+     "day": "2026-10-06",
+     "fillersPerMinute": 8,
+     "wordsPerMinute": 155,
+     "clearPoint": 3
+    },
+    {
+     "day": "2026-10-07",
+     "fillersPerMinute": 9,
+     "wordsPerMinute": 160,
+     "clearPoint": 3
+    },
+    {
+     "day": "2026-10-08",
+     "fillersPerMinute": 6,
+     "wordsPerMinute": 150,
+     "clearPoint": 4
+    },
+    {
+     "day": "2026-10-09",
+     "fillersPerMinute": 7,
+     "wordsPerMinute": 165,
+     "clearPoint": 3.5
+    },
+    {
+     "day": "2026-10-10",
+     "fillersPerMinute": 5,
+     "wordsPerMinute": 150,
+     "clearPoint": 4
+    },
+    {
+     "day": "2026-10-11",
+     "fillersPerMinute": 6,
+     "wordsPerMinute": 152,
+     "clearPoint": 4
+    }
+   ],
+   "average": {
+    "fillersPerMinute": 7,
+    "wordsPerMinute": 155,
+    "clearPoint": 3.5
+   },
+   "start": {
+    "fillersPerMinute": 11,
+    "wordsPerMinute": 150,
+    "clearPoint": 2
+   }
+  }
+ },
+ {
+  "name": "Starting point missing",
+  "improves": true,
+  "notebook": "",
+  "facts": {
+   "weekStart": "2026-10-05",
+   "practiceDays": 3,
+   "scoredDays": 3,
+   "days": [
+    {
+     "day": "2026-10-05",
+     "fillersPerMinute": 12,
+     "wordsPerMinute": 150,
+     "clearPoint": 2
+    },
+    {
+     "day": "2026-10-07",
+     "fillersPerMinute": 8,
+     "wordsPerMinute": 150,
+     "clearPoint": 3
+    },
+    {
+     "day": "2026-10-09",
+     "fillersPerMinute": 4,
+     "wordsPerMinute": 150,
+     "clearPoint": 4
+    }
+   ],
+   "average": {
+    "fillersPerMinute": 8,
+    "wordsPerMinute": 150,
+    "clearPoint": 3.0
+   },
+   "start": null
+  }
+ },
+ {
+  "name": "Speed could not be measured",
+  "improves": true,
+  "notebook": "",
+  "facts": {
+   "weekStart": "2026-10-05",
+   "practiceDays": 3,
+   "scoredDays": 3,
+   "days": [
+    {
+     "day": "2026-10-05",
+     "fillersPerMinute": 7,
+     "wordsPerMinute": null,
+     "clearPoint": 3
+    },
+    {
+     "day": "2026-10-07",
+     "fillersPerMinute": 6,
+     "wordsPerMinute": null,
+     "clearPoint": 3.5
+    },
+    {
+     "day": "2026-10-09",
+     "fillersPerMinute": 5,
+     "wordsPerMinute": null,
+     "clearPoint": 4
+    }
+   ],
+   "average": {
+    "fillersPerMinute": 6,
+    "wordsPerMinute": null,
+    "clearPoint": 3.5
+   },
+   "start": {
+    "fillersPerMinute": 9,
+    "wordsPerMinute": null,
+    "clearPoint": 3
+   }
+  }
+ }
+]

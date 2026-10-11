@@ -35,3 +35,33 @@ export function dayStartIn(timeZone: string | null, instant: Date): Date {
   utc.setUTCHours(0, 0, 0, 0);
   return utc;
 }
+
+// A zone name we can use, or UTC. Same fallback as dayStartIn, so a day and a week never disagree about which zone they are in.
+function usableZone(timeZone: string | null): string {
+  if (timeZone) {
+    try {
+      new Intl.DateTimeFormat('en-US', { timeZone });
+      return timeZone;
+    } catch {
+      // fall through to UTC
+    }
+  }
+  return 'UTC';
+}
+
+// The calendar day an instant falls on in the person's zone, as "2026-10-10".
+export function dayKeyIn(timeZone: string | null, instant: Date): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: usableZone(timeZone), year: 'numeric', month: '2-digit', day: '2-digit' }).format(instant);
+}
+
+// The moment the person's week began (Monday at midnight where they are) for the week that contains `instant`.
+// Same week as the phone's Progress chart: Monday to Sunday.
+export function weekStartIn(timeZone: string | null, instant: Date): Date {
+  const dayStart = dayStartIn(timeZone, instant);
+  // Noon is far from any midnight, so a clock change can't move it onto another day.
+  const noon = new Date(dayStart.getTime() + 12 * 60 * 60_000);
+  const weekday = new Intl.DateTimeFormat('en-US', { timeZone: usableZone(timeZone), weekday: 'short' }).format(noon);
+  const sinceMonday = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(weekday);
+  const mondayNoon = new Date(noon.getTime() - sinceMonday * 24 * 60 * 60_000);
+  return dayStartIn(timeZone, mondayNoon);
+}

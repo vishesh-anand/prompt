@@ -5,7 +5,7 @@ import { z } from 'npm:zod@4';
 import { makeModel, modelName, transcriber, transcriberVersion } from '../_shared/providers/index.ts';
 import { metricsSchema } from '../_shared/schemas/metrics.ts';
 import { overDailyLimit } from './dailyLimit.ts';
-import { dayStartIn } from './dayStart.ts';
+import { dayStartIn } from '../_shared/dayStart.ts';
 import { runPipeline } from './runPipeline.ts';
 
 const bodySchema = z.object({ answerId: z.uuid() });
