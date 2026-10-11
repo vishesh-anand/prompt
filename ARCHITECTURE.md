@@ -123,7 +123,9 @@ All tables use Row Level Security: a person can only ever read or change their o
 - `user_id`, `notes` (short text), `updated_at`
 
 **weekly_notes**
-- `user_id`, `week_start`, `text`
+- `user_id`, `week_start` (the Monday, in the person's timezone), `text`
+- `days_covered` (3 to 7: how many scored practice days the saved text was written from), `prompt_version`, `model`, `updated_at`
+- Only the `weekly-note` function writes it (through `save_weekly_note`, which refuses a note covering no more days than the saved one). The phone can only read its own.
 
 Streaks, charts, and "which questions have I seen" are all calculated from `answers`. No separate tables for them. Answers under 10 seconds are never uploaded (see the pipeline rules), so they have no row and do not count toward the streak.
 
@@ -179,7 +181,16 @@ A daily database job deletes audio older than 30 days, except each user's baseli
 
 ## Weekly coach note
 
-Created when the Progress screen is opened, only if the user practiced on at least 3 days that week. Saved in `weekly_notes` so it's only generated once per week.
+Covers this week (Monday to Sunday, in the person's timezone). The Progress screen asks the `weekly-note` function every time it is shown, and the function decides:
+- Fewer than 3 practice days this week: no note.
+- Fewer than 3 days with scored answers: no new note (answers still being processed don't count yet; the saved note, if any, is returned).
+- Otherwise a note is written when more days have scores than the saved note covers (`days_covered`), so the first note comes on the third scored day and is rewritten on each new day after that. Opening Progress again with nothing new costs no AI call. At most 5 notes a week.
+
+The note is written from counted numbers only (per-day filler words a minute, words a minute, clear point out of 6, the starting point, and the coach's notebook), never a transcript. `_shared/weeklyFacts.ts` computes them with the same rules as the phone's chart.
+
+## Progress chart
+
+Calendar week, Monday to Sunday on the phone. Three small rows (filler words a minute, words a minute, clear point out of 6), each on its own scale. One point per practice day; a faint dotted line marks the starting point. Only first attempts shape the lines (a retry follows the better version, so it would flatter the week). Several first attempts on a day are averaged. An answer with no scores yet is left out of the lines but still counts as a practice day, like the streak. When the 60 seconds ran out, the ending is left out and the other two marks are scaled to 6.
 
 ## Security
 

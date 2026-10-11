@@ -1,0 +1,32 @@
+# Free: no answer is recorded. Opens the Progress tab and checks each part has something plain to say (a chart or its
+# empty sentence, a note or how many days to go, the starting-point block), then goes back to Home.
+appId: com.visheshanand.prompt
+---
+- launchApp
+- runFlow: onboard.yaml
+- extendedWaitUntil:
+    visible: "Answer today's question"
+    timeout: 30000
+
+- tapOn: "Progress"
+- extendedWaitUntil:
+    visible: "This week"
+    timeout: 20000
+    label: "The Progress tab opens (if this fails the tab bar or the screen did not load)"
+- assertVisible: "(Your streak starts with today's answer\\.|.*in a row)"
+- assertVisible: "(Your chart for this week starts with today's answer\\.|.*Filler words.*)"
+- assertVisible: "Weekly note"
+- assertVisible: "Since your first answer"
+- assertNotVisible:
+    text: "Your progress didn't load.*"
+    label: "Nothing failed to load"
+
+# The bottom of the page must be reachable above the floating tab bar (look at progress-bottom.png after a run).
+- scroll
+- scroll
+- takeScreenshot: progress-bottom
+
+# Back to Home: the question is still there, and the tab bar did not lose it.
+- tapOn: "Home"
+- assertVisible:
+    id: "home-question"
