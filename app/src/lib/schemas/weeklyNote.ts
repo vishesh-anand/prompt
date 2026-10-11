@@ -8,6 +8,8 @@ export const weeklyNoteReplySchema = z.object({
   note: z.string().nullable(),
   // A note is due but another request is writing it (or the week's attempts are used). Absent from older replies.
   writing: z.boolean().default(false),
+  // The week's attempts are used up and nothing more will be tried this week.
+  gaveUp: z.boolean().default(false),
 });
 
 export type WeeklyNoteReply = z.infer<typeof weeklyNoteReplySchema>;

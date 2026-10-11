@@ -1,5 +1,5 @@
 import { assertEquals, assertRejects } from 'jsr:@std/assert@1';
-import { zodOutputFormat } from 'npm:@anthropic-ai/sdk/helpers/zod';
+import { zodOutputFormat } from 'npm:@anthropic-ai/sdk@0.131.0/helpers/zod';
 
 import type { Model, PromptFile } from '../providers/model.ts';
 import { type Coaching, coachingOutputSchema, coachingSchema, maxTipWords } from '../schemas/coaching.ts';

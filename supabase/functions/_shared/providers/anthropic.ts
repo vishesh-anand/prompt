@@ -1,5 +1,5 @@
-import Anthropic from 'npm:@anthropic-ai/sdk';
-import { zodOutputFormat } from 'npm:@anthropic-ai/sdk/helpers/zod';
+import Anthropic from 'npm:@anthropic-ai/sdk@0.131.0';
+import { zodOutputFormat } from 'npm:@anthropic-ai/sdk@0.131.0/helpers/zod';
 
 import type { Model } from './model.ts';
 

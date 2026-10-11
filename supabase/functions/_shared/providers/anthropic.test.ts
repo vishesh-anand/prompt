@@ -1,5 +1,5 @@
 import { assertEquals, assertRejects } from 'jsr:@std/assert@1';
-import type Anthropic from 'npm:@anthropic-ai/sdk';
+import type Anthropic from 'npm:@anthropic-ai/sdk@0.131.0';
 import { z } from 'npm:zod@4';
 
 import { anthropicModel, type Usage } from './anthropic.ts';

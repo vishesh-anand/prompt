@@ -10,11 +10,12 @@ export const daysNeeded = 3;
 // a row in a week (a saved note starts the count again, so a short outage can't use the week up).
 export const claimSeconds = 180;
 export const maxAttemptsPerWeek = 20;
-// One model request may take this long, with one automatic retry (the SDK backs off between them). The stage tries
-// twice, so the worst case is 2 tries x 2 requests x 20 s = 80 s, and the claim leaves another minute for the database
-// reads and writes. This keeps a second request from paying while the first is still running; a test checks the sums.
+// One model request may take this long, and the SDK does not retry on its own: it would sleep for as long as a busy
+// server's retry-after asks, with no ceiling, and the stage already tries twice. The worst case is 2 tries x 20 s = 40 s,
+// and the claim leaves minutes for the database reads and writes. This keeps a second request from paying while the
+// first is still running; a test checks the sums.
 export const modelTimeoutMs = 20_000;
-export const modelRetries = 1;
+export const modelRetries = 0;
 export const worstCaseModelMs = 2 * (modelRetries + 1) * modelTimeoutMs;
 
 export type SavedNote = { text: string; days_covered: number };
@@ -27,16 +28,18 @@ export interface Store {
   answer(id: string): Promise<AnswerRow | null>;
   notebook(): Promise<string>;
   savedNote(weekStart: string): Promise<SavedNote | null>;
-  // Atomic: true for the one caller that may ask the model now. Anyone else, anyone within `minSeconds`, and anyone past
-  // `maxAttempts` for the week, gets false.
-  claim(weekStart: string, limits: { minSeconds: number; maxAttempts: number }): Promise<boolean>;
+  // Atomic: true for the one caller that may ask the model now. Anyone else, anyone within `minSeconds`, anyone past
+  // `maxAttempts` for the week, and anyone when the saved note already covers `daysCovered`, gets false.
+  claim(weekStart: string, limits: { minSeconds: number; maxAttempts: number; daysCovered: number }): Promise<boolean>;
+  // How many attempts this week has used (read only after a claim is refused, to tell "someone is writing" from "gave up").
+  attemptsUsed(weekStart: string): Promise<number>;
   // Saves only if it covers more days than what is saved, and returns what is saved afterwards.
   saveNote(note: { weekStart: string; text: string; daysCovered: number; promptVersion: number; model: string }): Promise<SavedNote>;
 }
 
-// `writing` is true when a note is due but another request holds the claim (or the week's attempts are used up), so the
-// phone can say "not ready yet" and not "answers still being scored".
-export type WeeklyNoteReply = { practiceDays: number; daysNeeded: number; note: string | null; writing: boolean };
+// `writing` is true when a note is due and another request holds the claim, so the phone can say "not ready yet" and not
+// "answers still being scored". `gaveUp` is true when the week's attempts are used up and nothing more will be tried.
+export type WeeklyNoteReply = { practiceDays: number; daysNeeded: number; note: string | null; writing: boolean; gaveUp: boolean };
 
 // The Progress screen calls this every time it is shown. The model is only asked when the week has at least three
 // practice days AND more of them than the saved note was written from, so a call with nothing new costs nothing.
@@ -47,7 +50,13 @@ export async function getWeeklyNote({ store, model, modelName, now }: { store: S
 
   // First pass, with no starting point: it is enough to count the days, and often it is all we need.
   const counted = weeklyFacts({ timeZone: timezone, now, answers, start: null });
-  const reply = (note: string | null, writing = false): WeeklyNoteReply => ({ practiceDays: counted.practiceDays, daysNeeded, note, writing });
+  const reply = (note: string | null, state: { writing?: boolean; gaveUp?: boolean } = {}): WeeklyNoteReply => ({
+    practiceDays: counted.practiceDays,
+    daysNeeded,
+    note,
+    writing: state.writing ?? false,
+    gaveUp: state.gaveUp ?? false,
+  });
 
   if (counted.practiceDays < daysNeeded) return reply(null);
   const saved = await store.savedNote(counted.weekStart);
@@ -56,14 +65,17 @@ export async function getWeeklyNote({ store, model, modelName, now }: { store: S
   if (saved && saved.days_covered >= counted.scoredDays) return reply(saved.text);
 
   // A note is due. Read what it is written from first: a database error here costs nothing, so it must not use up an attempt.
-  const start = baselineAnswerId ? await store.answer(baselineAnswerId) : null;
-  const notebook = await store.notebook();
+  const [start, notebook] = await Promise.all([baselineAnswerId ? store.answer(baselineAnswerId) : Promise.resolve(null), store.notebook()]);
 
   // Only one request may pay for the note: the others (a second device, a retry, a loop) get the saved note back.
-  if (!(await store.claim(counted.weekStart, { minSeconds: claimSeconds, maxAttempts: maxAttemptsPerWeek }))) {
-    // The winner may have finished a moment ago, so look again: report "writing" only when there really is no note.
+  const limits = { minSeconds: claimSeconds, maxAttempts: maxAttemptsPerWeek, daysCovered: counted.scoredDays };
+  if (!(await store.claim(counted.weekStart, limits))) {
+    // The winner may have finished a moment ago, so look again. With still no note, either another request is writing
+    // it, or the week's attempts are used up and nothing more will be tried.
     const current = await store.savedNote(counted.weekStart);
-    return reply(current?.text ?? null, current === null);
+    if (current) return reply(current.text);
+    const gaveUp = (await store.attemptsUsed(counted.weekStart)) >= maxAttemptsPerWeek;
+    return reply(null, { writing: !gaveUp, gaveUp });
   }
 
   // The note may have been written between the check above and winning the claim (a slow request that lost the race a

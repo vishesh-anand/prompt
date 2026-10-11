@@ -56,7 +56,7 @@ export function useProgress() {
       void profile.refetch();
       void history.refetch();
       void week.refetch();
-      void note.refetch();
+      void note.refetch({ cancelRefetch: false });
     },
   };
 }

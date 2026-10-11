@@ -2,7 +2,7 @@ import { assertEquals, assertRejects } from 'jsr:@std/assert@1';
 
 import type { Model, PromptFile } from '../_shared/providers/model.ts';
 import type { AnswerRow } from '../_shared/weeklyFacts.ts';
-import { claimSeconds, daysNeeded, getWeeklyNote, maxAttemptsPerWeek, type SavedNote, type Store, worstCaseModelMs } from './getWeeklyNote.ts';
+import { claimSeconds, daysNeeded, getWeeklyNote, maxAttemptsPerWeek, modelRetries, type SavedNote, type Store, worstCaseModelMs } from './getWeeklyNote.ts';
 
 const mark = { score: 1, quotes: ['x'], why: 'x' };
 const answer = (iso: string, o: { retry?: boolean } = {}): AnswerRow => ({
@@ -26,7 +26,7 @@ const wed = answer('2026-10-07T15:00:00Z');
 const thu = answer('2026-10-08T15:00:00Z');
 const lastSunday = answer('2026-10-04T15:00:00Z');
 
-function fakeStore(o: { answers: AnswerRow[]; saved?: SavedNote | null; raceTo?: SavedNote; baseline?: AnswerRow | null; alreadyClaimed?: boolean; savedAfterClaim?: SavedNote }) {
+function fakeStore(o: { answers: AnswerRow[]; saved?: SavedNote | null; raceTo?: SavedNote; baseline?: AnswerRow | null; alreadyClaimed?: boolean; savedAfterClaim?: SavedNote; attempts?: number }) {
   const calls = { saves: [] as { daysCovered: number; text: string; weekStart: string }[], savedNoteReads: 0, claims: 0 };
   let saved = o.saved ?? null;
   let claimed = o.alreadyClaimed ?? false;
@@ -45,7 +45,8 @@ function fakeStore(o: { answers: AnswerRow[]; saved?: SavedNote | null; raceTo?:
       if (calls.savedNoteReads >= 2 && o.savedAfterClaim) return Promise.resolve(o.savedAfterClaim);
       return Promise.resolve(saved);
     },
-    claim: (_week: string, _limits: { minSeconds: number; maxAttempts: number }) => {
+    attemptsUsed: () => Promise.resolve(o.attempts ?? 1),
+    claim: (_week: string, _limits: { minSeconds: number; maxAttempts: number; daysCovered: number }) => {
       calls.claims += 1;
       // Like the database: the first caller wins and every later one is refused (within the minute).
       if (claimed) return Promise.resolve(false);
@@ -79,7 +80,7 @@ Deno.test('two practice days: no note and no model call, and it says how many da
   const { store, calls } = fakeStore({ answers: [mon, tue] });
   const { model, seen } = fakeModel('unused');
   const reply = await getWeeklyNote({ store, model, modelName: 'm', now });
-  assertEquals(reply, { practiceDays: 2, daysNeeded: 3, note: null, writing: false });
+  assertEquals(reply, { practiceDays: 2, daysNeeded: 3, note: null, writing: false, gaveUp: false });
   assertEquals(seen.length, 0);
   assertEquals(calls.saves.length, 0);
 });
@@ -103,7 +104,7 @@ Deno.test('the third day writes the note once and saves it with the days it cove
   const { store, calls } = fakeStore({ answers: [mon, tue, wed] });
   const { model, seen } = fakeModel('Your filler words held at 8 a minute. Say your point first.');
   const reply = await getWeeklyNote({ store, model, modelName: 'sonnet', now });
-  assertEquals(reply, { practiceDays: 3, daysNeeded: 3, note: 'Your filler words held at 8 a minute. Say your point first.', writing: false });
+  assertEquals(reply, { practiceDays: 3, daysNeeded: 3, note: 'Your filler words held at 8 a minute. Say your point first.', writing: false, gaveUp: false });
   assertEquals(seen.length, 1);
   assertEquals(calls.saves, [{ daysCovered: 3, text: 'Your filler words held at 8 a minute. Say your point first.', weekStart: '2026-10-05' }]);
 });
@@ -121,7 +122,7 @@ Deno.test('a new practice day rewrites the note', async () => {
   const { store, calls } = fakeStore({ answers: [mon, tue, wed, thu], saved: { text: 'Old note.', days_covered: 3 } });
   const { model, seen } = fakeModel('New note.');
   const reply = await getWeeklyNote({ store, model, modelName: 'm', now });
-  assertEquals(reply, { practiceDays: 4, daysNeeded: 3, note: 'New note.', writing: false });
+  assertEquals(reply, { practiceDays: 4, daysNeeded: 3, note: 'New note.', writing: false, gaveUp: false });
   assertEquals(seen.length, 1);
   assertEquals(calls.saves[0]?.daysCovered, 4);
 });
@@ -163,7 +164,7 @@ Deno.test('a third day that is still being scored makes no note yet, and costs n
   const { store, calls } = fakeStore({ answers: [mon, tue, unscored('2026-10-07T15:00:00Z')] });
   const { model, seen } = fakeModel('unused');
   const reply = await getWeeklyNote({ store, model, modelName: 'm', now });
-  assertEquals(reply, { practiceDays: 3, daysNeeded: 3, note: null, writing: false });
+  assertEquals(reply, { practiceDays: 3, daysNeeded: 3, note: null, writing: false, gaveUp: false });
   assertEquals(seen.length, 0);
   assertEquals(calls.saves.length, 0);
 });
@@ -180,7 +181,7 @@ Deno.test('a fourth day still being scored keeps the saved note, and is picked u
   const first = fakeStore({ answers: [mon, tue, wed, pending], saved: { text: 'Three days.', days_covered: 3 } });
   const m1 = fakeModel('unused');
   const waiting = await getWeeklyNote({ store: first.store, model: m1.model, modelName: 'm', now });
-  assertEquals(waiting, { practiceDays: 4, daysNeeded: 3, note: 'Three days.', writing: false });
+  assertEquals(waiting, { practiceDays: 4, daysNeeded: 3, note: 'Three days.', writing: false, gaveUp: false });
   assertEquals(m1.seen.length, 0);
 
   const second = fakeStore({ answers: [mon, tue, wed, thu], saved: { text: 'Three days.', days_covered: 3 } });
@@ -227,7 +228,7 @@ Deno.test('a request that loses the claim and has no saved note gets null, not a
   const { store, calls } = fakeStore({ answers: [mon, tue, wed], alreadyClaimed: true });
   const { model, seen } = fakeModel('unused');
   // Due but not ready: the phone is told a note is on its way, not that answers are being scored.
-  assertEquals(await getWeeklyNote({ store, model, modelName: 'm', now }), { practiceDays: 3, daysNeeded: 3, note: null, writing: true });
+  assertEquals(await getWeeklyNote({ store, model, modelName: 'm', now }), { practiceDays: 3, daysNeeded: 3, note: null, writing: true, gaveUp: false });
   assertEquals(seen.length, 0);
   assertEquals(calls.saves.length, 0);
 });
@@ -266,14 +267,14 @@ Deno.test('a note saved by another request between the check and the claim is re
 Deno.test('the claim is asked for with the one-per-minute bound', async () => {
   const asked: number[] = [];
   const { store } = fakeStore({ answers: [mon, tue, wed] });
-  const withSpy: Store = { ...store, claim: (w, l) => { asked.push(l.minSeconds * 1000 + l.maxAttempts); return store.claim(w, l); } };
+  const withSpy: Store = { ...store, claim: (w, l) => { asked.push(l.minSeconds * 1000 + l.maxAttempts + l.daysCovered / 100); return store.claim(w, l); } };
   await getWeeklyNote({ store: withSpy, model: fakeModel('x').model, modelName: 'm', now });
-  assertEquals(asked, [claimSeconds * 1000 + maxAttemptsPerWeek]);
+  assertEquals(asked, [claimSeconds * 1000 + maxAttemptsPerWeek + 0.03]);
 });
 
 Deno.test('the worst case for the model finishes with a minute to spare inside the claim', () => {
-  // 2 tries x 2 requests x 20 s = 80 s. The rest of the claim is for the database reads and writes.
-  assertEquals(worstCaseModelMs, 80_000);
+  // 2 tries x 20 s, and the SDK does not retry on its own (it would sleep for as long as a server's retry-after, unbounded).
+  assertEquals(worstCaseModelMs, 40_000);
   assertEquals(worstCaseModelMs + 60_000 <= claimSeconds * 1000, true);
 });
 
@@ -304,11 +305,29 @@ Deno.test('a request that loses the claim to a winner that has just saved gets t
   });
   // The first read (the due check) finds nothing; the read after the lost claim finds the winner's note.
   const reply = await getWeeklyNote({ store, model: fakeModel('unused').model, modelName: 'm', now });
-  assertEquals(reply, { practiceDays: 3, daysNeeded: 3, note: 'Just written.', writing: false });
+  assertEquals(reply, { practiceDays: 3, daysNeeded: 3, note: 'Just written.', writing: false, gaveUp: false });
 });
 
 Deno.test('a week that is still being scored is not "writing": nothing is due yet', async () => {
   const { store } = fakeStore({ answers: [mon, tue, unscored('2026-10-07T15:00:00Z')] });
   const reply = await getWeeklyNote({ store, model: fakeModel('x').model, modelName: 'm', now });
   assertEquals(reply.writing, false);
+});
+
+Deno.test('the SDK does not retry by itself: a server retry-after has no ceiling', () => {
+  assertEquals(modelRetries, 0);
+});
+
+Deno.test('when the attempts are used up the reply says it gave up, not that a note is being written', async () => {
+  const { store } = fakeStore({ answers: [mon, tue, wed], alreadyClaimed: true, attempts: maxAttemptsPerWeek });
+  const reply = await getWeeklyNote({ store, model: fakeModel('unused').model, modelName: 'm', now });
+  assertEquals(reply, { practiceDays: 3, daysNeeded: 3, note: null, writing: false, gaveUp: true });
+});
+
+Deno.test('the claim is asked for with the days the note would cover', async () => {
+  const seen: number[] = [];
+  const { store } = fakeStore({ answers: [mon, tue, wed, thu], saved: { text: 'Old.', days_covered: 3 } });
+  const spy: Store = { ...store, claim: (w, l) => { seen.push(l.daysCovered); return store.claim(w, l); } };
+  await getWeeklyNote({ store: spy, model: fakeModel('x').model, modelName: 'm', now });
+  assertEquals(seen, [4]);
 });

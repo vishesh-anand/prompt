@@ -75,7 +75,11 @@ export default function Progress() {
                 </Text>
               ) : p.noteView.kind === 'writing' ? (
                 <Text variant="body" color="textSecondary">
-                  {"Your weekly note isn't ready yet. Look again in a minute."}
+                  {"Your weekly note isn't ready yet. It will appear here when it is."}
+                </Text>
+              ) : p.noteView.kind === 'gaveUp' ? (
+                <Text variant="body" color="textSecondary">
+                  {"This week's note couldn't be written. Your answers are saved, and a new note can start next week."}
                 </Text>
               ) : p.noteView.kind === 'failed' ? (
                 <Text variant="body" color="textSecondary">

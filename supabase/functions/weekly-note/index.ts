@@ -42,12 +42,18 @@ function storeFor(db: SupabaseClient, admin: SupabaseClient, userId: string): St
       if (error) fail('weekly-note could not load the saved note', error);
       return data;
     },
-    async claim(weekStart, { minSeconds, maxAttempts }) {
+    async attemptsUsed(weekStart) {
+      const { data, error } = await admin.from('weekly_note_claims').select('attempts').eq('user_id', userId).eq('week_start', weekStart).maybeSingle();
+      if (error) fail('weekly-note could not read the attempts', error);
+      return data?.attempts ?? 0;
+    },
+    async claim(weekStart, { minSeconds, maxAttempts, daysCovered }) {
       const { data, error } = await admin.rpc('claim_weekly_note', {
         p_user_id: userId,
         p_week_start: weekStart,
         p_min_seconds: minSeconds,
         p_max_attempts: maxAttempts,
+        p_days_covered: daysCovered,
       });
       if (error) fail('weekly-note could not claim the week', error);
       return data === true;

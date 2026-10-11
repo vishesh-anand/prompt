@@ -59,23 +59,27 @@ describe('noteView', () => {
   });
 
   it('shows the note when there is one', () => {
-    expect(noteView({ practiceDays: 4, daysNeeded: 3, note: 'Say it first.', writing: false }, false)).toEqual({ kind: 'note', text: 'Say it first.' });
+    expect(noteView({ practiceDays: 4, daysNeeded: 3, note: 'Say it first.', writing: false, gaveUp: false }, false)).toEqual({ kind: 'note', text: 'Say it first.' });
   });
 
   it('counts the days to go with the server\'s own count', () => {
-    expect(noteView({ practiceDays: 2, daysNeeded: 3, note: null, writing: false }, false)).toEqual({ kind: 'toGo', practiceDays: 2, daysNeeded: 3 });
+    expect(noteView({ practiceDays: 2, daysNeeded: 3, note: null, writing: false, gaveUp: false }, false)).toEqual({ kind: 'toGo', practiceDays: 2, daysNeeded: 3 });
   });
 
   it('says it is waiting for scores when the days are there but the note is not', () => {
-    expect(noteView({ practiceDays: 3, daysNeeded: 3, note: null, writing: false }, false)).toEqual({ kind: 'scoring' });
+    expect(noteView({ practiceDays: 3, daysNeeded: 3, note: null, writing: false, gaveUp: false }, false)).toEqual({ kind: 'scoring' });
   });
 
   it('says the note is being written when it is due but not ready, and not that answers are being scored', () => {
-    expect(noteView({ practiceDays: 3, daysNeeded: 3, note: null, writing: true }, false)).toEqual({ kind: 'writing' });
+    expect(noteView({ practiceDays: 3, daysNeeded: 3, note: null, writing: true, gaveUp: false }, false)).toEqual({ kind: 'writing' });
+  });
+
+  it('says plainly when the week\'s attempts are used up', () => {
+    expect(noteView({ practiceDays: 3, daysNeeded: 3, note: null, writing: false, gaveUp: true }, false)).toEqual({ kind: 'gaveUp' });
   });
 
   it('keeps showing a note it had if a later refresh failed', () => {
-    expect(noteView({ practiceDays: 4, daysNeeded: 3, note: 'Kept.', writing: false }, true)).toEqual({ kind: 'note', text: 'Kept.' });
+    expect(noteView({ practiceDays: 4, daysNeeded: 3, note: 'Kept.', writing: false, gaveUp: false }, true)).toEqual({ kind: 'note', text: 'Kept.' });
   });
 });
 
