@@ -16,6 +16,8 @@ import {
 } from '@/design';
 import { CompareView } from '@/features/compare/CompareView';
 import { compareSamples } from '@/features/compare/samples';
+import { ProgressChart } from '@/features/progress/ProgressChart';
+import { progressSamples } from '@/features/progress/samples';
 
 // Development only: shows every token and component. Testers never see it.
 // To check dark mode, flip Appearance in Control Center.
@@ -105,6 +107,15 @@ export default function DesignPreview() {
             <View key={sample.name} style={styles.compareSample}>
               <Text variant="label">{sample.name}</Text>
               <CompareView rows={sample.rows} summary={sample.summary} />
+            </View>
+          ))}
+        </Section>
+
+        <Section title="Progress chart">
+          {progressSamples.map((sample) => (
+            <View key={sample.name} style={styles.compareSample}>
+              <Text variant="label">{sample.name}</Text>
+              <ProgressChart series={sample.series} start={sample.start} />
             </View>
           ))}
         </Section>

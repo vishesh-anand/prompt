@@ -50,7 +50,7 @@ function Routes() {
           <Stack.Screen name="(auth)/sign-in" />
         </Stack.Protected>
         <Stack.Protected guard={session !== null}>
-          <Stack.Screen name="index" />
+          <Stack.Screen name="(tabs)" />
           <Stack.Screen name="(onboarding)/reminder" />
           <Stack.Screen name="record" />
           <Stack.Screen name="feedback/[answerId]" />

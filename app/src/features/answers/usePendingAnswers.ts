@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useSession } from '@/features/auth/AuthProvider';
+import { invalidateAnswers } from '@/features/history/invalidateAnswers';
 
 import { listPendingAnswers, type PendingAnswer } from './pendingAnswers';
 import { uploadAnswer } from './uploadAnswer';
@@ -19,6 +20,6 @@ export function useUploadPending() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (pending: PendingAnswer) => uploadAnswer(pending),
-    onSettled: () => Promise.all([queryClient.invalidateQueries({ queryKey: ['pending'] }), queryClient.invalidateQueries({ queryKey: ['history'] })]),
+    onSettled: () => Promise.all([queryClient.invalidateQueries({ queryKey: ['pending'] }), invalidateAnswers(queryClient)]),
   });
 }

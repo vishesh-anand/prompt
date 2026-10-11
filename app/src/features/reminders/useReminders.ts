@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
 import { useSession } from '@/features/auth/AuthProvider';
+import { invalidateAnswers } from '@/features/history/invalidateAnswers';
 import { useHistory } from '@/features/history/useHistory';
 import { useProfile } from '@/features/profile/useProfile';
 import { streak } from '@/features/streak/streak';
@@ -32,7 +33,7 @@ export function useReminders() {
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (state) => {
       if (state !== 'active') return;
-      void queryClient.invalidateQueries({ queryKey: ['history'] });
+      void invalidateAnswers(queryClient);
       setCameToFront((n) => n + 1);
     });
     return () => subscription.remove();

@@ -13,7 +13,7 @@ export function useProfile() {
     // A failed load shouldn't keep the splash screen up through three slow retries.
     retry: 1,
     queryFn: async () => {
-      const { data, error } = await supabase.from('profiles').select('reminder_time, timezone').single();
+      const { data, error } = await supabase.from('profiles').select('reminder_time, timezone, baseline_answer_id').single();
       if (error) throw error;
       return profileSchema.parse(data);
     },

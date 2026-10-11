@@ -18,7 +18,7 @@ export function useSaveReminder() {
   const userId = useSession().session?.user.id;
 
   return useMutation({
-    mutationFn: async (time: TimeOfDay): Promise<Profile> => {
+    mutationFn: async (time: TimeOfDay): Promise<Pick<Profile, 'reminder_time' | 'timezone'>> => {
       // Saying no is fine: the time is still saved and the app works, there just won't be reminders.
       await askForReminderPermission().catch(() => false);
       const next = { reminder_time: formatTime(time), timezone: phoneTimezone() };
@@ -28,6 +28,12 @@ export function useSaveReminder() {
       if (data.length === 0) throw new Error('The profile was not updated');
       return next;
     },
-    onSuccess: (next) => queryClient.setQueryData(['profile', userId], next),
+    // Merged into what is cached, so the rest of the profile (the starting point) is kept.
+    onSuccess: (next) => {
+      const cached = queryClient.getQueryData<Profile>(['profile', userId]);
+      // With nothing cached (the first load failed) there is no starting point to merge into: load the real profile.
+      if (cached) queryClient.setQueryData<Profile>(['profile', userId], { ...cached, ...next });
+      else void queryClient.invalidateQueries({ queryKey: ['profile', userId] });
+    },
   });
 }
