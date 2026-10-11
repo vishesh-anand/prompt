@@ -26,7 +26,7 @@ const wed = answer('2026-10-07T15:00:00Z');
 const thu = answer('2026-10-08T15:00:00Z');
 const lastSunday = answer('2026-10-04T15:00:00Z');
 
-function fakeStore(o: { answers: AnswerRow[]; saved?: SavedNote | null; raceTo?: SavedNote; baseline?: AnswerRow | null; alreadyClaimed?: boolean }) {
+function fakeStore(o: { answers: AnswerRow[]; saved?: SavedNote | null; raceTo?: SavedNote; baseline?: AnswerRow | null; alreadyClaimed?: boolean; savedAfterClaim?: SavedNote }) {
   const calls = { saves: [] as { daysCovered: number; text: string; weekStart: string }[], savedNoteReads: 0, claims: 0 };
   let saved = o.saved ?? null;
   let claimed = o.alreadyClaimed ?? false;
@@ -41,9 +41,11 @@ function fakeStore(o: { answers: AnswerRow[]; saved?: SavedNote | null; raceTo?:
     notebook: () => Promise.resolve('Says um before the main point.'),
     savedNote: () => {
       calls.savedNoteReads += 1;
+      // The second read is the one after winning the claim: another request may have saved a note in between.
+      if (calls.savedNoteReads >= 2 && o.savedAfterClaim) return Promise.resolve(o.savedAfterClaim);
       return Promise.resolve(saved);
     },
-    claim: () => {
+    claim: (_week: string, _minSeconds: number) => {
       calls.claims += 1;
       // Like the database: the first caller wins and every later one is refused (within the minute).
       if (claimed) return Promise.resolve(false);
@@ -245,4 +247,25 @@ Deno.test('if the model fails after winning the claim, the error is thrown and n
   assertEquals((await getWeeklyNote({ store, model, modelName: 'm', now })).note, null);
   assertEquals(seen.length, 0);
   assertEquals(calls.saves.length, 0);
+});
+
+Deno.test('a note saved by another request between the check and the claim is returned, not written again', async () => {
+  const { store, calls } = fakeStore({
+    answers: [mon, tue, wed, thu],
+    saved: { text: 'Old note.', days_covered: 3 },
+    savedAfterClaim: { text: 'Written meanwhile.', days_covered: 4 },
+  });
+  const { model, seen } = fakeModel('Duplicate.');
+  const reply = await getWeeklyNote({ store, model, modelName: 'm', now });
+  assertEquals(reply.note, 'Written meanwhile.');
+  assertEquals(seen.length, 0);
+  assertEquals(calls.saves.length, 0);
+});
+
+Deno.test('the claim is asked for with the one-per-minute bound', async () => {
+  const asked: number[] = [];
+  const { store } = fakeStore({ answers: [mon, tue, wed] });
+  const withSpy: Store = { ...store, claim: (w, s) => { asked.push(s); return store.claim(w, s); } };
+  await getWeeklyNote({ store: withSpy, model: fakeModel('x').model, modelName: 'm', now });
+  assertEquals(asked, [60]);
 });

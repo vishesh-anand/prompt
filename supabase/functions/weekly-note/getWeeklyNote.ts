@@ -6,6 +6,9 @@ import { type AnswerRow, weeklyFacts } from '../_shared/weeklyFacts.ts';
 // A practice week needs this many days before it gets a note (PRODUCT.md: "at least 3 practice days that week").
 export const daysNeeded = 3;
 
+// At most one attempt to write a note per person per week in this many seconds.
+export const claimSeconds = 60;
+
 export type SavedNote = { text: string; days_covered: number };
 
 // Everything the weekly note reads and writes. The real one is wired in index.ts; the tests use a fake.
@@ -16,8 +19,8 @@ export interface Store {
   answer(id: string): Promise<AnswerRow | null>;
   notebook(): Promise<string>;
   savedNote(weekStart: string): Promise<SavedNote | null>;
-  // Atomic: true for the one caller that may ask the model now. Anyone else, or anyone within a minute, gets false.
-  claim(weekStart: string): Promise<boolean>;
+  // Atomic: true for the one caller that may ask the model now. Anyone else, or anyone within `minSeconds`, gets false.
+  claim(weekStart: string, minSeconds: number): Promise<boolean>;
   // Saves only if it covers more days than what is saved, and returns what is saved afterwards.
   saveNote(note: { weekStart: string; text: string; daysCovered: number; promptVersion: number; model: string }): Promise<SavedNote>;
 }
@@ -42,7 +45,12 @@ export async function getWeeklyNote({ store, model, modelName, now }: { store: S
   if (saved && saved.days_covered >= counted.scoredDays) return reply(saved.text);
 
   // A note is due. Only one request may pay for it: the others (a second device, a retry, a loop) get the saved note back.
-  if (!(await store.claim(counted.weekStart))) return reply(saved?.text ?? null);
+  if (!(await store.claim(counted.weekStart, claimSeconds))) return reply(saved?.text ?? null);
+
+  // The note may have been written between the check above and winning the claim (a slow request that lost the race a
+  // minute ago). Look again, so the same note is never paid for twice.
+  const latest = await store.savedNote(counted.weekStart);
+  if (latest && latest.days_covered >= counted.scoredDays) return reply(latest.text);
 
   const start = baselineAnswerId ? await store.answer(baselineAnswerId) : null;
   const facts = weeklyFacts({ timeZone: timezone, now, answers, start });

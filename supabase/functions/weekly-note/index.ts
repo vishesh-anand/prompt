@@ -40,8 +40,8 @@ function storeFor(db: SupabaseClient, admin: SupabaseClient, userId: string): St
       if (error) fail('weekly-note could not load the saved note', error);
       return data;
     },
-    async claim(weekStart) {
-      const { data, error } = await admin.rpc('claim_weekly_note', { p_user_id: userId, p_week_start: weekStart });
+    async claim(weekStart, minSeconds) {
+      const { data, error } = await admin.rpc('claim_weekly_note', { p_user_id: userId, p_week_start: weekStart, p_min_seconds: minSeconds });
       if (error) fail('weekly-note could not claim the week', error);
       return data === true;
     },
