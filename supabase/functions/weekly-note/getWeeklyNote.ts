@@ -6,13 +6,16 @@ import { type AnswerRow, weeklyFacts } from '../_shared/weeklyFacts.ts';
 // A practice week needs this many days before it gets a note (PRODUCT.md: "at least 3 practice days that week").
 export const daysNeeded = 3;
 
-// At most one attempt to write a note per person per week in this many seconds, and at most this many attempts in a week
-// (a week has at most 5 notes, so the rest is room for failures).
-export const claimSeconds = 60;
+// At most one attempt to write a note per person per week in this many seconds, and at most this many failed attempts in
+// a row in a week (a saved note starts the count again, so a short outage can't use the week up).
+export const claimSeconds = 180;
 export const maxAttemptsPerWeek = 20;
-// One model call may take this long, with no automatic retries. The stage tries twice, so both tries finish inside the
-// claim: a second request can never start paying while the first is still running.
+// One model request may take this long, with one automatic retry (the SDK backs off between them). The stage tries
+// twice, so the worst case is 2 tries x 2 requests x 20 s = 80 s, and the claim leaves another minute for the database
+// reads and writes. This keeps a second request from paying while the first is still running; a test checks the sums.
 export const modelTimeoutMs = 20_000;
+export const modelRetries = 1;
+export const worstCaseModelMs = 2 * (modelRetries + 1) * modelTimeoutMs;
 
 export type SavedNote = { text: string; days_covered: number };
 
@@ -52,19 +55,24 @@ export async function getWeeklyNote({ store, model, modelName, now }: { store: S
   if (counted.scoredDays < daysNeeded) return reply(saved?.text ?? null);
   if (saved && saved.days_covered >= counted.scoredDays) return reply(saved.text);
 
-  // A note is due. Only one request may pay for it: the others (a second device, a retry, a loop) get the saved note back.
+  // A note is due. Read what it is written from first: a database error here costs nothing, so it must not use up an attempt.
+  const start = baselineAnswerId ? await store.answer(baselineAnswerId) : null;
+  const notebook = await store.notebook();
+
+  // Only one request may pay for the note: the others (a second device, a retry, a loop) get the saved note back.
   if (!(await store.claim(counted.weekStart, { minSeconds: claimSeconds, maxAttempts: maxAttemptsPerWeek }))) {
-    return reply(saved?.text ?? null, saved === null);
+    // The winner may have finished a moment ago, so look again: report "writing" only when there really is no note.
+    const current = await store.savedNote(counted.weekStart);
+    return reply(current?.text ?? null, current === null);
   }
 
   // The note may have been written between the check above and winning the claim (a slow request that lost the race a
-  // minute ago). Look again, so the same note is never paid for twice.
+  // while ago). Look again, so the same note is never paid for twice.
   const latest = await store.savedNote(counted.weekStart);
   if (latest && latest.days_covered >= counted.scoredDays) return reply(latest.text);
 
-  const start = baselineAnswerId ? await store.answer(baselineAnswerId) : null;
   const facts = weeklyFacts({ timeZone: timezone, now, answers, start });
-  const text = await writeWeeklyNote({ facts, notebook: await store.notebook() }, model);
+  const text = await writeWeeklyNote({ facts, notebook }, model);
   const stored = await store.saveNote({ weekStart: facts.weekStart, text, daysCovered: facts.scoredDays, promptVersion: weeklyNoteVersion, model: modelName });
   return reply(stored.text);
 }

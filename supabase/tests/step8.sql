@@ -133,6 +133,20 @@ begin
   select public.claim_weekly_note(ben, wk + 42, 60, 3) into won;
   if won is distinct from true then raise exception 'FAIL (r5): the next week did not start fresh'; end if;
 
+  -- (t) A note that was written starts the attempt count again; a refused (lower or equal) save does not.
+  select public.claim_weekly_note(ann, wk + 56, 60, 3) into won;
+  update public.weekly_note_claims set claimed_at = now() - interval '2 minutes' where user_id = ann and week_start = wk + 56;
+  select public.claim_weekly_note(ann, wk + 56, 60, 3) into won;
+  select attempts into n from public.weekly_note_claims where user_id = ann and week_start = wk + 56;
+  if n <> 2 then raise exception 'FAIL (t1): attempts is %, expected 2', n; end if;
+  perform public.save_weekly_note(ann, wk + 56, 'Saved.', 3, 1, 'm');
+  select attempts into n from public.weekly_note_claims where user_id = ann and week_start = wk + 56;
+  if n <> 0 then raise exception 'FAIL (t2): a saved note left attempts at %', n; end if;
+  update public.weekly_note_claims set attempts = 2 where user_id = ann and week_start = wk + 56;
+  perform public.save_weekly_note(ann, wk + 56, 'Not newer.', 3, 1, 'm');
+  select attempts into n from public.weekly_note_claims where user_id = ann and week_start = wk + 56;
+  if n <> 2 then raise exception 'FAIL (t3): a refused save reset attempts to %', n; end if;
+
   -- (s) The cap is checked too.
   begin
     perform public.claim_weekly_note(ann, wk + 49, 60, 0);
@@ -148,7 +162,8 @@ begin
 
   -- (g) Ann reads her own notes and only hers.
   select count(*) into n from public.weekly_notes;
-  if n <> 2 then raise exception 'FAIL (g): Ann sees % notes, expected her 2', n; end if;
+  -- Her notes: this week, next week, and the one saved in (t).
+  if n <> 3 then raise exception 'FAIL (g): Ann sees % notes, expected her 3', n; end if;
 
   -- (h) The phone cannot write: not insert, update or delete, and not call the function.
   begin

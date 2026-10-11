@@ -27,7 +27,9 @@ export function useProgress() {
   // Stable between renders: the screen runs it from useFocusEffect, which would otherwise run again on every render.
   const refresh = useCallback(() => {
     void invalidateAnswers(queryClient);
-    void queryClient.invalidateQueries({ queryKey: ['weeklyNote'] });
+    // Not cancelled if it is already running: that request may be the one paying for the note, and a second one would
+    // only be told the note is not ready.
+    void queryClient.invalidateQueries({ queryKey: ['weeklyNote'] }, { cancelRefetch: false });
   }, [queryClient]);
 
   const loaded = week.data !== undefined && history.data !== undefined && profile.data !== undefined;

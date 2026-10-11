@@ -2,8 +2,8 @@
 import { withSupabase } from 'npm:@supabase/server@1';
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2';
 
-import { makeModel, modelName } from '../_shared/providers/index.ts';
-import { getWeeklyNote, modelTimeoutMs, type Store } from './getWeeklyNote.ts';
+import { makeModel, modelName } from '../_shared/providers/claude.ts';
+import { getWeeklyNote, modelRetries, modelTimeoutMs, type Store } from './getWeeklyNote.ts';
 
 const answerColumns = 'created_at, retry_of, duration_ms, metrics, judgement';
 
@@ -75,7 +75,7 @@ export default {
     if (!userId) return Response.json({ error: 'unauthorized' }, { status: 401 });
     try {
       const store = storeFor(ctx.supabase, ctx.supabaseAdmin, userId);
-      const reply = await getWeeklyNote({ store, model: makeModel((u) => console.info('weekly-note model usage', u.model, u.inputTokens, u.outputTokens), { timeoutMs: modelTimeoutMs, maxRetries: 0 }), modelName, now: new Date() });
+      const reply = await getWeeklyNote({ store, model: makeModel((u) => console.info('weekly-note model usage', u.model, u.inputTokens, u.outputTokens), { timeoutMs: modelTimeoutMs, maxRetries: modelRetries }), modelName, now: new Date() });
       return Response.json(reply);
     } catch (error) {
       console.error('weekly-note failed', error);

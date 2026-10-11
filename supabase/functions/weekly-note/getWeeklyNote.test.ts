@@ -2,7 +2,7 @@ import { assertEquals, assertRejects } from 'jsr:@std/assert@1';
 
 import type { Model, PromptFile } from '../_shared/providers/model.ts';
 import type { AnswerRow } from '../_shared/weeklyFacts.ts';
-import { claimSeconds, getWeeklyNote, maxAttemptsPerWeek, modelTimeoutMs, type SavedNote, type Store } from './getWeeklyNote.ts';
+import { claimSeconds, daysNeeded, getWeeklyNote, maxAttemptsPerWeek, type SavedNote, type Store, worstCaseModelMs } from './getWeeklyNote.ts';
 
 const mark = { score: 1, quotes: ['x'], why: 'x' };
 const answer = (iso: string, o: { retry?: boolean } = {}): AnswerRow => ({
@@ -271,8 +271,40 @@ Deno.test('the claim is asked for with the one-per-minute bound', async () => {
   assertEquals(asked, [claimSeconds * 1000 + maxAttemptsPerWeek]);
 });
 
-Deno.test('both model tries finish inside the claim, so a second request can never pay while the first is running', () => {
-  assertEquals(2 * modelTimeoutMs < claimSeconds * 1000, true);
+Deno.test('the worst case for the model finishes with a minute to spare inside the claim', () => {
+  // 2 tries x 2 requests x 20 s = 80 s. The rest of the claim is for the database reads and writes.
+  assertEquals(worstCaseModelMs, 80_000);
+  assertEquals(worstCaseModelMs + 60_000 <= claimSeconds * 1000, true);
+});
+
+Deno.test('the limits fit what the database accepts, and the days needed match the saved-note rule', async () => {
+  // claim_weekly_note accepts 10 to 3600 seconds and 1 to 100 attempts.
+  assertEquals(claimSeconds >= 10 && claimSeconds <= 3600, true);
+  assertEquals(maxAttemptsPerWeek >= 1 && maxAttemptsPerWeek <= 100, true);
+  // weekly_notes only accepts days_covered from daysNeeded to 7; below that every save would fail after a paid call.
+  const migration = await Deno.readTextFile(new URL('../../migrations/20261012000000_weekly_notes.sql', import.meta.url));
+  assertEquals(migration.includes(`check (days_covered between ${daysNeeded} and 7)`), true);
+});
+
+Deno.test('a read failing before the claim does not use up an attempt', async () => {
+  const { store, calls } = fakeStore({ answers: [mon, tue, wed], baseline: answer('2026-09-01T15:00:00Z') });
+  const broken: Store = { ...store, answer: () => Promise.reject(new Error('database hiccup')) };
+  await assertRejects(() => getWeeklyNote({ store: broken, model: fakeModel('x').model, modelName: 'm', now }), Error, 'hiccup');
+  assertEquals(calls.claims, 0);
+  const brokenNotebook: Store = { ...store, notebook: () => Promise.reject(new Error('notebook hiccup')) };
+  await assertRejects(() => getWeeklyNote({ store: brokenNotebook, model: fakeModel('x').model, modelName: 'm', now }), Error, 'hiccup');
+  assertEquals(calls.claims, 0);
+});
+
+Deno.test('a request that loses the claim to a winner that has just saved gets the note, not "writing"', async () => {
+  const { store } = fakeStore({
+    answers: [mon, tue, wed],
+    alreadyClaimed: true,
+    savedAfterClaim: { text: 'Just written.', days_covered: 3 },
+  });
+  // The first read (the due check) finds nothing; the read after the lost claim finds the winner's note.
+  const reply = await getWeeklyNote({ store, model: fakeModel('unused').model, modelName: 'm', now });
+  assertEquals(reply, { practiceDays: 3, daysNeeded: 3, note: 'Just written.', writing: false });
 });
 
 Deno.test('a week that is still being scored is not "writing": nothing is due yet', async () => {
