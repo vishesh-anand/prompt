@@ -6,6 +6,10 @@ How the app looks, moves, and talks. Read this before building or changing any s
 
 **Calm and simple, like a quiet room.** Speaking out loud to a phone makes people a little nervous. Every screen should lower that nervousness: lots of empty space, very little on screen at once, soft colors, and one warm accent.
 
+What the app helps with: a listener gets your point, and it costs them little effort (see PRODUCT.md). Every screen should make that one idea easy to see.
+
+The visual look of the feedback, before-and-after and Progress screens will be revisited in Claude Design before build step D (see ARCHITECTURE.md). Until then, this file sets what is on each screen and in what order, and the current visual style stays.
+
 The app is plain almost everywhere, and beautiful in three places:
 
 1. **The recording screen** (the glowing circle)
@@ -52,7 +56,7 @@ Rules:
 - **Apple's built-in serif font** (New York, `fontFamily: 'ui-serif'` on iOS) only for:
   - The daily question
   - The rewritten "better version" of your answer
-  - The weekly coach note
+  - The coach's note
 - Use Apple's standard text sizes so the app respects the user's text-size setting (Dynamic Type).
 
 | Style | Size | Weight | Font |
@@ -87,7 +91,7 @@ Only in these moments. Nowhere else.
 | Start recording | Light tap |
 | Stop recording | Medium tap |
 | Feedback appears | Soft tap |
-| You improved on retry | Success pattern |
+| You improved on retry (the retry instruction was met) | Success pattern |
 | Toggling a setting | Selection click |
 
 ## The three special moments
@@ -95,26 +99,34 @@ Only in these moments. Nowhere else.
 ### 1. Recording screen
 - The question stays at the top, in the serif font.
 - In the center, a soft coral circle that gently grows and shrinks with your voice. Loud voice, slightly bigger. Silence, it settles slowly. It should feel like breathing, never jittery.
-- A thin ring around the circle fills up as the 60 seconds run out. No big countdown numbers.
+- A thin ring around the circle fills up as the time runs out (2 minutes, or 90 seconds on a retry). No big countdown numbers.
+- On a retry, the one instruction from the tip sits under the question, in the standard font, quieter than the question.
 - One button: tap the circle to stop.
 - Background stays calm. Nothing else on screen.
 
 ### 2. Feedback reveal
 - A short, calm "listening" state while feedback is prepared. Not a spinner. The circle slowly settles and fades.
-- Results appear one at a time, top to bottom, with a small delay between each (about 0.12 seconds), in the order from PRODUCT.md: filler words, speed, clear point, one tip, better version.
+- Results appear one at a time, top to bottom, with a small delay between each (about 0.12 seconds), in the order from PRODUCT.md: headline, what a listener understood, one tip, better version, how it sounded. Each part appears as soon as its pipeline stage has saved it, so a later part may arrive a few seconds after an earlier one.
 - The one tip is the most prominent item on the screen.
+- **What a listener understood:** the restatement in the standard font. "That's what I meant" and "Not quite" are small and quiet, clearly secondary to Try again. Tapping one gives no haptic.
+- **The map** sits behind a "See how they're built" tap, right under the better version. It opens your answer's map next to the better version's map: a few steps each, with times and labels (Direction, Point, Support, Off track, Ending). Compact, plain text, no boxes or colors per label; the label word carries the meaning.
+- **How it sounded** shows only the lines a listener would notice. A clean answer shows nothing here, not an empty heading.
 - The "Try again" button is the single accent-colored button.
 
 ### 3. Before and after
-- First and second attempts side by side: filler words, speed, clear point.
-- Numbers count up or down into place.
-- Improvements are marked in `positive` green with an arrow and a short line like "4 fewer filler words."
+- The retry instruction is checked first, in one plain line: "You told the listener where you were going in your first sentence. Last time, your point came at 1:10."
+- First and second tries' maps side by side. The clear version is not shown here; each try keeps its own on its feedback screen.
+- Off-track time and stumbles for both tries. Numbers count up or down into place.
+- Improvements are marked in `positive` green with an arrow and a short line like "Off track: 40% to 15%."
 - If there was no improvement, say so plainly and give one next step. No celebration, no guilt.
+- The screen presents the retry as practice, not as proof of progress.
 
 ## Progress chart
-- Three simple lines over the week: filler words, speed, clear point.
+- Your last 14 practice days, one dot a day. Nothing resets on Monday.
+- The headline above it in plain words: "Clear by the end, 8 of your last 10 answers."
+- Simple lines: direction early, off-track time, stumbles a minute, and filler words a minute only when fillers have been a problem. Each on its own scale.
 - Minimal: no gridlines, no legend box. Label each line directly at its end.
-- Compare against the starting point with a faint dotted line.
+- Compare against the starting point with a faint dotted line, and one plain sentence: "On your first day, 40% of your answer was off track. Now it's 15%."
 
 ## How the app talks
 
@@ -123,6 +135,8 @@ Only in these moments. Nowhere else.
 Rules:
 - Talk to "you." Short sentences.
 - Use real numbers and real moments from their answer. "Your point came at 40 seconds" beats "try to be more concise."
+- The point doesn't have to come first. The rule is "let the listener know early where you're going." Ask for the point first only when the question wanted a direct answer, or when circling came before the point. Work questions often want an answer first; Everyday ones often suit a story.
+- Say a few fillers are fine. Flag only what a listener would notice, and never give a "safe" number of fillers.
 - Every piece of criticism ends with one concrete next step.
 - Never shame. Never generic praise like "Great job!" or "Amazing!"
 - Praise only what actually improved, and be specific about it.
@@ -135,15 +149,23 @@ Examples:
 | "Great job! Keep it up!" | "You cut your filler words from 9 to 4." |
 | "Your answer lacked structure." | "Your main point came at 40 seconds. Next time, say it in your first sentence." |
 | "Too many filler words detected." | "You said 'basically' 6 times. Try a short pause instead." |
+| "You used 7 filler words." (for 7 spread over 2 minutes) | Nothing. A listener wouldn't notice them. |
+| "Filler words: 4." | "You said 'basically' four times in 20 seconds. It starts to sound like a habit." |
+| "Your answer was disorganized." | "You found your point while talking. It came at 1:10, after two passes around it." |
+| "Always start with your point." (for a story) | "You set up a story, then landed your point. Easy to follow." |
+| "Clarity: 3 out of 5." | "You're saying the app's feedback is too shallow to help you speak clearly." |
 | "Oops! Something went wrong." | "That didn't upload. Your recording is saved. Tap to try again." |
 
 ## Empty, error, and waiting states
 - Every screen has a designed empty state. Example for Progress with no data: "Your chart starts after your first answer."
+- Progress before there are enough answers for a headline: "After 3 answers, you'll see how often a listener got your point."
+- A map with no clear point: "A listener couldn't find one main point here." The tip then says what to do next.
 - Errors say what happened, that nothing was lost (when true), and what to do.
 - Never lose a recording. If upload fails, keep it on the phone and retry.
 
 ## Accessibility
 - Every button and control has a clear VoiceOver label.
+- The map and the chart each have a short spoken summary for VoiceOver ("Your point came at 1:10, after two off-track steps").
 - Text contrast meets Apple's guidelines in both light and dark.
 - Supports the user's text-size setting without breaking layouts.
 - Respects Reduce Motion.

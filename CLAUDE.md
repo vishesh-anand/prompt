@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-A daily speaking-practice iPhone app. You answer a question out loud for up to 60 seconds, get coach-style feedback, and try again.
+A daily speaking-practice iPhone app. You answer a question out loud for up to 2 minutes, get coach-style feedback on whether a listener would get your point and how hard they'd have to work for it, and try again.
 
 Read these before any non-trivial work:
 - @PRODUCT.md — what the app does and does not do
@@ -83,7 +83,7 @@ Before calling any task done: type check, lint, and tests must pass.
 **Pipeline**
 - Each pipeline stage is its own file with a typed input and output, and saves its result before the next stage runs.
 - Stages use the `Transcriber` and `Model` interfaces only. Never import a provider's library directly in a stage.
-- Measuring (fillers, pace, pauses, restarts) is plain code. Never use AI for anything that can be counted.
+- Measuring countable things (fillers, pace, pauses and where they fall, repeats, hedges, vague words, "and" chaining) is plain code. Never use AI for anything that can be counted. True restarts, and whether a listener would notice something, need judgment: they come from the Map stage, which must quote the exact words and never change a count.
 - Every AI output is validated against a schema.
 - Prompts live in `supabase/functions/_shared/prompts/`, each with a version number. Changing a prompt means bumping its version.
 - After any prompt or model change, run the evals and report the before-and-after numbers. Don't ship a change that makes them worse.
