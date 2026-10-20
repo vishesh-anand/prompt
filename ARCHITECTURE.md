@@ -131,6 +131,10 @@ The old `judgement` column (the three marks) is dropped in a new migration once 
 - `days_covered` (3 to 7: how many scored practice days the saved text was written from), `prompt_version`, `model`, `updated_at`
 - Only the `weekly-note` function writes it (through `save_weekly_note`, which refuses a note covering no more days than the saved one). The phone can only read its own.
 
+**listener_ratings** (the listener check, see Evals; no owner and no policies, so only the server key can use it)
+- `rater` (a pseudonym, `R1` to `R9`; `R0` is the owner's own test link and never counts), `clip` (`c01`...), `point`, `effort` (1 = no effort at all, 5 = hard work), `has_support`, `clear_ending`, `would_cut`, `stood_out`, `easier` (on the second clip of a pair only), `rated_at`
+- Only the `listener-check` function writes it. Friends have no login: each has a secret link, checked against the `LISTENER_RATERS` secret.
+
 Streaks, charts, and "which questions have I seen" are all calculated from `answers`. No separate tables for them. Answers under 10 seconds are never uploaded (see the pipeline rules), so they have no row and do not count toward the streak.
 
 ## The feedback pipeline
@@ -190,7 +194,7 @@ Handled entirely on the phone:
 
 ## Scheduled cleanup
 
-A daily database job deletes audio older than 30 days, except each user's baseline recording. Text and scores are kept. Clips chosen for the evals are copied to eval storage first, so the cleanup doesn't remove them.
+A daily database job deletes audio older than 30 days, except each user's baseline recording. Text and scores are kept. Clips chosen for the evals are copied to eval storage first (the private `eval-clips` bucket, no policies, files named by clip code), so the cleanup doesn't remove them. The cleanup never touches `eval-clips`.
 
 ## Coach's note
 
@@ -240,7 +244,8 @@ The `evals/` folder holds:
 - 2 or 3 friends listen to 25 to 30 of the owner's clips, as audio, once each. The clips are varied: rambling and tidy, both categories, and 5 to 8 first-try-and-retry pairs.
 - For each clip, they write the point in one sentence, rate how easy it was to follow (1 to 5, each step labelled), and note anything that stood out to them. For retry pairs, they say which version was easier to follow.
 - A calibration round on a few shared clips comes first.
-- A simple rating page, so raters don't handle audio files or spreadsheets.
+- A simple rating page, so raters don't handle audio files or spreadsheets. It is one static file (`evals/listener/page/index.html`, hosted on Vercel) with no keys. It talks to the `listener-check` edge function, which plays each clip through a 15-minute signed link from `eval-clips` and saves the ratings. The clip list (`supabase/functions/listener-check/clips.json`, ids and tags only) ships with the function. Friends also answer three yes/no questions: was there a reason or example, did it end clearly, was there a part they'd cut.
+- The tests are written down before any rating: `evals/listener/preregistered.md`.
 - It answers three questions:
   - Does the AI listener's restatement match what real listeners heard?
   - Does the AI flag what real listeners noticed?

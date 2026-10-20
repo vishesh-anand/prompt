@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Listener check</title>
+<!-- Step A, the listener check (ARCHITECTURE.md, Evals). A static page with no keys: each friend's secret link
+     (#t=...) is sent to the listener-check function, which plays clips through short signed links and saves ratings. -->
+<style>
+  :root {
+    --background: #FBF8F4; --surface: #FFFFFF; --text-primary: #1F1B16; --text-secondary: #6B645C;
+    --accent: #E8643C; --on-accent: #1F1B16; --accent-text: #B8461F; --divider: #ECE6DE;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #16130F; --surface: #221E19; --text-primary: #F3EEE8; --text-secondary: #A39B91;
+      --accent: #F07A52; --on-accent: #16130F; --accent-text: #F59A78; --divider: #2E2923;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--background); color: var(--text-primary);
+    font: 17px/1.45 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  }
+  main { max-width: 560px; margin: 0 auto; padding: 48px 24px; }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 16px; }
+  .label { font-size: 13px; font-weight: 500; color: var(--text-secondary); margin: 0 0 8px; }
+  p { margin: 0 0 16px; }
+  .secondary { color: var(--text-secondary); }
+  button {
+    font: inherit; border: none; border-radius: 12px; padding: 12px 24px; cursor: pointer;
+    background: var(--accent); color: var(--on-accent); font-weight: 600;
+  }
+  button:disabled { opacity: 0.5; cursor: default; }
+  fieldset { border: none; margin: 0 0 24px; padding: 0; }
+  legend { font-weight: 600; margin-bottom: 8px; padding: 0; }
+  textarea {
+    width: 100%; min-height: 96px; font: inherit; color: var(--text-primary); background: var(--surface);
+    border: 1px solid var(--divider); border-radius: 12px; padding: 12px;
+  }
+  .choices label { display: flex; gap: 12px; align-items: center; padding: 8px 0; }
+  .choices.scale label { align-items: flex-start; }
+  .choices.scale input { margin-top: 2px; flex: none; }
+  .hint { font-size: 15px; color: var(--text-secondary); margin: 0 0 8px; }
+  .choices.row { display: flex; gap: 24px; }
+  input[type=radio] { width: 20px; height: 20px; accent-color: var(--accent); margin: 0; }
+  .error { color: var(--accent-text); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main id="app" aria-live="polite"><p class="secondary">Loading…</p></main>
+<script>
+const FUNCTION_URL = 'https://brqefqbutzltwvqfebco.supabase.co/functions/v1/listener-check';
+const token = new URLSearchParams(location.hash.slice(1)).get('t');
+const app = document.getElementById('app');
+let items = [];
+let rated = new Set();
+
+const efforts = [
+  ['No effort at all', 'You knew where they were going right away and just listened.'],
+  ['A little effort', 'Easy overall, with one moment where you wondered where it was heading.'],
+  ['Some effort', 'You had to hold pieces in your head and wait to see how they connected.'],
+  ['Quite a lot of effort', 'You kept trying to work out the point, and drifted or got lost once or twice.'],
+  ['Hard work', 'You had to piece it together yourself, or never found the point.'],
+];
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
+async function call(body) {
+  const res = await fetch(FUNCTION_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, ...body }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw Object.assign(new Error(data.error || 'server_error'), { status: res.status });
+  return data;
+}
+
+function show(html) {
+  app.innerHTML = html;
+  window.scrollTo(0, 0);
+}
+
+function showError(message) {
+  show(`<h1>Something went wrong</h1><p>${esc(message)}</p><p class="secondary">Your earlier answers are saved. Reload the page to carry on.</p>`);
+}
+
+function intro() {
+  show(`
+    <h1>Thanks for helping</h1>
+    <p>You'll hear short spoken answers to everyday and work questions. Listen to each one <strong>once</strong>, the way you'd hear someone in a conversation. There's no replay, and that's on purpose.</p>
+    <p>After each one, write the main point in one sentence and answer a few quick questions. There are no right answers: we want to know what you actually heard.</p>
+    <p>It starts with ${items.filter((i) => i.round === 'calibration').length} practice clips that everyone hears, so we can compare notes. You can stop any time; your answers are saved and the link brings you back to where you were.</p>
+    <p class="secondary">Use headphones or a quiet room.</p>
+    <button id="go">Start</button>`);
+  document.getElementById('go').onclick = next;
+}
+
+function next() {
+  const item = items.find((i) => !rated.has(i.clip));
+  if (!item) return show('<h1>All done</h1><p>Thank you. Every answer is saved, and you can close this page.</p>');
+  const calibrationLeft = items.some((i) => i.round === 'calibration' && !rated.has(i.clip));
+  const calibrationDone = items.some((i) => i.round === 'calibration') && !calibrationLeft;
+  if (item.round === 'main' && calibrationDone && !sessionStorage.getItem('pastCalibration')) {
+    show(`<h1>Practice round done</h1><p>Thanks. Before the main round there's a short call to compare notes on the practice clips. Carry on once you've had it.</p><button id="go">Start the main round</button>`);
+    document.getElementById('go').onclick = () => {
+      try { sessionStorage.setItem('pastCalibration', '1'); } catch {}
+      play(item);
+    };
+    return;
+  }
+  play(item);
+}
+
+function heading(item) {
+  const group = items.filter((i) => i.round === item.round);
+  const n = group.indexOf(item) + 1;
+  if (item.round === 'calibration') return `Practice clip ${n} of ${group.length}`;
+  if (item.pair === null) return `Clip ${n} of ${group.length}`;
+  return `Clip ${n} of ${group.length} · Pair ${item.pair}, answer ${item.side}`;
+}
+
+function play(item) {
+  const pairNote = item.side === 'A'
+    ? '<p>The next two answers are to the same question. Rate each one, then say which was easier to follow.</p>'
+    : item.side === 'B' ? `<p>This is the second answer to the same question as answer A.</p>` : '';
+  show(`
+    <p class="label">${esc(heading(item))}</p>
+    ${pairNote}
+    <p>Press play when you're ready. You'll hear it once.</p>
+    <button id="play" disabled>Play</button>
+    <p id="status" class="secondary"></p>
+    <audio id="audio" preload="none"></audio>`);
+  const button = document.getElementById('play');
+  const status = document.getElementById('status');
+  const audio = document.getElementById('audio');
+  const failed = () => { status.textContent = "That clip didn't load. Reload the page to try again."; };
+  // The link is fetched before the tap, because iPhone Safari only starts audio straight from a tap, not after a wait.
+  call({ action: 'play', clip: item.clip }).then(({ url }) => {
+    audio.src = url;
+    audio.onended = () => form(item);
+    audio.onerror = failed;
+    button.disabled = false;
+  }, (e) => {
+    if (e.status === 409) { rated.add(item.clip); return next(); }
+    failed();
+  });
+  button.onclick = () => {
+    button.disabled = true;
+    button.textContent = 'Listening…';
+    audio.play().catch(failed);
+  };
+}
+
+function radios(name, options) {
+  return options.map(([value, text]) => `<label><input type="radio" name="${name}" value="${value}" required> ${esc(text)}</label>`).join('');
+}
+
+function yesNo(name, question, hint) {
+  return `<fieldset class="choices"><legend>${esc(question)}</legend><p class="hint">${esc(hint)}</p><div class="choices row">${radios(name, [['yes', 'Yes'], ['no', 'No']])}</div></fieldset>`;
+}
+
+function form(item) {
+  const pairChoice = item.side === 'B' ? `
+    <fieldset class="choices row"><legend>Which of the two answers was easier to follow?</legend>
+      ${radios('easier', [['A', 'Answer A'], ['B', 'Answer B']])}
+    </fieldset>` : '';
+  show(`
+    <p class="label">${esc(heading(item))}</p>
+    <form id="form">
+      <fieldset><legend><label for="point">What was the main point? One sentence.</label></legend>
+        <textarea id="point" name="point" maxlength="1000" required></textarea>
+      </fieldset>
+      <fieldset class="choices scale"><legend>How much effort did it take to follow?</legend>
+        <p class="hint">How hard you had to work to follow where they were going. Not about how hard the topic is, or whether you agree. Go with your first feeling.</p>
+        ${efforts.map(([name, meaning], i) => `<label><input type="radio" name="effort" value="${i + 1}" required><span><strong>${i + 1}. ${esc(name)}</strong><br><span class="secondary">${esc(meaning)}</span></span></label>`).join('')}
+      </fieldset>
+      ${yesNo('hasSupport', 'Did they give a reason or an example?', 'Something that backed up the point: why it is true, or a real case.')}
+      ${yesNo('clearEnding', 'Did it end clearly?', 'It landed on a final point or wrap-up, rather than just stopping or trailing off.')}
+      ${yesNo('wouldCut', "Was there a part you'd cut?", 'A stretch that didn\'t help you get the point, like a side story that went nowhere or the same idea said twice. Background that sets up the point doesn\'t count.')}
+      ${pairChoice}
+      <fieldset><legend><label for="stoodOut">Anything that stood out? <span class="secondary">(optional)</span></label></legend>
+        <p class="hint">Whatever caught your attention, good or bad, in a few words. For example: where you got lost, something said twice, lots of "um", a long pause, a really clear example.</p>
+        <textarea id="stoodOut" name="stoodOut" maxlength="1000"></textarea>
+      </fieldset>
+      <button type="submit">Next</button>
+      <p id="status" class="error"></p>
+    </form>`);
+  const formEl = document.getElementById('form');
+  formEl.onsubmit = async (event) => {
+    event.preventDefault();
+    const f = new FormData(formEl);
+    const pair = items.filter((i) => i.pair !== null && i.pair === item.pair);
+    const stoodOut = String(f.get('stoodOut')).trim();
+    const submit = formEl.querySelector('button');
+    submit.disabled = true;
+    try {
+      await call({
+        action: 'rate',
+        clip: item.clip,
+        point: String(f.get('point')),
+        effort: Number(f.get('effort')),
+        hasSupport: f.get('hasSupport') === 'yes',
+        clearEnding: f.get('clearEnding') === 'yes',
+        wouldCut: f.get('wouldCut') === 'yes',
+        stoodOut: stoodOut || null,
+        easier: item.side === 'B' ? pair.find((i) => i.side === f.get('easier')).clip : null,
+      });
+      rated.add(item.clip);
+      next();
+    } catch {
+      submit.disabled = false;
+      document.getElementById('status').textContent = "That didn't save. Your answer is still here. Tap Next to try again.";
+    }
+  };
+}
+
+// A link pasted into a tab that already has the page open changes only the part after #, which doesn't reload.
+addEventListener('hashchange', () => location.reload());
+
+(async () => {
+  if (!token) return show('<h1>This page needs your own link</h1><p>Open the link you were sent, including everything after the #.</p>');
+  try {
+    const data = await call({ action: 'start' });
+    items = data.items;
+    rated = new Set(data.rated);
+    if (rated.size === 0) intro(); else next();
+  } catch (e) {
+    if (e.status === 401) return show("<h1>This link doesn't work</h1><p>Check that you opened the whole link you were sent.</p>");
+    showError("The page couldn't load your clips.");
+  }
+})();
+</script>
+</body>
+</html>

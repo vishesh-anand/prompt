@@ -6,6 +6,8 @@
     "test": "deno test --allow-read .",
     "evals:judge": "deno run --allow-net --allow-read --allow-write --allow-env --allow-run --env-file=.env judge.ts",
     "evals:coach": "deno run --allow-net --allow-read --allow-write --allow-env --allow-run --env-file=.env coach.ts",
-    "evals:weekly": "deno run --allow-net --allow-read --allow-write --allow-env --allow-run --env-file=.env weekly.ts"
+    "evals:weekly": "deno run --allow-net --allow-read --allow-write --allow-env --allow-run --env-file=.env weekly.ts",
+    "evals:listener": "deno run --allow-read --allow-write --allow-run listener.ts",
+    "evals:listener-clips": "deno run --allow-read --allow-write --allow-run listener-clips.ts"
   }
 }

@@ -1,0 +1,158 @@
+{
+  "_help": "The listener check's clips. code = the name friends see (cNN). round: calibration (rated first, left out of the results), main (rated and counted) or candidate (copied to eval storage, not shown). retryOf = the code of the first try when this clip is its retry; a main retry whose first try is also main is played as a pair. category is set by hand from what the answer is about (answers before 2026-10-11 were all stored under one placeholder work question). timerStopped = cut off by the 60-second timer. No audio or transcript here.",
+  "clips": [
+    {
+      "code": "c03",
+      "answerId": "7747bef0-6a61-4a58-9b83-9a7294d3b7b9",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/7747bef0-6a61-4a58-9b83-9a7294d3b7b9.m4a",
+      "round": "main",
+      "category": "everyday",
+      "retryOf": null,
+      "timerStopped": true
+    },
+    {
+      "code": "c08",
+      "answerId": "33e3bb77-4f9b-4637-81e4-f5892a965610",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/33e3bb77-4f9b-4637-81e4-f5892a965610.m4a",
+      "round": "main",
+      "category": "everyday",
+      "retryOf": null,
+      "timerStopped": true
+    },
+    {
+      "code": "c09",
+      "answerId": "48ec573e-d896-4e57-8444-303bf0b02c83",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/48ec573e-d896-4e57-8444-303bf0b02c83.m4a",
+      "round": "calibration",
+      "category": "work",
+      "retryOf": null,
+      "timerStopped": true
+    },
+    {
+      "code": "c10",
+      "answerId": "1d9ec811-961f-4296-8976-e14bd5215c2e",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/1d9ec811-961f-4296-8976-e14bd5215c2e.m4a",
+      "round": "main",
+      "category": "everyday",
+      "retryOf": null,
+      "timerStopped": true
+    },
+    {
+      "code": "c11",
+      "answerId": "e5aa7b63-f060-4611-b521-162802a93ddd",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/e5aa7b63-f060-4611-b521-162802a93ddd.m4a",
+      "round": "calibration",
+      "category": "everyday",
+      "retryOf": null,
+      "timerStopped": true
+    },
+    {
+      "code": "c12",
+      "answerId": "977fb7c5-e8f5-468b-81ed-10cc6c11d608",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/977fb7c5-e8f5-468b-81ed-10cc6c11d608.m4a",
+      "round": "main",
+      "category": "everyday",
+      "retryOf": null,
+      "timerStopped": true
+    },
+    {
+      "code": "c13",
+      "answerId": "d7648d1c-12e9-45ee-b0a2-6c607ff98673",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/d7648d1c-12e9-45ee-b0a2-6c607ff98673.m4a",
+      "round": "calibration",
+      "category": "everyday",
+      "retryOf": null,
+      "timerStopped": true
+    },
+    {
+      "code": "c14",
+      "answerId": "aaee8de1-0fd5-47cf-9757-023c3bc03fdd",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/aaee8de1-0fd5-47cf-9757-023c3bc03fdd.m4a",
+      "round": "calibration",
+      "category": "everyday",
+      "retryOf": null,
+      "timerStopped": true
+    },
+    {
+      "code": "c15",
+      "answerId": "e5669315-6ed2-46e7-a675-be528f68491b",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/e5669315-6ed2-46e7-a675-be528f68491b.m4a",
+      "round": "main",
+      "category": "everyday",
+      "retryOf": null,
+      "timerStopped": false
+    },
+    {
+      "code": "c16",
+      "answerId": "21aec571-ab6e-414d-83ec-f2f41b74bad0",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/21aec571-ab6e-414d-83ec-f2f41b74bad0.m4a",
+      "round": "main",
+      "category": "work",
+      "retryOf": null,
+      "timerStopped": true
+    },
+    {
+      "code": "c17",
+      "answerId": "fcd60f03-85e3-4fcd-ae5a-4b8b2e866c05",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/fcd60f03-85e3-4fcd-ae5a-4b8b2e866c05.m4a",
+      "round": "main",
+      "category": "everyday",
+      "retryOf": null,
+      "timerStopped": true
+    },
+    {
+      "code": "c19",
+      "answerId": "765b55c4-c15b-4ecd-9859-fe2c4f1cad8b",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/765b55c4-c15b-4ecd-9859-fe2c4f1cad8b.m4a",
+      "round": "main",
+      "category": "work",
+      "retryOf": null,
+      "timerStopped": true
+    },
+    {
+      "code": "c21",
+      "answerId": "a225d285-3139-4f98-afb9-4e0aa6a020e5",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/a225d285-3139-4f98-afb9-4e0aa6a020e5.m4a",
+      "round": "main",
+      "category": "work",
+      "retryOf": null,
+      "timerStopped": false
+    },
+    {
+      "code": "c22",
+      "answerId": "7116b6e3-1df8-45c3-ac1c-92147f7d4b78",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/7116b6e3-1df8-45c3-ac1c-92147f7d4b78.m4a",
+      "round": "main",
+      "category": "work",
+      "retryOf": "c21",
+      "timerStopped": false
+    },
+    {
+      "code": "c23",
+      "answerId": "2595b456-af57-4b0d-9dd9-38fe24735438",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/2595b456-af57-4b0d-9dd9-38fe24735438.m4a",
+      "round": "main",
+      "category": "work",
+      "retryOf": null,
+      "timerStopped": false
+    },
+    {
+      "code": "c25",
+      "answerId": "9233e784-8471-436a-891a-d41816159fe1",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/9233e784-8471-436a-891a-d41816159fe1.m4a",
+      "round": "main",
+      "category": "work",
+      "retryOf": "c23",
+      "timerStopped": false
+    },
+    {
+      "code": "c26",
+      "answerId": "d0871cf8-5603-42e4-a995-54da6bce67b3",
+      "audioPath": "a56ee738-5ba8-435e-9d40-58b19a3b3d1c/d0871cf8-5603-42e4-a995-54da6bce67b3.m4a",
+      "round": "main",
+      "category": "everyday",
+      "retryOf": null,
+      "timerStopped": false
+    }
+  ]
+}

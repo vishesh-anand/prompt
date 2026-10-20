@@ -12,9 +12,19 @@ Things we chose not to do yet, or could not check, so they don't get forgotten. 
 - **Progress in dark mode and at large text, and with VoiceOver.** No screenshots were taken in dark mode or at accessibility text sizes, and the chart's spoken summary was only unit-tested. *When:* before TestFlight.
 - **A parallel call against the deployed weekly-note function.** The claim is covered by unit tests (one model call for 2 and 10 concurrent requests, tests fail without the claim), by `step8.sql` and by one real claim and rewrite. Two real requests at the same moment were not sent. *When:* if the weekly note's cost looks wrong in the Anthropic usage page. *Recheck in step F:* the coach's note replaces the weekly note, so this may change or go away.
 
+- **The listener page on Android.** The owner checked it on an iPhone (2026-10-20: playback, the form, coming back to the link, dark mode, large text). Nobody has tried it on Android. *When:* before sending a link to a friend with an Android phone.
+
 - **The filler study behind "a few is fine" was only seen in a summary.** Laske et al. 2024 (12 fillers a minute hurt listener ratings, 5 did not) came from a secondary write-up. Read the paper before any filler number is shown to users or used as a threshold. *When:* step B or D, before fillers are flagged.
 
 ## Left for later
+
+- **Step A, part 2 (after step B): the listener check's ratings.** Part 1 built the bucket, the table, the function, the page and the scripts, and holds 17 of the owner's clips (4 practice, 9 single answers, 2 pairs), chosen from the transcripts: setup tests, scripted readings, a second retry of one answer, extra F1 topics and one clip with a remark about a friend were left out. Still to do:
+  1. record about 10 to 12 new answers with the 2-minute timer (about 6 Everyday and 3 to 4 Try-again pairs; flow 02 first);
+  2. set the final rounds in `clips.json` (4 calibration, about 28 main, the rest candidate) and redeploy `listener-check`;
+  3. write what you meant for each clip; make the friends' links; calibration call; main round;
+  4. mark point matches in `evals/listener/point-matches.json`, then run `npm run evals:listener`. *When:* after step B.
+- **A friend can hear a clip twice by reloading the page mid-clip.** The page has no replay button, and a rated clip is never played again, but nothing on the server counts plays. *When:* if a friend says they heard one twice; the fix is a `played_at` column checked in `play`.
+- **"Delete all my data" and the eval clips.** Today `eval-clips` and `listener_ratings` hold only the owner's clips and friends' pseudonymous ratings. Once testers' clips are added (where `consent_to_improve` is yes), delete-account must remove their copies from `eval-clips`. *When:* step 9, or before the first tester clip is copied.
 
 - **The AI listener may be too generous.** It reads a transcript, can re-read it, and knows every topic, so it may "get the point" more often than a tired person hearing you once. The "That's what I meant" tap and the listener check are the guards. *When:* step C, when the map eval runs against the friends' ratings.
 - **Vague words and "and" chaining are stored, not shown.** Each has one line of evidence (vague words from lecture studies, "and" chaining from one second-language study). Show them only if the listener check shows they go with harder-to-follow answers. *When:* after step A's results.
