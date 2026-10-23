@@ -9,6 +9,7 @@ export const weekAnswerSchema = z.object({
   retry_of: z.string().nullable(),
   created_at: z.string(),
   duration_ms: z.number(),
+  time_limit_ms: z.number(),
   metrics: metricsSchema.nullable(),
   judgement: judgementSchema.nullable(),
 });

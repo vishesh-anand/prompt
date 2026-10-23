@@ -78,14 +78,14 @@ for (const m of models) {
   let current: Usage[] = [];
   const model = anthropicModel(apiKey, { model: m.model, effort, onUsage: (u) => current.push(u) });
   for (const clip of clips) {
-    const { transcript, durationMs } = transcriptOf(clip);
+    const { transcript, durationMs, timeLimitMs } = transcriptOf(clip);
     for (let run = 1; run <= runsPerClip; run++) {
       current = [];
       let failedAttempts = 0;
       const started = performance.now();
       const base = { model: m.id, clip: clip.answerId, run };
       try {
-        const result: JudgeResult = await judge({ question: clip.question!, transcript, stoppedByTimeLimit: stoppedByTimeLimit(durationMs) }, model, {
+        const result: JudgeResult = await judge({ question: clip.question!, transcript, stoppedByTimeLimit: stoppedByTimeLimit(durationMs, timeLimitMs) }, model, {
           onAttemptFailed: () => failedAttempts++,
         });
         const j = result.judgement;

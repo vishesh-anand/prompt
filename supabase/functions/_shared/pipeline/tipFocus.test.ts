@@ -2,32 +2,27 @@ import { assertEquals } from 'jsr:@std/assert@1';
 
 import type { SavedJudgement } from '../schemas/judgement.ts';
 import type { Metrics } from '../schemas/metrics.ts';
+import { testMetrics } from '../testMetrics.ts';
 import { chooseFocus } from './tipFocus.ts';
 
 const mark = (score: 0 | 1 | 2, quote = 'q') => ({ score, quotes: [quote], why: 'w' });
 
 // An answer with nothing wrong, to change one thing at a time.
 const clean: { metrics: Metrics; judgement: SavedJudgement; stoppedByTimeLimit: boolean } = {
-  metrics: {
-    wordCount: 100,
-    fillers: { total: 0, byWord: {} },
-    pace: { wordsPerMinute: 140, band: 'good' },
-    pauses: { count: 0, longestMs: 0, atSeconds: [] },
-    restarts: { count: 0, atSeconds: [] },
-  },
+  metrics: testMetrics(),
   judgement: { mainPoint: mark(2, 'I like cats.'), reasonOrExample: mark(2), ending: mark(2), mainPointAtSeconds: 2 },
   stoppedByTimeLimit: false,
 };
 
 const withJudgement = (j: Partial<SavedJudgement>) => ({ ...clean, judgement: { ...clean.judgement, ...j } });
-const withMetrics = (m: Partial<Metrics>) => ({ ...clean, metrics: { ...clean.metrics, ...m } });
+const withMetrics = (m: Parameters<typeof testMetrics>[0]) => ({ ...clean, metrics: testMetrics(m) });
 
 Deno.test('nothing wrong is a polish tip', () => {
   assertEquals(chooseFocus(clean).kind, 'polish');
 });
 
 Deno.test('a missing main point beats everything else', () => {
-  const input = { ...withJudgement({ mainPoint: mark(0), ending: mark(0), reasonOrExample: mark(0) }), metrics: { ...clean.metrics, fillers: { total: 20, byWord: { um: 20 } } } };
+  const input = { ...withJudgement({ mainPoint: mark(0), ending: mark(0), reasonOrExample: mark(0) }), metrics: testMetrics({ fillers: { total: 20, byWord: { um: 20 } } }) };
   assertEquals(chooseFocus(input).kind, 'main_point');
 });
 
@@ -54,8 +49,6 @@ Deno.test('reason or example is the lowest priority: it only wins when nothing e
   assertEquals(chooseFocus(withJudgement({ reasonOrExample: mark(0), ending: mark(1) })).kind, 'ending');
   const mildFillers = withMetrics({ fillers: { total: 3, byWord: { like: 3 } } });
   assertEquals(chooseFocus({ ...mildFillers, judgement: { ...clean.judgement, reasonOrExample: mark(0) } }).kind, 'fillers');
-  const mildRestarts = withMetrics({ restarts: { count: 2, atSeconds: [5, 9] } });
-  assertEquals(chooseFocus({ ...mildRestarts, judgement: { ...clean.judgement, reasonOrExample: mark(0) } }).kind, 'restarts');
   // A missing reason (0) still ranks above a general one (1) when both are the only thing flagged.
   assertEquals(chooseFocus(withJudgement({ reasonOrExample: mark(0, 'nothing') })).facts.quote, 'nothing');
 });
@@ -70,16 +63,24 @@ Deno.test('fillers are judged per 100 words, with the most said first', () => {
 });
 
 Deno.test('severe fillers beat a moderate weak ending', () => {
-  const input = { ...withJudgement({ ending: mark(1) }), metrics: { ...clean.metrics, fillers: { total: 9, byWord: { um: 9 } } } };
+  const input = { ...withJudgement({ ending: mark(1) }), metrics: testMetrics({ fillers: { total: 9, byWord: { um: 9 } } }) };
   assertEquals(chooseFocus(input).kind, 'fillers');
 });
 
-Deno.test('speed and restarts only count when clearly off', () => {
+Deno.test('speed only counts when clearly off', () => {
   assertEquals(chooseFocus(withMetrics({ pace: { wordsPerMinute: 190, band: 'too_fast' } })).kind, 'speed');
   assertEquals(chooseFocus(withMetrics({ pace: { wordsPerMinute: null, band: null } })).kind, 'polish');
-  assertEquals(chooseFocus(withMetrics({ restarts: { count: 3, atSeconds: [5, 9, 20] } })).kind, 'restarts');
-  assertEquals(chooseFocus(withMetrics({ restarts: { count: 2, atSeconds: [5, 9] } })).kind, 'restarts');
-  assertEquals(chooseFocus(withMetrics({ restarts: { count: 1, atSeconds: [5] } })).kind, 'polish');
+});
+
+Deno.test('repeats, hedges, pauses, vague words and "and" are never the tip', () => {
+  const busy = withMetrics({
+    repeats: { count: 9, atSeconds: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+    hedges: { total: 5, byPhrase: { 'kind of': 5 }, atSeconds: [1, 2, 3, 4, 5] },
+    pauses: [{ atSeconds: 3, ms: 2500, midSentence: true }],
+    vagueWords: { total: 8, byWord: { thing: 8 } },
+    ands: { count: 20 },
+  });
+  assertEquals(chooseFocus(busy).kind, 'polish');
 });
 
 Deno.test('an answer with no words has no filler rate to divide by', () => {

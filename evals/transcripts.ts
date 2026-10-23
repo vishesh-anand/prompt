@@ -4,9 +4,10 @@ import { type Transcript, transcriptSchema } from '../supabase/functions/_shared
 
 // The transcripts the pipeline saved on each answer, which are the exact words the owner scored and quoted.
 // They are fetched once through the Supabase CLI and kept in the git-ignored out/ folder.
-export type SavedTranscript = { durationMs: number; transcript: Transcript };
+export type SavedTranscript = { durationMs: number; timeLimitMs: number; transcript: Transcript };
 
-const saved = z.object({ durationMs: z.number(), transcript: transcriptSchema });
+// Files cached before step B have no limit; every answer then stopped at 60 seconds.
+const saved = z.object({ durationMs: z.number(), timeLimitMs: z.number().default(60_000), transcript: transcriptSchema });
 const cacheDir = 'out/transcripts';
 
 export async function loadTranscripts(clips: { answerId: string }[]): Promise<Map<string, SavedTranscript>> {
@@ -24,17 +25,17 @@ export async function loadTranscripts(clips: { answerId: string }[]): Promise<Ma
 
   const ids = missing.map((id) => `'${id}'`).join(',');
   const { success, stdout, stderr } = await new Deno.Command('npx', {
-    args: ['supabase', 'db', 'query', '--linked', `select id::text as id, duration_ms, transcript from public.answers where id in (${ids})`, '-o', 'json'],
+    args: ['supabase', 'db', 'query', '--linked', `select id::text as id, duration_ms, time_limit_ms, transcript from public.answers where id in (${ids})`, '-o', 'json'],
     stdout: 'piped',
     stderr: 'piped',
   }).output();
   const text = new TextDecoder().decode(stdout);
   if (!success || !text.includes('{')) throw new Error(`Could not load transcripts: ${new TextDecoder().decode(stderr) || text}`);
   const rows = z
-    .object({ rows: z.array(z.object({ id: z.string(), duration_ms: z.number(), transcript: transcriptSchema })) })
+    .object({ rows: z.array(z.object({ id: z.string(), duration_ms: z.number(), time_limit_ms: z.number(), transcript: transcriptSchema })) })
     .parse(JSON.parse(text.slice(text.indexOf('{')))).rows;
   for (const row of rows) {
-    const one = { durationMs: row.duration_ms, transcript: row.transcript };
+    const one = { durationMs: row.duration_ms, timeLimitMs: row.time_limit_ms, transcript: row.transcript };
     await Deno.writeTextFile(`${cacheDir}/${row.id}.json`, JSON.stringify(one));
     found.set(row.id, one);
   }

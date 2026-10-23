@@ -4,7 +4,7 @@ import { stoppedByTimeLimit } from '@/features/recording/limits';
 import type { Judgement } from '@/lib/schemas/judgement';
 import type { Metrics } from '@/lib/schemas/metrics';
 
-export type Attempt = { metrics: Metrics; judgement: Judgement; durationMs: number; tip?: string };
+export type Attempt = { metrics: Metrics; judgement: Judgement; durationMs: number; timeLimitMs: number; tip?: string };
 
 export type CompareRow = {
   id: 'fillers' | 'speed' | 'mainPoint' | 'reasonOrExample' | 'ending';
@@ -64,11 +64,11 @@ function speedRow(first: Attempt, latest: Attempt): CompareRow {
   };
 }
 
-// The three marks of a clear point. The ending is left out of the comparison when the 60 seconds ran out
+// The three marks of a clear point. The ending is left out of the comparison when the time ran out
 // on either try: nobody chose where that answer stopped, so a better or worse ending means nothing.
 function markRows(first: Attempt, latest: Attempt): CompareRow[] {
-  const firstRanOut = stoppedByTimeLimit(first.durationMs);
-  const latestRanOut = stoppedByTimeLimit(latest.durationMs);
+  const firstRanOut = stoppedByTimeLimit(first.durationMs, first.timeLimitMs);
+  const latestRanOut = stoppedByTimeLimit(latest.durationMs, latest.timeLimitMs);
   const before = describeJudgement(first.judgement, { stoppedByTimeLimit: firstRanOut });
   const after = describeJudgement(latest.judgement, { stoppedByTimeLimit: latestRanOut });
   const scores = [

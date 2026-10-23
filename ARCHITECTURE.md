@@ -111,7 +111,8 @@ All tables use Row Level Security: a person can only ever read or change their o
 **answers**
 - `id`, `user_id`, `question_id`, `created_at`
 - `retry_of` (points to the first attempt when this is a retry)
-- `audio_path`, `duration_ms` (up to 2 minutes, with a few seconds of margin), `audio_deleted_at`
+- `audio_path`, `duration_ms` (up to the answer's limit, with a few seconds of margin), `audio_deleted_at`
+- `time_limit_ms` (the limit it was recorded with: 2 minutes on a first try, 90 seconds on a retry, 60 seconds before step B; the "time ran out" rule uses it)
 - `status`: `uploaded` → `transcribed` → `measured` → `mapped` → `coached`, or `failed`
 - `transcript` (words with start and end times)
 - `metrics` (counted by code: fillers and which ones, fillers a minute, pace, pauses and whether each fell mid-sentence or between sentences, repeats, hedges, vague words, "and" chaining)
@@ -288,7 +289,7 @@ Then:
 
 Evals are built alongside step 4 and grow with steps 5 and 6, then with A to F.
 
-**Where the code is:** this file describes the app after A to F. Until those steps land, the code still has the judge stage and its three marks (`judgement`, `evals:judge`), the 60-second timer, the calendar-week note and chart, and Measure's "restarts" (which are really repeats). Each step's plan says what it changes.
+**Where the code is:** this file describes the app after A to F. Until those steps land, the code still has the judge stage and its three marks (`judgement`, `evals:judge`), and the calendar-week note and chart. Each step's plan says what it changes.
 
 ## Open decisions
 

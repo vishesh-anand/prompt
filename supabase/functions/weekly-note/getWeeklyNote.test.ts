@@ -1,6 +1,7 @@
 import { assertEquals, assertRejects } from 'jsr:@std/assert@1';
 
 import type { Model, PromptFile } from '../_shared/providers/model.ts';
+import { testMetrics } from '../_shared/testMetrics.ts';
 import type { AnswerRow } from '../_shared/weeklyFacts.ts';
 import { claimSeconds, daysNeeded, getWeeklyNote, maxAttemptsPerWeek, modelRetries, type SavedNote, type Store, worstCaseModelMs } from './getWeeklyNote.ts';
 
@@ -9,13 +10,8 @@ const answer = (iso: string, o: { retry?: boolean } = {}): AnswerRow => ({
   created_at: iso,
   retry_of: o.retry ? 'first' : null,
   duration_ms: 30_000,
-  metrics: {
-    wordCount: 80,
-    fillers: { total: 4, byWord: {} },
-    pace: { wordsPerMinute: 140, band: 'good' },
-    pauses: { count: 0, longestMs: 0, atSeconds: [] },
-    restarts: { count: 0, atSeconds: [] },
-  },
+  time_limit_ms: 120_000,
+  metrics: testMetrics({ wordCount: 80, fillers: { total: 4, byWord: {} } }),
   judgement: { mainPoint: mark, reasonOrExample: mark, ending: mark, mainPointAtSeconds: 2 },
 });
 

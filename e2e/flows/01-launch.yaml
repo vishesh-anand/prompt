@@ -11,4 +11,5 @@ appId: com.visheshanand.prompt
 - assertVisible: "Everyday conversation"
 - assertVisible:
     id: "home-question"
-- assertVisible: "(Your streak starts with today's answer\\.|Streak: .* in a row)"
+# With no streak, Home groups the line for VoiceOver as "No streak yet".
+- assertVisible: "(No streak yet|Your streak starts with today's answer\\.|Streak: .* in a row)"

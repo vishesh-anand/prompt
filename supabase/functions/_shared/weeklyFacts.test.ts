@@ -1,22 +1,18 @@
 import { assertEquals } from 'jsr:@std/assert@1';
 
+import { testMetrics } from './testMetrics.ts';
 import { type AnswerRow, weeklyFacts } from './weeklyFacts.ts';
 
 const mark = (score: number) => ({ score, quotes: ['x'], why: 'x' });
-function row(iso: string, o: { retry?: boolean; fillers?: number; ms?: number; wpm?: number | null; main?: number; reason?: number; ending?: number; scored?: boolean; words?: number } = {}): AnswerRow {
-  const { retry = false, fillers = 6, ms = 30_000, wpm = 140, main = 1, reason = 1, ending = 1, scored = true, words = 100 } = o;
+function row(iso: string, o: { retry?: boolean; fillers?: number; ms?: number; wpm?: number | null; main?: number; reason?: number; ending?: number; scored?: boolean; words?: number; limit?: number } = {}): AnswerRow {
+  const { retry = false, fillers = 6, ms = 30_000, wpm = 140, main = 1, reason = 1, ending = 1, scored = true, words = 100, limit = 120_000 } = o;
   return {
     created_at: iso,
     retry_of: retry ? 'first' : null,
     duration_ms: ms,
+    time_limit_ms: limit,
     metrics: scored
-      ? {
-          wordCount: words,
-          fillers: { total: fillers, byWord: {} },
-          pace: { wordsPerMinute: wpm, band: wpm === null ? null : 'good' },
-          pauses: { count: 0, longestMs: 0, atSeconds: [] },
-          restarts: { count: 0, atSeconds: [] },
-        }
+      ? testMetrics({ wordCount: words, fillers: { total: fillers, byWord: {} }, pace: { wordsPerMinute: wpm, band: wpm === null ? null : 'good' } })
       : null,
     judgement: scored && words > 0 ? { mainPoint: mark(main), reasonOrExample: mark(reason), ending: mark(ending), mainPointAtSeconds: 3 } : null,
   };
@@ -46,7 +42,7 @@ Deno.test('applies the same rules as the phone: per minute, first attempts only,
     answers: [
       row('2026-10-06T15:00:00Z', { fillers: 6, ms: 30_000 }), // 12 a minute, clear point 3
       row('2026-10-06T15:10:00Z', { retry: true, fillers: 0 }), // a retry, left out of the numbers
-      row('2026-10-07T15:00:00Z', { fillers: 4, ms: 60_000, main: 2, reason: 1, ending: 0 }), // time ran out: 4.5
+      row('2026-10-07T15:00:00Z', { fillers: 4, ms: 60_000, limit: 60_000, main: 2, reason: 1, ending: 0 }), // time ran out (before step B): 4.5
     ],
     start: null,
   });

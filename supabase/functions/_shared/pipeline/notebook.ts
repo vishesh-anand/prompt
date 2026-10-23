@@ -28,7 +28,7 @@ export function updateNotebook({ previousNotes, judgement, metrics, tip }: Input
           ending: judgement.ending.score,
           mainPointAtSeconds: judgement.mainPointAtSeconds,
         },
-        measurements: metrics,
+        measurements: notebookMeasurements(metrics),
         tipGiven: tip,
       },
       schema: notebookSchema,
@@ -38,4 +38,17 @@ export function updateNotebook({ previousNotes, judgement, metrics, tip }: Input
     if (text.length > notebookMaxChars) throw new Error(`notebook reply is ${text.length} characters, more than ${notebookMaxChars}`);
     return text;
   }, onAttemptFailed);
+}
+
+// Only what the feedback can talk about. Measures that are stored but not shown yet (vague words, "and") stay out, so
+// they can't reach the notes and, through them, the coach's tips.
+function notebookMeasurements({ wordCount, fillers, pace, pauses, repeats, hedges }: Metrics) {
+  return {
+    wordCount,
+    fillers: { total: fillers.total, byWord: fillers.byWord, perMinute: fillers.perMinute },
+    pace,
+    midSentencePauses: pauses.filter((p) => p.midSentence).length,
+    repeats: repeats.count,
+    hedges: { total: hedges.total, byPhrase: hedges.byPhrase },
+  };
 }

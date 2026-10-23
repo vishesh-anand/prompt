@@ -19,7 +19,10 @@ function say(sentence: string, { wordSeconds = 0.4, gaps = {} }: { wordSeconds?:
   return { words };
 }
 
-const fillers = (sentence: string) => measure({ transcript: say(sentence) }).fillers;
+const fillers = (sentence: string) => {
+  const { total, byWord } = measure({ transcript: say(sentence) }).fillers;
+  return { total, byWord };
+};
 
 Deno.test('counts um and uh, including longer spellings', () => {
   assertEquals(fillers('Um I went, uh, there umm and uhh back'), { total: 4, byWord: { um: 2, uh: 2 } });
@@ -99,28 +102,94 @@ Deno.test('too few words give no speed', () => {
   assertEquals(measure({ transcript: few }).pace, { wordsPerMinute: null, band: null });
 });
 
-Deno.test('long pauses: only gaps of the named length or more', () => {
+Deno.test('pauses: only gaps of the named length or more, each with its length', () => {
   const longEnough = longPauseMs / 1000;
   const result = measure({ transcript: say('one two three four five six', { gaps: { 2: longEnough, 4: longEnough - 0.1 } }) });
-  assertEquals(result.pauses.count, 1);
-  assertEquals(result.pauses.longestMs, longPauseMs);
-  assertEquals(result.pauses.atSeconds, [0.8]); // the second word ends at 0.8s
+  assertEquals(result.pauses, [{ atSeconds: 0.8, ms: longPauseMs, midSentence: true }]); // the second word ends at 0.8s
 });
 
-Deno.test('restarts: a repeated phrase is one restart, ignoring punctuation and fillers', () => {
-  assertEquals(measure({ transcript: say('I think, I think we should go') }).restarts, { count: 1, atSeconds: [0.8] });
-  assertEquals(measure({ transcript: say('I think um I think we should go') }).restarts.count, 1);
-  assertEquals(measure({ transcript: say('We went to the, the shop') }).restarts.count, 1);
-  assertEquals(measure({ transcript: say('I think I think I think so') }).restarts.count, 2);
-  assertEquals(measure({ transcript: say('We went to the shop and then home') }).restarts.count, 0);
+Deno.test('pauses: after a full stop, question mark or exclamation mark is between sentences, anywhere else mid-sentence', () => {
+  const where = (sentence: string) => measure({ transcript: say(sentence, { gaps: { 3: 1.5 } }) }).pauses.map((p) => p.midSentence);
+  assertEquals(where('I went home. Then I slept'), [false]);
+  assertEquals(where('Did you go? Yes I did'), [false]);
+  assertEquals(where('I went "home." Then slept'), [false]);
+  assertEquals(where('I went to the shop'), [true]);
+  // A comma is still inside the sentence.
+  assertEquals(where('I went home, then I slept'), [true]);
+});
+
+Deno.test('repeats: a repeated phrase is one repeat, ignoring punctuation and fillers', () => {
+  assertEquals(measure({ transcript: say('I think, I think we should go') }).repeats, { count: 1, atSeconds: [0.8] });
+  assertEquals(measure({ transcript: say('I think um I think we should go') }).repeats.count, 1);
+  assertEquals(measure({ transcript: say('We went to the, the shop') }).repeats.count, 1);
+  assertEquals(measure({ transcript: say('I think I think I think so') }).repeats.count, 2);
+  assertEquals(measure({ transcript: say('We went to the shop and then home') }).repeats.count, 0);
+});
+
+const hedges = (sentence: string) => measure({ transcript: say(sentence) }).hedges;
+
+Deno.test('hedges: kind of, sort of, kinda, sorta and I guess, with when each started', () => {
+  assertEquals(hedges('It was kind of hard and I guess sort of fun'), {
+    total: 3,
+    byPhrase: { 'kind of': 1, 'i guess': 1, 'sort of': 1 },
+    atSeconds: [0.8, 2.4, 3.2],
+  });
+  assertEquals(hedges('It was kinda fun, sorta').byPhrase, { kinda: 1, sorta: 1 });
+});
+
+Deno.test('hedges: "kind of" after a word that makes it a noun is not a hedge', () => {
+  assertEquals(hedges('What kind of car is it').total, 0);
+  assertEquals(hedges('It is a sort of tool').total, 0);
+  assertEquals(hedges('I like this kind of thing').total, 0);
+  // Words split by a comma are not the phrase: "a kind, of course".
+  assertEquals(hedges('It was kind, of course').total, 0);
+  // A comma before it means the noun word is not attached: "it was a, kind of, mess".
+  assertEquals(hedges('It was a, kind of, mess').total, 1);
+});
+
+const vague = (sentence: string) => measure({ transcript: say(sentence) }).vagueWords;
+
+Deno.test('vague words: unclear names, amounts and kinds', () => {
+  assertEquals(vague('We did a lot of things and some stuff').byWord, { 'a lot': 1, things: 1, some: 1, stuff: 1 });
+  assertEquals(vague('A few types of aspects came up somehow, something various').byWord, {
+    'a few': 1,
+    'types of': 1,
+    aspects: 1,
+    somehow: 1,
+    something: 1,
+    various: 1,
+  });
+  assertEquals(vague('We shipped the checkout page in March').total, 0);
+});
+
+Deno.test('vague words: "kind of" is only ever a hedge, and fillers are not counted again', () => {
+  assertEquals(vague('It was kind of basically, you know, fine').total, 0);
+  // "some" before a noun "kind of" is still a vague amount.
+  assertEquals(vague('Some kind of answer').byWord, { some: 1 });
+});
+
+Deno.test('"and" chaining: every and is counted', () => {
+  assertEquals(measure({ transcript: say('I went and then, and so, I slept. And that was it and done') }).ands, { count: 4 });
+  assertEquals(measure({ transcript: say('Salt and pepper') }).ands, { count: 1 });
+});
+
+Deno.test('fillers a minute are over the time spoken, not the silence around it', () => {
+  // 4 fillers among 20 words of 0.4s each: 8s spoken, so 30 a minute.
+  const result = measure({ transcript: say('um uh like basically ' + twenty.split(' ').slice(4).join(' '), { gaps: { 0: 5 } }) });
+  assertEquals(result.speakingSeconds, 8);
+  assertEquals(result.fillers.perMinute, 30);
 });
 
 Deno.test('an empty transcript measures as nothing', () => {
   assertEquals(measure({ transcript: { words: [] } }), {
     wordCount: 0,
-    fillers: { total: 0, byWord: {} },
+    speakingSeconds: 0,
+    fillers: { total: 0, byWord: {}, perMinute: null },
     pace: { wordsPerMinute: null, band: null },
-    pauses: { count: 0, longestMs: 0, atSeconds: [] },
-    restarts: { count: 0, atSeconds: [] },
+    pauses: [],
+    repeats: { count: 0, atSeconds: [] },
+    hedges: { total: 0, byPhrase: {}, atSeconds: [] },
+    vagueWords: { total: 0, byWord: {} },
+    ands: { count: 0 },
   });
 });

@@ -6,7 +6,7 @@ import { AppState } from 'react-native';
 import { recordingMotion } from '@/design';
 
 import { e2eTake } from './e2eTake';
-import { maxAnswerMs, minAnswerMs } from './limits';
+import { minAnswerMs } from './limits';
 
 export type RecordingPhase = 'idle' | 'starting' | 'recording' | 'stopping';
 
@@ -24,11 +24,13 @@ function toLevel(db: number | undefined): number {
 }
 
 type Options = {
+  // When the recording stops on its own: 2 minutes on a first try, 90 seconds on a retry.
+  limitMs: number;
   // Called if the screen goes away mid-answer, once the recording is safely stopped. Only for takes long enough to score.
   onLeftMidAnswer: (take: { uri: string; durationMs: number }) => void;
 };
 
-export function useRecording({ onLeftMidAnswer }: Options) {
+export function useRecording({ limitMs, onLeftMidAnswer }: Options) {
   const recorder = useAudioRecorder(recorderOptions);
   const state = useAudioRecorderState(recorder, recordingMotion.meterIntervalMs);
   const [phase, setPhase] = useState<RecordingPhase>('idle');
@@ -105,9 +107,9 @@ export function useRecording({ onLeftMidAnswer }: Options) {
   const onLimitReached = useEffectEvent(() => void stop());
   useEffect(() => {
     if (phase !== 'recording') return;
-    const timer = setTimeout(() => onLimitReached(), maxAnswerMs);
+    const timer = setTimeout(() => onLimitReached(), limitMs);
     return () => clearTimeout(timer);
-  }, [phase]);
+  }, [phase, limitMs]);
 
   // Leaving the app mid-answer keeps what you said so far. Subscribed once.
   const onBackground = useEffectEvent(() => void stop());

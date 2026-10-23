@@ -5,9 +5,9 @@ import { metricsSchema } from './schemas/metrics.ts';
 
 // Plain code, no AI. The numbers the weekly note is written from. The same rules as the phone's chart
 // (app/src/features/progress/daySeries.ts): first attempts only, filler words per minute, the three marks out of 6
-// with the ending left out when the 60 seconds ran out. Every answer still counts as a practice day.
+// with the ending left out when the time ran out. Every answer still counts as a practice day.
 
-export type AnswerRow = { created_at: string; retry_of: string | null; duration_ms: number; metrics: unknown; judgement: unknown };
+export type AnswerRow = { created_at: string; retry_of: string | null; duration_ms: number; time_limit_ms: number; metrics: unknown; judgement: unknown };
 
 export type Numbers = { fillersPerMinute: number | null; wordsPerMinute: number | null; clearPoint: number | null };
 
@@ -38,7 +38,7 @@ export function numbersOf(row: AnswerRow): Numbers {
   let clearPoint: number | null = null;
   if (measured && judgement.success) {
     const { mainPoint, reasonOrExample, ending } = judgement.data;
-    clearPoint = stoppedByTimeLimit(row.duration_ms)
+    clearPoint = stoppedByTimeLimit(row.duration_ms, row.time_limit_ms)
       ? ((mainPoint.score + reasonOrExample.score) / 4) * 6
       : mainPoint.score + reasonOrExample.score + ending.score;
   }

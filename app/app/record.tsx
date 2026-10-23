@@ -12,7 +12,7 @@ export default function Record() {
   const router = useRouter();
   const mic = useMicPermission();
   const params = useLocalSearchParams<{ questionId?: string; retryOf?: string }>();
-  const { missingQuestion, question, recording, saveStatus, answerId, retry } = useAnswerFlow(params);
+  const { missingQuestion, question, recording, limitMs, saveStatus, answerId, retry } = useAnswerFlow(params);
   const { phase, level, take, failed, toggle, reset } = recording;
   const isRecording = phase === 'recording';
   const saving = take && !take.tooShort;
@@ -55,7 +55,7 @@ export default function Record() {
           </View>
         ) : mic.status === 'granted' && question.data ? (
           <>
-            <RecordingCircle recording={isRecording} level={level} onPress={toggle} />
+            <RecordingCircle recording={isRecording} level={level} onPress={toggle} limitMs={limitMs} />
             <View style={styles.hint}>
               {failed ? (
                 <Text variant="body" color="textSecondary">

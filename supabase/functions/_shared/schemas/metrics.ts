@@ -20,24 +20,36 @@ export const paceBandSchema = z.enum(['too_slow', 'good', 'too_fast']);
 // shape in app/src/lib/schemas/metrics.ts.
 export const metricsSchema = z.object({
   wordCount: z.number(),
+  // From the first word's start to the last word's end, so silence at either end doesn't count.
+  speakingSeconds: z.number(),
   fillers: z.object({
     total: z.number(),
     // Each filler that was said, with how many times: { um: 4, like: 3 }.
     byWord: z.record(z.string(), z.number()),
+    perMinute: z.number().nullable(), // null when no time was spoken
   }),
   pace: z.object({
     wordsPerMinute: z.number().nullable(), // null when there are too few words to say
     band: paceBandSchema.nullable(),
   }),
-  pauses: z.object({
-    count: z.number(),
-    longestMs: z.number(),
-    atSeconds: z.array(z.number()),
-  }),
-  restarts: z.object({
+  // Each long silence between two words: where it started, how long it was, and whether it fell inside a sentence.
+  pauses: z.array(z.object({ atSeconds: z.number(), ms: z.number(), midSentence: z.boolean() })),
+  // The same 1 to 3 words said twice in a row: "I think, I think".
+  repeats: z.object({
     count: z.number(),
     atSeconds: z.array(z.number()),
   }),
+  hedges: z.object({
+    total: z.number(),
+    byPhrase: z.record(z.string(), z.number()),
+    atSeconds: z.array(z.number()),
+  }),
+  // Stored, not shown, until the listener check shows they matter (ARCHITECTURE.md, Evals).
+  vagueWords: z.object({
+    total: z.number(),
+    byWord: z.record(z.string(), z.number()),
+  }),
+  ands: z.object({ count: z.number() }),
 });
 
 export type Metrics = z.infer<typeof metricsSchema>;

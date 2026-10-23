@@ -9,9 +9,10 @@ import { twice } from './twice.ts';
 // every quote is real and counts when the main point came. Saved on every answer in pipeline_version.
 export const judgeVersion = judgePrompt.version;
 
-// PRODUCT.md "Recording": answers stop at 60 seconds. A little slack for the recorder's last few ms.
-const timeLimitMs = 60_000;
-export function stoppedByTimeLimit(durationMs: number): boolean {
+// Did the time limit stop this answer? Each answer stores the limit it was recorded with (time_limit_ms: 2 minutes on a
+// first try, 90 seconds on a retry, 60 seconds before step B). A little slack for the recorder's last few ms.
+// Same rule as stoppedByTimeLimit in app/src/features/recording/limits.ts.
+export function stoppedByTimeLimit(durationMs: number, timeLimitMs: number): boolean {
   return durationMs >= timeLimitMs - 500;
 }
 

@@ -23,8 +23,8 @@ export function useCompare(answerId: string) {
   if (latest.isError || first.isError || (b && b.retry_of === null)) view = 'unavailable';
   else if (a && b) {
     if (a.metrics && a.judgement && b.metrics && b.judgement) {
-      const firstTry: Attempt = { metrics: a.metrics, judgement: a.judgement, durationMs: a.duration_ms, tip: a.coaching?.tip };
-      const latestTry: Attempt = { metrics: b.metrics, judgement: b.judgement, durationMs: b.duration_ms, tip: b.coaching?.tip };
+      const firstTry: Attempt = { metrics: a.metrics, judgement: a.judgement, durationMs: a.duration_ms, timeLimitMs: a.time_limit_ms, tip: a.coaching?.tip };
+      const latestTry: Attempt = { metrics: b.metrics, judgement: b.judgement, durationMs: b.duration_ms, timeLimitMs: b.time_limit_ms, tip: b.coaching?.tip };
       result = compareAttempts(firstTry, latestTry);
       view = 'ready';
     } else {

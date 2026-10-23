@@ -1,3 +1,4 @@
+import { sampleMetrics } from '@/lib/sampleMetrics';
 import type { WeekAnswer } from '@/lib/schemas/progress';
 
 import { noteMessage, noteView, startMessage, startView } from './progressView';
@@ -10,15 +11,8 @@ function answer(o: { metrics?: boolean; words?: number } = {}): WeekAnswer {
     retry_of: null,
     created_at: '2026-10-05T15:00:00Z',
     duration_ms: 30_000,
-    metrics: metrics
-      ? {
-          wordCount: words,
-          fillers: { total: 4, byWord: {} },
-          pace: { wordsPerMinute: 140, band: 'good' },
-          pauses: { count: 0, longestMs: 0, atSeconds: [] },
-          restarts: { count: 0, atSeconds: [] },
-        }
-      : null,
+    time_limit_ms: 120_000,
+    metrics: metrics ? sampleMetrics({ wordCount: words, fillers: { total: 4, byWord: {} } }) : null,
     judgement: metrics && words > 0 ? { mainPoint: mark, reasonOrExample: mark, ending: mark, mainPointAtSeconds: 2 } : null,
   };
 }

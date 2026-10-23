@@ -70,7 +70,7 @@ export function useFeedback(answerId: string) {
     if (view === 'ready') void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
   }, [view]);
 
-  const timeRanOut = answer.data ? stoppedByTimeLimit(answer.data.duration_ms) : false;
+  const timeRanOut = answer.data ? stoppedByTimeLimit(answer.data.duration_ms, answer.data.time_limit_ms) : false;
 
   const isFinished = finished && view === 'ready';
   // The one accent button once everything is in: try again after a first attempt, see before and after after a retry.

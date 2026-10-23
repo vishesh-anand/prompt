@@ -45,6 +45,7 @@ const row = {
   retry_of: null,
   audio_path: 'u1/a1.m4a',
   duration_ms: 30_000,
+  time_limit_ms: 120_000,
   status: 'uploaded',
   metrics: null,
   judgement: null,

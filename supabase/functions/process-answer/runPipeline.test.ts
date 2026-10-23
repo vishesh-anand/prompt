@@ -22,7 +22,7 @@ const earlier = '2026-10-06T09:00:00.000000+00:00';
 const later = '2026-10-07T18:00:00.000000+00:00';
 
 const row = (changes: Partial<AnswerRow> = {}): AnswerRow => ({
-  id: 'answer-1', user_id: 'user-1', question_id: 7, audio_path: 'user-1/answer-1.m4a', duration_ms: 30_000, created_at: noon,
+  id: 'answer-1', user_id: 'user-1', question_id: 7, audio_path: 'user-1/answer-1.m4a', duration_ms: 30_000, time_limit_ms: 120_000, created_at: noon,
   transcript: null, metrics: null, judgement: null, coaching: null, ...changes,
 });
 

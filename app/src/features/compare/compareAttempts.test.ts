@@ -1,4 +1,4 @@
-import type { Metrics } from '@/lib/schemas/metrics';
+import { sampleMetrics } from '@/lib/sampleMetrics';
 
 import { compareAttempts, type Attempt, type CompareRow } from './compareAttempts';
 
@@ -7,21 +7,16 @@ type Score = 0 | 1 | 2;
 
 // Only the values a test cares about are written out; everything else is a calm, middling default.
 function attempt(
-  o: { fillers?: number; band?: Band; mainPoint?: Score; reason?: Score; ending?: Score; durationMs?: number; tip?: string } = {},
+  o: { fillers?: number; band?: Band; mainPoint?: Score; reason?: Score; ending?: Score; durationMs?: number; timeLimitMs?: number; tip?: string } = {},
 ): Attempt {
-  const { fillers = 5, band = 'good', mainPoint = 1, reason = 1, ending = 1, durationMs = 40_000, tip = 'Say your point first.' } = o;
-  const metrics: Metrics = {
-    wordCount: 100,
-    fillers: { total: fillers, byWord: {} },
-    pace: { wordsPerMinute: band === null ? null : 140, band },
-    pauses: { count: 0, longestMs: 0, atSeconds: [] },
-    restarts: { count: 0, atSeconds: [] },
-  };
+  const { fillers = 5, band = 'good', mainPoint = 1, reason = 1, ending = 1, durationMs = 40_000, timeLimitMs = 120_000, tip = 'Say your point first.' } = o;
+  const metrics = sampleMetrics({ fillers: { total: fillers, byWord: {} }, pace: { wordsPerMinute: band === null ? null : 140, band } });
   const mark = (score: Score) => ({ score, quotes: ['x'], why: 'x' });
   return {
     metrics,
     judgement: { mainPoint: mark(mainPoint), reasonOrExample: mark(reason), ending: mark(ending), mainPointAtSeconds: 3 },
     durationMs,
+    timeLimitMs,
     tip,
   };
 }
@@ -102,23 +97,31 @@ describe('clear point', () => {
   });
 });
 
-describe('when the 60 seconds ran out', () => {
-  const ranOut = 60_000;
+describe('when the time ran out', () => {
+  const firstRanOut = { durationMs: 120_000, timeLimitMs: 120_000 };
+  const retryRanOut = { durationMs: 90_000, timeLimitMs: 90_000 };
+  const firstStopped = { durationMs: 40_000, timeLimitMs: 120_000 };
+  const retryStopped = { durationMs: 40_000, timeLimitMs: 90_000 };
+  // Recorded before step B, when every answer stopped at 60 seconds.
+  const oldRanOut = { durationMs: 60_000, timeLimitMs: 60_000 };
 
   it.each([
-    { name: 'the first try', first: ranOut, latest: 40_000, shown: ['Time ran out', 'Lands'] },
-    { name: 'the second try', first: 40_000, latest: ranOut, shown: ['Cut off', 'Time ran out'] },
-    { name: 'both tries', first: ranOut, latest: ranOut, shown: ['Time ran out', 'Time ran out'] },
+    { name: 'the first try', first: firstRanOut, latest: retryStopped, shown: ['Time ran out', 'Lands'] },
+    { name: 'the second try', first: firstStopped, latest: retryRanOut, shown: ['Cut off', 'Time ran out'] },
+    { name: 'both tries', first: firstRanOut, latest: retryRanOut, shown: ['Time ran out', 'Time ran out'] },
+    { name: 'a first try from before step B', first: oldRanOut, latest: retryStopped, shown: ['Time ran out', 'Lands'] },
   ])('$name: the ending is never marked better', ({ first, latest, shown }) => {
-    const result = compareAttempts(
-      attempt({ ending: 0, durationMs: first }),
-      attempt({ ending: 2, durationMs: latest }),
-    );
+    const result = compareAttempts(attempt({ ending: 0, ...first }), attempt({ ending: 2, ...latest }));
     const r = row(result.rows, 'ending');
     expect([r.before, r.after]).toEqual(shown);
     expect(r.improved).toBe(false);
     expect(r.line).toBe("Time ran out, so the ending isn't compared");
     expect(result.summary.improved).toBe(false);
+  });
+
+  it('a 60-second answer under the 2-minute limit stopped by choice, so its ending is compared', () => {
+    const result = compareAttempts(attempt({ ending: 0, durationMs: 60_000, timeLimitMs: 120_000 }), attempt({ ending: 2, ...retryStopped }));
+    expect(row(result.rows, 'ending').improved).toBe(true);
   });
 });
 
@@ -154,7 +157,7 @@ describe('the coach voice (DESIGN.md)', () => {
     [attempt({ fillers: 9, band: 'too_fast', mainPoint: 0 }), attempt({ fillers: 0, band: 'good', mainPoint: 2 })],
     [attempt({ fillers: 1 }), attempt({ fillers: 1 })],
     [attempt({ fillers: 1, band: null }), attempt({ fillers: 12, band: 'too_slow', mainPoint: 0, reason: 0 })],
-    [attempt({ durationMs: 60_000 }), attempt({ durationMs: 60_000, ending: 2 })],
+    [attempt({ durationMs: 120_000 }), attempt({ durationMs: 90_000, timeLimitMs: 90_000, ending: 2 })],
   ];
 
   it('has no praise, alarm, or exclamation marks, and every line is short', () => {

@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase';
 
 import { weekStart } from './week';
 
-const columns = 'id, retry_of, created_at, duration_ms, metrics, judgement';
+const columns = 'id, retry_of, created_at, duration_ms, time_limit_ms, metrics, judgement';
 
 // This week's answers with their saved numbers: a bounded query, so it never grows with your history.
 export function useWeekAnswers(now: Date) {

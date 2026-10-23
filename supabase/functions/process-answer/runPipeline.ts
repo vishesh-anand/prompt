@@ -21,6 +21,7 @@ export type AnswerRow = {
   question_id: number;
   audio_path: string;
   duration_ms: number;
+  time_limit_ms: number;
   // When the answer was given, exactly as the database wrote it. The notebook uses it to stay in order.
   created_at: string;
   transcript: unknown;
@@ -98,7 +99,7 @@ export async function runPipeline(admin: SupabaseClient, answer: AnswerRow, prov
     // Nothing was said, so there is nothing to judge or coach.
     if (metrics.wordCount === 0) return;
 
-    const timeLimit = stoppedByTimeLimit(answer.duration_ms);
+    const timeLimit = stoppedByTimeLimit(answer.duration_ms, answer.time_limit_ms);
 
     const savedJudgement = savedJudgementSchema.safeParse(answer.judgement);
     if (savedJudgement.success) {
@@ -125,7 +126,7 @@ export async function runPipeline(admin: SupabaseClient, answer: AnswerRow, prov
       freshCoaching = coaching;
     }
   } catch (error) {
-    console.error(`process-answer failed for ${answer.id}`, error);
+    console.error(`process-answer failed for ${answer.id}`, ...errorKind(error));
     // Best effort: if even this write fails, the app notices the row hasn't moved and offers a retry.
     await admin.from('answers').update({ status: 'failed' }).eq('id', answer.id);
     return;
@@ -146,7 +147,14 @@ export async function runPipeline(admin: SupabaseClient, answer: AnswerRow, prov
         console.log(`process-answer left the notebook alone for ${answer.id}: it has already moved past this answer`);
       }
     } catch (error) {
-      console.error(`process-answer could not update the notebook for ${answer.id}`, error);
+      console.error(`process-answer could not update the notebook for ${answer.id}`, ...errorKind(error));
     }
   }
+}
+
+// Only the kind of error and its status or code, never its message: a model error's message can echo what was sent,
+// which is the person's own words. The same rule as the weekly note's log.
+function errorKind(error: unknown): unknown[] {
+  const e = error as { constructor?: { name?: string }; status?: unknown; code?: unknown } | null;
+  return [e?.constructor?.name ?? 'unknown', e?.status ?? '', e?.code ?? ''];
 }

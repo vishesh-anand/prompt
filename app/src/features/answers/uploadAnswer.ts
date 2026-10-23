@@ -1,3 +1,4 @@
+import { limitFor } from '@/features/recording/limits';
 import { supabase } from '@/lib/supabase';
 
 import { removePendingAnswer, type PendingAnswer } from './pendingAnswers';
@@ -18,7 +19,14 @@ export async function uploadAnswer(pending: PendingAnswer): Promise<string> {
 
   const { error: rowError } = await supabase
     .from('answers')
-    .insert({ id: pending.answerId, question_id: pending.questionId, duration_ms: pending.durationMs, retry_of: pending.retryOf });
+    .insert({
+      id: pending.answerId,
+      question_id: pending.questionId,
+      duration_ms: pending.durationMs,
+      retry_of: pending.retryOf,
+      // Worked out from the kind of answer, so the take saved on the phone needs nothing new.
+      time_limit_ms: limitFor(pending.retryOf),
+    });
   if (rowError && rowError.code !== alreadyExists) throw rowError;
 
   removePendingAnswer(pending.answerId);

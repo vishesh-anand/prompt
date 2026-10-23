@@ -14,7 +14,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { recordCircle, recordingMotion, space, useTheme } from '@/design';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 
-import { maxAnswerMs } from './limits';
+import { limitHint } from './limits';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -27,12 +27,14 @@ type Props = {
   // Loudness, 0 (silent) to 1 (loud).
   level: number;
   onPress: () => void;
+  // How long the answer can be. The ring fills over this time.
+  limitMs: number;
   // Home uses the circle too, as the way in to today's answer.
   accessibilityLabel?: string;
 };
 
-// The soft coral circle. Grows and settles with your voice; a thin ring fills over the 60 seconds.
-export function RecordingCircle({ recording, level, onPress, accessibilityLabel }: Props) {
+// The soft coral circle. Grows and settles with your voice; a thin ring fills as the time runs out.
+export function RecordingCircle({ recording, level, onPress, limitMs, accessibilityLabel }: Props) {
   const { colors } = useTheme();
   const reduceMotion = useReduceMotion();
 
@@ -58,9 +60,9 @@ export function RecordingCircle({ recording, level, onPress, accessibilityLabel 
     cancelAnimation(progress);
     progress.set(0);
     if (recording) {
-      progress.set(withTiming(1, { duration: maxAnswerMs, easing: Easing.linear, reduceMotion: ReduceMotion.Never }));
+      progress.set(withTiming(1, { duration: limitMs, easing: Easing.linear, reduceMotion: ReduceMotion.Never }));
     }
-  }, [recording, progress]);
+  }, [recording, progress, limitMs]);
 
   // Reduce Motion: nothing moves. The halo stays put and the coral circle fades brighter with your voice.
   const coreStyle = useAnimatedStyle(() => ({
@@ -83,7 +85,7 @@ export function RecordingCircle({ recording, level, onPress, accessibilityLabel 
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? (recording ? 'Stop recording' : 'Start recording')}
-      accessibilityHint="Up to 60 seconds"
+      accessibilityHint={limitHint(limitMs)}
       style={styles.box}>
       <Animated.View style={[styles.glow, { backgroundColor: colors.accentSoft }, glowStyle]} />
       <Animated.View style={[styles.core, { backgroundColor: colors.accent }, coreStyle]} />

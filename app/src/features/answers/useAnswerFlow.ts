@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { z } from 'zod';
 
 import { useSession } from '@/features/auth/AuthProvider';
+import { limitFor } from '@/features/recording/limits';
 import { useRecording } from '@/features/recording/useRecording';
 import { useQuestion } from '@/features/questions/useQuestion';
 
@@ -18,8 +19,11 @@ export function useAnswerFlow(params: { questionId?: string; retryOf?: string } 
   const question = useQuestion(askedFor);
   const questionId = question.data?.id;
   const save = useSaveAnswer();
+  // One value for the auto-stop and the ring, so they can't disagree.
+  const limitMs = limitFor(retryOf);
 
   const recording = useRecording({
+    limitMs,
     onLeftMidAnswer: (take) => {
       if (userId && questionId !== undefined) save.keepForLater({ ...take, userId, questionId, retryOf });
     },
@@ -39,6 +43,7 @@ export function useAnswerFlow(params: { questionId?: string; retryOf?: string } 
     missingQuestion: askedFor === undefined,
     question,
     recording,
+    limitMs,
     saveStatus: save.status,
     answerId: save.answerId,
     retry: save.retry,

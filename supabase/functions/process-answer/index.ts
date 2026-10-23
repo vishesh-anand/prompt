@@ -22,7 +22,7 @@ export default {
     // ctx.supabase only sees the caller's own rows (Row Level Security), so a row someone else owns looks like it doesn't exist.
     const { data: answer, error } = await ctx.supabase
       .from('answers')
-      .select('id, user_id, question_id, audio_path, duration_ms, status, transcript, metrics, judgement, coaching, created_at')
+      .select('id, user_id, question_id, audio_path, duration_ms, time_limit_ms, status, transcript, metrics, judgement, coaching, created_at')
       .eq('id', body.data.answerId)
       .maybeSingle();
     if (error) {

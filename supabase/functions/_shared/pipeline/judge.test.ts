@@ -54,9 +54,17 @@ Deno.test('a main point after 15 seconds drops a 2 to a 1; nothing else changes'
 });
 
 Deno.test('the time limit counts the last half second of recorder slack', () => {
-  assertEquals(stoppedByTimeLimit(60_029), true);
-  assertEquals(stoppedByTimeLimit(59_600), true);
-  assertEquals(stoppedByTimeLimit(57_924), false);
+  assertEquals(stoppedByTimeLimit(120_029, 120_000), true);
+  assertEquals(stoppedByTimeLimit(119_600, 120_000), true);
+  assertEquals(stoppedByTimeLimit(117_924, 120_000), false);
+  assertEquals(stoppedByTimeLimit(89_600, 90_000), true);
+});
+
+Deno.test('the time limit is the one the answer was recorded with', () => {
+  // Before step B every answer stopped at 60 seconds; under the 2-minute limit, 60 seconds is a choice.
+  assertEquals(stoppedByTimeLimit(60_000, 60_000), true);
+  assertEquals(stoppedByTimeLimit(60_000, 120_000), false);
+  assertEquals(stoppedByTimeLimit(60_000, 90_000), false);
 });
 
 Deno.test('returns the judgement and when the main point came', async () => {

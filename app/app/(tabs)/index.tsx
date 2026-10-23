@@ -5,6 +5,7 @@ import { Button, Screen, SegmentedControl, Text, space } from '@/design';
 import { usePendingAnswers, useUploadPending } from '@/features/answers/usePendingAnswers';
 import { categoryOptions, showTestTools, useHome } from '@/features/home/useHome';
 import { RecordingCircle } from '@/features/recording/RecordingCircle';
+import { firstTryMs } from '@/features/recording/limits';
 import { supabase } from '@/lib/supabase';
 
 // Pick the kind of question, see today's question and your streak, tap the circle to answer.
@@ -77,6 +78,7 @@ export default function Home() {
           <RecordingCircle
             recording={false}
             level={0}
+            limitMs={firstTryMs}
             accessibilityLabel="Answer today's question"
             onPress={() => router.push({ pathname: '/record', params: { questionId: String(question.id) } })}
           />

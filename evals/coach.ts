@@ -102,8 +102,8 @@ const transcribeCost: number[] = [];
 
 for (const clip of clips) {
   const short = clip.answerId.slice(0, 8);
-  const { transcript, durationMs } = transcripts.get(clip.answerId)!;
-  const timeLimit = stoppedByTimeLimit(durationMs);
+  const { transcript, durationMs, timeLimitMs } = transcripts.get(clip.answerId)!;
+  const timeLimit = stoppedByTimeLimit(durationMs, timeLimitMs);
   const metrics = measure({ transcript });
   transcribeCost.push((durationMs / 60_000) * transcribePerMinute);
   const text = transcript.words.map((w) => w.punctuated).join(' ');

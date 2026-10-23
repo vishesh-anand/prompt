@@ -5,6 +5,7 @@ import type { Model, PromptFile } from '../providers/model.ts';
 import { type Coaching, coachingOutputSchema, coachingSchema, maxTipWords } from '../schemas/coaching.ts';
 import type { SavedJudgement } from '../schemas/judgement.ts';
 import type { Metrics, Transcript } from '../schemas/metrics.ts';
+import { testMetrics } from '../testMetrics.ts';
 import { coach, coachProblems, problemOf } from './coach.ts';
 import { updateNotebook, notebookMaxChars } from './notebook.ts';
 
@@ -13,13 +14,7 @@ const transcript: Transcript = { words: words.map((punctuated, i) => ({ text: pu
 
 const mark = { score: 2 as const, quotes: ['I like cats.'], why: 'w' };
 const judgement: SavedJudgement = { mainPoint: mark, reasonOrExample: mark, ending: mark, mainPointAtSeconds: 0 };
-const metrics: Metrics = {
-  wordCount: 8,
-  fillers: { total: 0, byWord: {} },
-  pace: { wordsPerMinute: 140, band: 'good' },
-  pauses: { count: 0, longestMs: 0, atSeconds: [] },
-  restarts: { count: 0, atSeconds: [] },
-};
+const metrics: Metrics = testMetrics({ wordCount: 8 });
 const input = { question: 'What do you like?', transcript, focus: { kind: 'polish' as const, facts: {} }, notebook: '', stoppedByTimeLimit: false };
 
 const good: Coaching = { tip: 'Open with the point. Next time, say it first.', betterVersion: 'I like cats. They are calm.' };
@@ -77,6 +72,15 @@ Deno.test('notebook returns the trimmed notes and passes the old ones', async ()
   assertEquals(notes, 'Says like often.');
   assertEquals((seen[0].input as { notes: string }).notes, 'old');
   assertEquals(seen[0].prompt.name, 'notebook');
+});
+
+Deno.test('notebook never sees the measures that are stored but not shown', async () => {
+  const { model, seen } = modelThatSays({ notes: 'ok' });
+  const busy = testMetrics({ vagueWords: { total: 9, byWord: { thing: 9 } }, ands: { count: 30 }, pauses: [{ atSeconds: 2, ms: 1500, midSentence: true }, { atSeconds: 5, ms: 1200, midSentence: false }] });
+  await updateNotebook({ previousNotes: '', judgement, metrics: busy, tip: 'tip' }, model);
+  const sent = JSON.stringify((seen[0].input as { measurements: unknown }).measurements);
+  assertEquals(/vague|thing|ands/.test(sent), false);
+  assertEquals((seen[0].input as { measurements: { midSentencePauses: number } }).measurements.midSentencePauses, 1);
 });
 
 Deno.test('notebook that is too long is asked for again, then rejected', async () => {

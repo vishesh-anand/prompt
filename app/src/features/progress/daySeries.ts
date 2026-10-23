@@ -25,14 +25,14 @@ function oneAnswer(a: WeekAnswer): Averages {
   let clearPoint: number | null = null;
   if (a.judgement !== null && measured !== null) {
     const { mainPoint, reasonOrExample, ending } = a.judgement;
-    // When the 60 seconds ran out nobody chose the ending, so it's left out and the other two marks fill the 6
+    // When the time ran out nobody chose the ending, so it's left out and the other two marks fill the 6
     // (the same rule as the feedback and before-and-after screens).
-    clearPoint = stoppedByTimeLimit(a.duration_ms)
+    clearPoint = stoppedByTimeLimit(a.duration_ms, a.time_limit_ms)
       ? ((mainPoint.score + reasonOrExample.score) / 4) * 6
       : mainPoint.score + reasonOrExample.score + ending.score;
   }
   return {
-    // Per minute, because answers run from 10 to 60 seconds and a bare count would just track how long you spoke.
+    // Per minute, because answers run from 10 seconds to 2 minutes and a bare count would just track how long you spoke.
     fillersPerMinute: measured !== null && a.duration_ms > 0 ? measured.fillers.total / (a.duration_ms / 60_000) : null,
     wordsPerMinute: measured?.pace.wordsPerMinute ?? null,
     clearPoint,

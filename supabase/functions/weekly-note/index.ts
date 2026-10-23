@@ -5,7 +5,7 @@ import type { SupabaseClient } from 'npm:@supabase/supabase-js@2';
 import { makeModel, modelName } from '../_shared/providers/claude.ts';
 import { getWeeklyNote, modelRetries, modelTimeoutMs, type Store } from './getWeeklyNote.ts';
 
-const answerColumns = 'created_at, retry_of, duration_ms, metrics, judgement';
+const answerColumns = 'created_at, retry_of, duration_ms, time_limit_ms, metrics, judgement';
 
 function fail(message: string, error: unknown): never {
   console.error(message, error);

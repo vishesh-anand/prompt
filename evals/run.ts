@@ -80,8 +80,9 @@ for (const clip of labels.clips) {
         setup: setup.id,
         turnaroundSeconds,
         wordsPerMinute: metrics.pace.wordsPerMinute,
-        pauses: metrics.pauses.count,
-        restarts: metrics.restarts.count,
+        // The labels count gaps of 2 seconds or more, and "restarts" there means a repeated phrase.
+        pauses: metrics.pauses.filter((p) => p.ms >= 2000).length,
+        restarts: metrics.repeats.count,
         hesitations: clip.hesitations === null ? null : scoreHesitations(metrics, clip.hesitations),
         fillers: clip.fillers === null ? null : scoreFillers(metrics, clip.fillers),
         fillersFound: metrics.fillers.byWord,
@@ -135,7 +136,7 @@ for (const clip of labels.clips) {
   const short = clip.answerId.slice(0, 8);
   lines.push(`### ${short}: ${clip.note}`, '');
   lines.push(`Your count: ${clip.hesitations === null ? 'not counted yet' : `${clip.hesitations} hesitations`}.`, '');
-  lines.push('| Setup | Hesitations found | Spellings returned | Other fillers found | Long pauses | Restarts | Words per minute | Word mistakes | Turnaround |', '|---|---|---|---|---|---|---|---|---|');
+  lines.push('| Setup | Hesitations found | Spellings returned | Other fillers found | Long pauses | Repeats | Words per minute | Word mistakes | Turnaround |', '|---|---|---|---|---|---|---|---|---|');
   for (const setup of setups) {
     const r = runs.find((x) => x.clip === short && x.setup === setup.id)!;
     if (r.error) {

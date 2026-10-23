@@ -1,3 +1,4 @@
+import { sampleMetrics } from '@/lib/sampleMetrics';
 import type { WeekAnswer } from '@/lib/schemas/progress';
 
 import { answerAverages, daySeries, weekAverages } from './daySeries';
@@ -10,9 +11,9 @@ type Score = 0 | 1 | 2;
 let n = 0;
 function answer(
   when: Date,
-  o: { retry?: boolean; fillers?: number; wpm?: number | null; words?: number; main?: Score; reason?: Score; ending?: Score; ms?: number; scored?: boolean } = {},
+  o: { retry?: boolean; fillers?: number; wpm?: number | null; words?: number; main?: Score; reason?: Score; ending?: Score; ms?: number; limit?: number; scored?: boolean } = {},
 ): WeekAnswer {
-  const { retry = false, fillers = 6, wpm = 140, words = 100, main = 1, reason = 1, ending = 1, ms = 30_000, scored = true } = o;
+  const { retry = false, fillers = 6, wpm = 140, words = 100, main = 1, reason = 1, ending = 1, ms = 30_000, limit = 120_000, scored = true } = o;
   n += 1;
   const mark = (score: Score) => ({ score, quotes: ['x'], why: 'x' });
   return {
@@ -20,14 +21,9 @@ function answer(
     retry_of: retry ? 'first' : null,
     created_at: when.toISOString(),
     duration_ms: ms,
+    time_limit_ms: limit,
     metrics: scored
-      ? {
-          wordCount: words,
-          fillers: { total: fillers, byWord: {} },
-          pace: { wordsPerMinute: wpm, band: wpm === null ? null : 'good' },
-          pauses: { count: 0, longestMs: 0, atSeconds: [] },
-          restarts: { count: 0, atSeconds: [] },
-        }
+      ? sampleMetrics({ wordCount: words, fillers: { total: fillers, byWord: {} }, pace: { wordsPerMinute: wpm, band: wpm === null ? null : 'good' } })
       : null,
     judgement: scored && words > 0 ? { mainPoint: mark(main), reasonOrExample: mark(reason), ending: mark(ending), mainPointAtSeconds: 3 } : null,
   };
@@ -55,9 +51,16 @@ describe('daySeries', () => {
     expect(d.clearPoint).toBe(5);
   });
 
-  it('leaves the ending out when the 60 seconds ran out and scales the other two to 6: marks 2 and 1 give 4.5', () => {
-    const d = day(daySeries([answer(at(2026, 10, 6), { main: 2, reason: 1, ending: 0, ms: 60_000 })], now), '2026-10-06');
+  it('leaves the ending out when the time ran out and scales the other two to 6: marks 2 and 1 give 4.5', () => {
+    const d = day(daySeries([answer(at(2026, 10, 6), { main: 2, reason: 1, ending: 0, ms: 120_000 })], now), '2026-10-06');
     expect(d.clearPoint).toBe(4.5);
+  });
+
+  it('uses the limit each answer was recorded with: 60 seconds ran out before step B, not under the 2-minute limit', () => {
+    const before = day(daySeries([answer(at(2026, 10, 6), { main: 2, reason: 1, ending: 0, ms: 60_000, limit: 60_000 })], now), '2026-10-06');
+    expect(before.clearPoint).toBe(4.5);
+    const after = day(daySeries([answer(at(2026, 10, 6), { main: 2, reason: 1, ending: 0, ms: 60_000 })], now), '2026-10-06');
+    expect(after.clearPoint).toBe(3);
   });
 
   it('averages several first attempts on one day', () => {
