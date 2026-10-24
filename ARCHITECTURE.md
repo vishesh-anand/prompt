@@ -275,10 +275,10 @@ Built:
 6. **Retry and compare:** try again, before-and-after screen.
 7. **Home, streak, reminders, onboarding.**
 8. **Progress:** chart, weekly note, starting-point comparison. (Not yet checked on a real iPhone; see FOLLOWUPS.md.)
+- **B. New measures and the timer:** pause location, fillers a minute, repeats, hedges, vague words, "and" chaining; 2 minutes on a first try, 90 seconds on a retry. Checked on a real iPhone on 2026-10-24.
 
 Next, the feedback redesign:
-- **A. Listener check:** record clips, build the rating page, friends rate. Can start any time and run alongside B and C.
-- **B. New measures and the timer:** pause location, fillers a minute, repeats, hedges, vague words, "and" chaining; 2 minutes on a first try, 90 seconds on a retry.
+- **A. Listener check:** record clips, build the rating page, friends rate. Part 1 (the page and setup) is built; part 2 (new clips and the ratings) is next. Runs alongside C.
 - **C. The Map stage replaces the judge:** the map eval (needs A's clips), mapping old answers, dropping the marks.
 - **D. Coach and the new feedback screen:** listener restatement and the tap, the tip from the map, the better version with its steps and "what changed", noticed lines. The visual design is done in Claude Design before this step.
 - **E. Retry:** the instruction carried over, the 90-second retry, the new before and after.
