@@ -18,17 +18,23 @@ export function transcriptText(transcript: Transcript): string {
   return transcript.words.map((w) => w.punctuated).join(' ');
 }
 
-// Where a quote starts in the recording, in seconds, or null if those words aren't in the transcript in
-// that order. Case and punctuation don't matter, filler words do. With `after`, only a match starting later counts,
-// for words said more than once.
-export function findQuoteStart(transcript: Transcript, quote: string, after = -Infinity): number | null {
-  const spoken = transcript.words.map((w) => ({ plain: plainWord(w.punctuated), start: w.start })).filter((w) => w.plain !== '');
+// Which word of the transcript a quote starts at, or null if those words aren't in the transcript in that order.
+// Case and punctuation don't matter, filler words do. Only matches starting at word `from` or later count, for words
+// said more than once.
+export function findQuoteWord(transcript: Transcript, quote: string, from = 0): number | null {
+  const spoken = transcript.words.map((w, index) => ({ plain: plainWord(w.punctuated), index })).filter((w) => w.plain !== '');
   const wanted = quote.split(/\s+/).map(plainWord).filter((w) => w !== '');
   if (wanted.length === 0) return null;
   for (let i = 0; i + wanted.length <= spoken.length; i++) {
-    if (spoken[i].start > after && wanted.every((word, j) => spoken[i + j].plain === word)) return spoken[i].start;
+    if (spoken[i].index >= from && wanted.every((word, j) => spoken[i + j].plain === word)) return spoken[i].index;
   }
   return null;
+}
+
+// Where a quote starts in the recording, in seconds, or null if those words aren't in the transcript in that order.
+export function findQuoteStart(transcript: Transcript, quote: string): number | null {
+  const word = findQuoteWord(transcript, quote);
+  return word === null ? null : transcript.words[word].start;
 }
 
 // Counted from the first spoken word, so a slow start (silence before you begin) doesn't count against you.

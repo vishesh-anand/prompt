@@ -4,7 +4,7 @@ import { plainWord } from '../providers/transcriber.ts';
 import { type MapOutput, mapOutputSchema, type SavedMap } from '../schemas/map.ts';
 import type { Transcript } from '../schemas/metrics.ts';
 import { longPauseMs } from './measure.ts';
-import { findQuoteStart, secondsIntoAnswer } from './transcriptText.ts';
+import { findQuoteWord, secondsIntoAnswer } from './transcriptText.ts';
 import { problemOf, twice } from './twice.ts';
 
 // Stage 3 (from step D; step C runs it from the evals only): Map. Claude reads the answer once as a first-time listener
@@ -34,16 +34,17 @@ export function withoutPauseMarks(quote: string): string {
   return quote.replace(/\[[\d.]+ s pause\]/g, ' ');
 }
 
-const find = (transcript: Transcript, quote: string, after?: number) => findQuoteStart(transcript, withoutPauseMarks(quote), after);
+const find = (transcript: Transcript, quote: string, from?: number) => findQuoteWord(transcript, withoutPauseMarks(quote), from);
 
 // Where each step starts in the recording, searching on from the step before, so words said twice are placed in order.
 // Null for a step whose first words aren't found after the step before.
 function stepStarts(output: MapOutput, transcript: Transcript): (number | null)[] {
-  let previous = -Infinity;
+  let from = 0;
   return output.steps.map((step) => {
-    const start = find(transcript, step.startsWith, previous);
-    if (start !== null) previous = start;
-    return start;
+    const word = find(transcript, step.startsWith, from);
+    if (word === null) return null;
+    from = word + 1;
+    return transcript.words[word].start;
   });
 }
 
