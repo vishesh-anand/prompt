@@ -1,7 +1,7 @@
 import { assertEquals } from 'jsr:@std/assert@1';
 
 import type { Transcript } from '../schemas/metrics.ts';
-import { findQuote, findQuoteStart, secondsIntoAnswer, stoppedByTimeLimit } from './transcriptText.ts';
+import { findQuote, findQuoteStart, secondsIntoAnswer, splitSentences, stoppedByTimeLimit } from './transcriptText.ts';
 
 // "Um, I like cats. Cats are calm." One word per second, starting 3 seconds in.
 const words = ['Um,', 'I', 'like', 'cats.', 'Cats', 'are', 'calm.'];
@@ -50,4 +50,22 @@ Deno.test('a later word with the same start time as an earlier one can still be 
   // A cut where the transcriber gave two words the same start.
   const sameStart: Transcript = { words: ['so', 'so', 'yes.'].map((punctuated) => ({ text: punctuated, punctuated, start: 1, end: 1 })) };
   assertEquals(findQuote(sameStart, 'so', 1)?.first, 1);
+});
+
+const said = (...punctuated: string[]): Transcript => ({ words: punctuated.map((p, i) => ({ text: p, punctuated: p, start: i, end: i + 0.5 })) });
+
+Deno.test('sentences end at a full stop, question mark or exclamation mark, also inside quotes', () => {
+  assertEquals(splitSentences(transcript), [{ first: 0, last: 3 }, { first: 4, last: 6 }]);
+  assertEquals(splitSentences(said('Really?', 'Yes!', 'He', 'said', '"no."', 'Fine.')), [
+    { first: 0, last: 0 },
+    { first: 1, last: 1 },
+    { first: 2, last: 4 },
+    { first: 5, last: 5 },
+  ]);
+});
+
+Deno.test('words after the last full stop are a sentence too, and a filler on its own can be one', () => {
+  assertEquals(splitSentences(said('Um.', 'I', 'think', 'so')), [{ first: 0, last: 0 }, { first: 1, last: 3 }]);
+  assertEquals(splitSentences(said('no', 'full', 'stops')), [{ first: 0, last: 2 }]);
+  assertEquals(splitSentences({ words: [] }), []);
 });

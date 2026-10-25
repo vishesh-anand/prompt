@@ -21,6 +21,20 @@ export function transcriptText(transcript: Transcript): string {
 // A word ending in a full stop, question mark or exclamation mark ends a sentence. Measure and the Map share this rule.
 export const sentenceEnd = /[.?!]["')\]]*$/;
 
+// The answer's sentences, as the first and last word of each (positions in transcript.words). Words after the last full
+// stop form a sentence of their own. This is the unit the owner labels by hand, and where the Map's steps may start.
+export function splitSentences(transcript: Transcript): { first: number; last: number }[] {
+  const sentences: { first: number; last: number }[] = [];
+  let first = 0;
+  transcript.words.forEach((w, i) => {
+    if (sentenceEnd.test(w.punctuated) || i === transcript.words.length - 1) {
+      sentences.push({ first, last: i });
+      first = i + 1;
+    }
+  });
+  return sentences;
+}
+
 // Which words of the transcript a quote covers (the first and the last, as positions in transcript.words), or null if
 // those words aren't in the transcript in that order. Case and punctuation don't matter, filler words do. Only matches
 // starting at word `from` or later count, for words said more than once.
