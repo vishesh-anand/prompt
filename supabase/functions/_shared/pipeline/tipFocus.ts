@@ -1,6 +1,6 @@
 import type { SavedJudgement } from '../schemas/judgement.ts';
 import type { Metrics } from '../schemas/metrics.ts';
-import { latePointSeconds } from './judge.ts';
+import { latePointSeconds } from './transcriptText.ts';
 
 // Plain code, no AI: which single thing the tip is about. Claude only writes the tip about this focus.
 // Bump this when any rule below changes, and save it in pipeline_version.

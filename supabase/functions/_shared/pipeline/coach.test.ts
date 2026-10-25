@@ -6,8 +6,9 @@ import { type Coaching, coachingOutputSchema, coachingSchema, maxTipWords } from
 import type { SavedJudgement } from '../schemas/judgement.ts';
 import type { Metrics, Transcript } from '../schemas/metrics.ts';
 import { testMetrics } from '../testMetrics.ts';
-import { coach, coachProblems, problemOf } from './coach.ts';
+import { coach, coachProblems } from './coach.ts';
 import { updateNotebook, notebookMaxChars } from './notebook.ts';
+import { problemOf } from './twice.ts';
 
 const words = ['I', 'like', 'cats.', 'Cats', 'are', 'calm', 'and', 'quiet.'];
 const transcript: Transcript = { words: words.map((punctuated, i) => ({ text: punctuated.toLowerCase().replace(/[^a-z]/g, ''), punctuated, start: i, end: i + 0.5 })) };

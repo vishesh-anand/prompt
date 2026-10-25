@@ -1,5 +1,5 @@
 import { dayKeyIn, weekStartIn } from './dayStart.ts';
-import { stoppedByTimeLimit } from './pipeline/judge.ts';
+import { stoppedByTimeLimit } from './pipeline/transcriptText.ts';
 import { savedJudgementSchema } from './schemas/judgement.ts';
 import { metricsSchema } from './schemas/metrics.ts';
 

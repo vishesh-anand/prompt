@@ -3,7 +3,8 @@ import { assertEquals, assertRejects } from 'jsr:@std/assert@1';
 import type { Model } from '../providers/model.ts';
 import type { Judgement } from '../schemas/judgement.ts';
 import type { Transcript } from '../schemas/metrics.ts';
-import { applyPointTiming, findQuoteStart, judge, latePointSeconds, secondsIntoAnswer, stoppedByTimeLimit } from './judge.ts';
+import { applyPointTiming, judge } from './judge.ts';
+import { latePointSeconds } from './transcriptText.ts';
 
 // "Um, I like cats. Cats are calm." One word per second, starting 3 seconds in.
 const words = ['Um,', 'I', 'like', 'cats.', 'Cats', 'are', 'calm.'];
@@ -30,41 +31,11 @@ function modelThatSays(...replies: Judgement[]) {
   return { model, calls: () => calls };
 }
 
-Deno.test('finds where a quote starts, ignoring case and punctuation', () => {
-  assertEquals(findQuoteStart(transcript, 'i LIKE cats'), 4);
-  assertEquals(findQuoteStart(transcript, 'Um, I like'), 3);
-  assertEquals(findQuoteStart(transcript, 'cats are calm.'), 7);
-});
-
-Deno.test('a quote that was never said, or said in a different order, is not found', () => {
-  assertEquals(findQuoteStart(transcript, 'I love cats'), null);
-  assertEquals(findQuoteStart(transcript, 'calm cats'), null);
-  assertEquals(findQuoteStart(transcript, '...'), null);
-});
-
-Deno.test('time is counted from the first spoken word, not from the start of the recording', () => {
-  assertEquals(secondsIntoAnswer(transcript, 7), 4);
-});
-
 Deno.test('a main point after 15 seconds drops a 2 to a 1; nothing else changes', () => {
   assertEquals(applyPointTiming(mark(2, 'x'), latePointSeconds).score, 2);
   assertEquals(applyPointTiming(mark(2, 'x'), latePointSeconds + 0.1).score, 1);
   assertEquals(applyPointTiming(mark(1, 'x'), 40).score, 1);
   assertEquals(applyPointTiming(mark(0, 'x'), 40).score, 0);
-});
-
-Deno.test('the time limit counts the last half second of recorder slack', () => {
-  assertEquals(stoppedByTimeLimit(120_029, 120_000), true);
-  assertEquals(stoppedByTimeLimit(119_600, 120_000), true);
-  assertEquals(stoppedByTimeLimit(117_924, 120_000), false);
-  assertEquals(stoppedByTimeLimit(89_600, 90_000), true);
-});
-
-Deno.test('the time limit is the one the answer was recorded with', () => {
-  // Before step B every answer stopped at 60 seconds; under the 2-minute limit, 60 seconds is a choice.
-  assertEquals(stoppedByTimeLimit(60_000, 60_000), true);
-  assertEquals(stoppedByTimeLimit(60_000, 120_000), false);
-  assertEquals(stoppedByTimeLimit(60_000, 90_000), false);
 });
 
 Deno.test('returns the judgement and when the main point came', async () => {

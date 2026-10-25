@@ -1,10 +1,11 @@
 import { z } from 'npm:zod@4';
 
 import { coach } from '../supabase/functions/_shared/pipeline/coach.ts';
-import { judge, stoppedByTimeLimit } from '../supabase/functions/_shared/pipeline/judge.ts';
+import { judge } from '../supabase/functions/_shared/pipeline/judge.ts';
 import { measure } from '../supabase/functions/_shared/pipeline/measure.ts';
 import { updateNotebook } from '../supabase/functions/_shared/pipeline/notebook.ts';
 import { chooseFocus } from '../supabase/functions/_shared/pipeline/tipFocus.ts';
+import { stoppedByTimeLimit } from '../supabase/functions/_shared/pipeline/transcriptText.ts';
 import { coachPrompt } from '../supabase/functions/_shared/prompts/coach.ts';
 import { coachCheckPrompt } from '../supabase/functions/_shared/prompts/coachCheck.ts';
 import { notebookPrompt } from '../supabase/functions/_shared/prompts/notebook.ts';

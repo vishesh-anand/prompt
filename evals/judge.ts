@@ -1,4 +1,5 @@
-import { judge, type JudgeResult, applyPointTiming, findQuoteStart, secondsIntoAnswer, stoppedByTimeLimit } from '../supabase/functions/_shared/pipeline/judge.ts';
+import { judge, type JudgeResult, applyPointTiming } from '../supabase/functions/_shared/pipeline/judge.ts';
+import { findQuoteStart, secondsIntoAnswer, stoppedByTimeLimit } from '../supabase/functions/_shared/pipeline/transcriptText.ts';
 import { anthropicModel, type Usage } from '../supabase/functions/_shared/providers/anthropic.ts';
 import { judgePrompt } from '../supabase/functions/_shared/prompts/judge.ts';
 import type { Mark } from '../supabase/functions/_shared/schemas/judgement.ts';

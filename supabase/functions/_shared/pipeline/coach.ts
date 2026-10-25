@@ -2,8 +2,8 @@ import { coachPrompt } from '../prompts/coach.ts';
 import type { Model } from '../providers/model.ts';
 import { type Coaching, coachingOutputSchema, wordCount } from '../schemas/coaching.ts';
 import type { Transcript } from '../schemas/metrics.ts';
-import { transcriptText } from './judge.ts';
-import { twice } from './twice.ts';
+import { transcriptText } from './transcriptText.ts';
+import { problemOf, twice } from './twice.ts';
 import type { Focus } from './tipFocus.ts';
 
 // Stage 4: Coach. Claude writes one tip about the focus plain code chose, and a tighter version of the
@@ -33,13 +33,6 @@ export function coachProblems(coaching: Coaching, transcript: Transcript): strin
   // "Tighter" means never longer. This also stops the rewrite from growing new content.
   if (wordCount(better) > transcript.words.length) problems.push(`the better version has ${wordCount(better)} words, more than the ${transcript.words.length} in the answer`);
   return problems;
-}
-
-// What went wrong, short enough to hand back to the model. The SDK's error for a reply that doesn't fit the schema
-// is long JSON that ends in a plain "Validation issues:" list, which is the useful part.
-export function problemOf(error: Error): string {
-  const issues = error.message.split('Validation issues:')[1];
-  return (issues ?? error.message).trim().slice(0, 300);
 }
 
 // One try, plus one more if the model errors or breaks one of the checks above. The second try is told why the

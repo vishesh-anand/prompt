@@ -1,11 +1,12 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2';
 
 import { coach, coachVersion } from '../_shared/pipeline/coach.ts';
-import { judge, judgeVersion, stoppedByTimeLimit } from '../_shared/pipeline/judge.ts';
+import { judge, judgeVersion } from '../_shared/pipeline/judge.ts';
 import { measure, measureVersion } from '../_shared/pipeline/measure.ts';
 import { notebookVersion, updateNotebook } from '../_shared/pipeline/notebook.ts';
 import { chooseFocus, tipFocusVersion } from '../_shared/pipeline/tipFocus.ts';
 import { transcribe } from '../_shared/pipeline/transcribe.ts';
+import { stoppedByTimeLimit } from '../_shared/pipeline/transcriptText.ts';
 import { twice } from '../_shared/pipeline/twice.ts';
 import type { Usage } from '../_shared/providers/anthropic.ts';
 import type { Model } from '../_shared/providers/model.ts';
