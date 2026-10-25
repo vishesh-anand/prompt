@@ -1,7 +1,7 @@
 import { assertEquals } from 'jsr:@std/assert@1';
 
 import type { Transcript } from '../schemas/metrics.ts';
-import { findQuoteStart, findQuoteWord, secondsIntoAnswer, stoppedByTimeLimit } from './transcriptText.ts';
+import { findQuote, findQuoteStart, secondsIntoAnswer, stoppedByTimeLimit } from './transcriptText.ts';
 
 // "Um, I like cats. Cats are calm." One word per second, starting 3 seconds in.
 const words = ['Um,', 'I', 'like', 'cats.', 'Cats', 'are', 'calm.'];
@@ -39,14 +39,15 @@ Deno.test('the time limit is the one the answer was recorded with', () => {
   assertEquals(stoppedByTimeLimit(60_000, 90_000), false);
 });
 
-Deno.test('with a word to search from, only a match there or later counts', () => {
-  assertEquals(findQuoteWord(transcript, 'cats'), 3);
-  assertEquals(findQuoteWord(transcript, 'cats', 4), 4);
-  assertEquals(findQuoteWord(transcript, 'cats', 5), null);
+Deno.test('a quote covers its first to its last word, and with a word to search from only a match there or later counts', () => {
+  assertEquals(findQuote(transcript, 'cats'), { first: 3, last: 3 });
+  assertEquals(findQuote(transcript, 'cats', 4), { first: 4, last: 4 });
+  assertEquals(findQuote(transcript, 'cats', 5), null);
+  assertEquals(findQuote(transcript, 'like cats. Cats are'), { first: 2, last: 5 });
 });
 
 Deno.test('a later word with the same start time as an earlier one can still be found', () => {
   // A cut where the transcriber gave two words the same start.
   const sameStart: Transcript = { words: ['so', 'so', 'yes.'].map((punctuated) => ({ text: punctuated, punctuated, start: 1, end: 1 })) };
-  assertEquals(findQuoteWord(sameStart, 'so', 1), 1);
+  assertEquals(findQuote(sameStart, 'so', 1)?.first, 1);
 });

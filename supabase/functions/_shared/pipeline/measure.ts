@@ -1,4 +1,5 @@
 import type { Metrics, Transcript } from '../schemas/metrics.ts';
+import { sentenceEnd } from './transcriptText.ts';
 
 // Stage 2: Measure. Plain code, no AI, no network. The same transcript always gives the same numbers.
 // Saved on every answer in pipeline_version, so bump it when any rule below changes.
@@ -42,7 +43,6 @@ const kindIsNounAfter = new Set([
 const vagueWords = new Set(['thing', 'things', 'stuff', 'something', 'somehow', 'lots', 'some', 'various', 'aspects']);
 const vaguePairs = new Set(['a lot', 'a few', 'types of']);
 
-const sentenceEnd = /[.?!]["')\]]*$/;
 // A comma, dash or full stop after a word means the next word is not part of the same phrase.
 const endsWithPunctuation = /[,;:.?!\u2014-]["')\]]*$/;
 

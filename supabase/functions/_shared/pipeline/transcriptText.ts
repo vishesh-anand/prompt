@@ -18,23 +18,28 @@ export function transcriptText(transcript: Transcript): string {
   return transcript.words.map((w) => w.punctuated).join(' ');
 }
 
-// Which word of the transcript a quote starts at, or null if those words aren't in the transcript in that order.
-// Case and punctuation don't matter, filler words do. Only matches starting at word `from` or later count, for words
-// said more than once.
-export function findQuoteWord(transcript: Transcript, quote: string, from = 0): number | null {
+// A word ending in a full stop, question mark or exclamation mark ends a sentence. Measure and the Map share this rule.
+export const sentenceEnd = /[.?!]["')\]]*$/;
+
+// Which words of the transcript a quote covers (the first and the last, as positions in transcript.words), or null if
+// those words aren't in the transcript in that order. Case and punctuation don't matter, filler words do. Only matches
+// starting at word `from` or later count, for words said more than once.
+export function findQuote(transcript: Transcript, quote: string, from = 0): { first: number; last: number } | null {
   const spoken = transcript.words.map((w, index) => ({ plain: plainWord(w.punctuated), index })).filter((w) => w.plain !== '');
   const wanted = quote.split(/\s+/).map(plainWord).filter((w) => w !== '');
   if (wanted.length === 0) return null;
   for (let i = 0; i + wanted.length <= spoken.length; i++) {
-    if (spoken[i].index >= from && wanted.every((word, j) => spoken[i + j].plain === word)) return spoken[i].index;
+    if (spoken[i].index >= from && wanted.every((word, j) => spoken[i + j].plain === word)) {
+      return { first: spoken[i].index, last: spoken[i + wanted.length - 1].index };
+    }
   }
   return null;
 }
 
 // Where a quote starts in the recording, in seconds, or null if those words aren't in the transcript in that order.
 export function findQuoteStart(transcript: Transcript, quote: string): number | null {
-  const word = findQuoteWord(transcript, quote);
-  return word === null ? null : transcript.words[word].start;
+  const found = findQuote(transcript, quote);
+  return found === null ? null : transcript.words[found.first].start;
 }
 
 // Counted from the first spoken word, so a slow start (silence before you begin) doesn't count against you.

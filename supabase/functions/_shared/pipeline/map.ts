@@ -2,19 +2,22 @@ import { mapPrompt } from '../prompts/map.ts';
 import type { Model } from '../providers/model.ts';
 import { plainWord } from '../providers/transcriber.ts';
 import { type MapOutput, mapOutputSchema, type SavedMap } from '../schemas/map.ts';
-import type { Transcript } from '../schemas/metrics.ts';
+import type { Metrics, Transcript } from '../schemas/metrics.ts';
 import { longPauseMs } from './measure.ts';
-import { findQuoteWord, secondsIntoAnswer } from './transcriptText.ts';
+import { findQuote, secondsIntoAnswer, sentenceEnd } from './transcriptText.ts';
 import { problemOf, twice } from './twice.ts';
 
 // Stage 3 (from step D; step C runs it from the evals only): Map. Claude reads the answer once as a first-time listener
 // and returns its steps, the point, what it didn't follow, restarts and what a listener would notice. Plain code checks
-// every quote is real and works out all the times. It never counts anything: counts stay in Measure.
+// every quote is real and works out all the times. It never counts anything: counts stay in Measure, and the model
+// only picks which counted items a listener would notice.
 export const mapVersion = mapPrompt.version;
 
-type Input = { question: string; transcript: Transcript; stoppedByTimeLimit: boolean };
+type Input = { question: string; transcript: Transcript; metrics: Metrics; stoppedByTimeLimit: boolean };
 
 type Options = { onAttemptFailed?: (error: Error) => void };
+
+type Span = { first: number; last: number };
 
 const round1 = (x: number) => Math.round(x * 10) / 10;
 
@@ -29,46 +32,103 @@ export function transcriptWithPauses(transcript: Transcript): string {
     .join(' ');
 }
 
+// What Measure counted, for the model to choose from. Repeats and pauses are given as how many; the text shows the pauses.
+export function countedItems(metrics: Metrics) {
+  return {
+    fillers: metrics.fillers.byWord,
+    hedges: metrics.hedges.byPhrase,
+    repeats: metrics.repeats.count,
+    midSentencePauses: metrics.pauses.filter((p) => p.midSentence).length,
+  };
+}
+
 // The model is told never to quote a pause mark, but if it does the words around it are still real.
 export function withoutPauseMarks(quote: string): string {
   return quote.replace(/\[[\d.]+ s pause\]/g, ' ');
 }
 
-const find = (transcript: Transcript, quote: string, from?: number) => findQuoteWord(transcript, withoutPauseMarks(quote), from);
+const locate = (transcript: Transcript, quote: string, from?: number) => findQuote(transcript, withoutPauseMarks(quote), from);
 
-// Where each step starts in the recording, searching on from the step before, so words said twice are placed in order.
-// Null for a step whose first words aren't found after the step before.
-function stepStarts(output: MapOutput, transcript: Transcript): (number | null)[] {
+// Where each step starts, as a word position, searching on from the step before. Null for a step not found there.
+function stepWords(output: MapOutput, transcript: Transcript): (number | null)[] {
   let from = 0;
   return output.steps.map((step) => {
-    const word = find(transcript, step.startsWith, from);
-    if (word === null) return null;
-    from = word + 1;
-    return transcript.words[word].start;
+    const found = locate(transcript, step.startsWith, from);
+    if (found === null) return null;
+    from = found.first + 1;
+    return found.first;
   });
 }
 
-// Everything plain code can check about a reply. An empty list means every quote is real, the steps are in order and
-// they cover the whole answer: the first step starts at the first word, so words before it can't fall outside every step.
-export function mapProblems(output: MapOutput, transcript: Transcript): string[] {
-  const problems: string[] = [];
-  if (output.point.restatement.trim() === '') problems.push('the point restatement is empty');
-  const firstWord = transcript.words.find((w) => plainWord(w.punctuated) !== '');
-  const starts = stepStarts(output, transcript);
-  if (starts[0] !== null && starts[0] !== firstWord?.start) {
-    problems.push(`step 1 starts with "${output.steps[0].startsWith}", but it must start at the first word, "${firstWord?.punctuated}"`);
+// Did Measure count a thing of this kind at the quoted moment? Fillers have no saved positions, so for them the quote
+// must contain a filler word that was counted somewhere in the answer.
+function wasCounted(kind: MapOutput['noticed'][number]['kind'], quote: string, { first, last }: Span, transcript: Transcript, metrics: Metrics): boolean {
+  const said = ` ${withoutPauseMarks(quote).split(/\s+/).map(plainWord).filter((w) => w !== '').join(' ')} `;
+  const inside = transcript.words.slice(first, last + 1);
+  switch (kind) {
+    case 'fillers':
+      return Object.keys(metrics.fillers.byWord).some((filler) => said.includes(` ${filler} `));
+    case 'hedge':
+      return metrics.hedges.atSeconds.some((at) => inside.some((w) => round1(w.start) === at));
+    // A counted mid-sentence pause falls between two of the quoted words.
+    case 'pause':
+      return metrics.pauses.some((p) => p.midSentence && inside.slice(0, -1).some((w) => round1(w.end) === p.atSeconds));
+    case 'repeat':
+      return metrics.repeats.atSeconds.some((at) => inside.some((w) => round1(w.start) === at));
+    case 'pattern':
+      return true;
   }
-  starts.forEach((start, i) => {
-    if (start === null) problems.push(`step ${i + 1} starts with "${output.steps[i].startsWith}", which is not in the transcript after step ${i}`);
+}
+
+// Everything plain code can check about a reply. An empty list means it is fine to save.
+export function mapProblems(output: MapOutput, transcript: Transcript, metrics: Metrics): string[] {
+  const problems: string[] = [];
+  const words = transcript.words;
+  if (output.point.restatement.trim() === '') problems.push('the point restatement is empty');
+
+  // Steps start at sentence starts, in order, with opening words that appear nowhere earlier, and the first step starts
+  // at the first word, so every word belongs to a step.
+  const starts = stepWords(output, transcript);
+  const firstWord = words.findIndex((w) => plainWord(w.punctuated) !== '');
+  output.steps.forEach((step, i) => {
+    const at = starts[i];
+    const name = `step ${i + 1} ("${step.startsWith}")`;
+    if (at === null) {
+      problems.push(`${name} is not in the transcript after step ${i}`);
+      return;
+    }
+    if (i === 0 && at !== firstWord) problems.push(`${name} must start at the first word, "${words[firstWord].punctuated}"`);
+    if (i > 0 && !sentenceEnd.test(words[at - 1].punctuated)) problems.push(`${name} must start at the start of a sentence`);
+    if (locate(transcript, step.startsWith)?.first !== at) problems.push(`${name} also appears earlier in the answer; quote opening words that appear only once`);
   });
-  const quotes = [
-    output.point.quote,
-    ...output.didntFollow.map((d) => d.quote),
-    ...output.restarts.map((r) => r.quote),
-    ...output.noticed.map((n) => n.quote),
-  ].filter((q) => q.trim() !== '');
-  for (const quote of quotes) {
-    if (find(transcript, quote) === null) problems.push(`"${quote}" is not in the transcript`);
+
+  // Exactly one point step when there is a point, none when there isn't, and the point quote is inside it.
+  const pointSteps = output.steps.flatMap((s, i) => (s.label === 'point' ? [i] : []));
+  const pointQuote = output.point.quote.trim();
+  if (pointSteps.length > 1) problems.push(`${pointSteps.length} steps are point; exactly one step is point`);
+  if (pointSteps.length === 0 && pointQuote !== '') problems.push('point.quote is given, but no step is point');
+  if (pointSteps.length === 1 && pointQuote === '') problems.push('a step is point, but point.quote is empty');
+  if (pointSteps.length === 1 && pointQuote !== '') {
+    const from = starts[pointSteps[0]];
+    const to = starts[pointSteps[0] + 1] ?? words.length;
+    const found = from === null ? null : locate(transcript, pointQuote, from);
+    if (from !== null && (found === null || found.last >= to)) problems.push(`point.quote "${pointQuote}" is not inside the point step`);
+  }
+
+  // Every other quote is real and said only once, so the moment it names is the right one.
+  const quotes = [pointQuote, ...output.didntFollow.map((d) => d.quote), ...output.restarts.map((r) => r.quote), ...output.noticed.map((n) => n.quote)];
+  for (const quote of quotes.filter((q) => q !== '')) {
+    const found = locate(transcript, quote);
+    if (found === null) problems.push(`"${quote}" is not in the transcript`);
+    else if (locate(transcript, quote, found.first + 1) !== null) problems.push(`"${quote}" appears more than once; quote words that appear only once`);
+  }
+
+  // What a listener noticed is chosen from what Measure counted, never added to it.
+  for (const item of output.noticed) {
+    const found = locate(transcript, item.quote);
+    if (found !== null && !wasCounted(item.kind, item.quote, found, transcript, metrics)) {
+      problems.push(`noticed ${item.kind} "${item.quote}" is not one of the counted items; choose only from those`);
+    }
   }
   return problems;
 }
@@ -79,9 +139,9 @@ export function placeSteps(output: MapOutput, transcript: Transcript): Omit<Save
   const firstStart = words[0].start;
   const lastEnd = words[words.length - 1].end;
 
-  const starts = stepStarts(output, transcript).map((start, i) => {
-    if (start === null) throw new Error(`step ${i + 1} could not be placed`);
-    return start;
+  const starts = stepWords(output, transcript).map((at, i) => {
+    if (at === null) throw new Error(`step ${i + 1} could not be placed`);
+    return words[at].start;
   });
 
   const spoken = lastEnd - firstStart;
@@ -96,7 +156,7 @@ export function placeSteps(output: MapOutput, transcript: Transcript): Omit<Save
   };
 }
 
-// One try, plus one more if the model errors or quotes words that were never said. The second try is told why.
+// One try, plus one more if the model errors or fails a check above. The second try is told why.
 export function mapAnswer(input: Input, model: Model, { onAttemptFailed }: Options = {}): Promise<SavedMap> {
   if (input.transcript.words.length === 0) return Promise.reject(new Error('there are no words to map'));
   return twice(async (previousError) => {
@@ -106,11 +166,12 @@ export function mapAnswer(input: Input, model: Model, { onAttemptFailed }: Optio
         question: input.question,
         transcript: transcriptWithPauses(input.transcript),
         stoppedByTimeLimit: input.stoppedByTimeLimit,
+        counted: countedItems(input.metrics),
         ...(previousError ? { previousAttemptProblem: problemOf(previousError) } : {}),
       },
       schema: mapOutputSchema,
     });
-    const problems = mapProblems(output, input.transcript);
+    const problems = mapProblems(output, input.transcript, input.metrics);
     if (problems.length > 0) throw new Error(`map reply rejected: ${problems.join('; ')}`);
     return { ...placeSteps(output, input.transcript), version: mapVersion };
   }, onAttemptFailed);

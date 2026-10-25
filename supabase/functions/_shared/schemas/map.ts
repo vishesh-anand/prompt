@@ -4,20 +4,21 @@ import { z } from 'npm:zod@4';
 export const stepLabels = ['direction', 'point', 'support', 'off_track', 'ending'] as const;
 export type StepLabel = (typeof stepLabels)[number];
 
-const quote = z.string().describe('Exact words from the transcript, copied word for word with filler words kept, never a [pause] mark');
+const quote = z.string().describe('4 to 10 words copied exactly from the transcript, filler words kept, never a [pause] mark, appearing only once in the answer');
 
 const step = z.object({
   label: z.enum(stepLabels),
-  startsWith: quote.describe("The step's first 3 to 8 words, copied exactly from the transcript"),
+  startsWith: z.string().describe("The first 5 to 8 words of the step's first sentence (the whole sentence if shorter), copied exactly, appearing nowhere earlier in the answer"),
 });
 
 // What the Map stage asks the model for. It holds no counts and no times: plain code works those out from the quotes.
+// The point comes first, so the model settles on it before it labels the steps.
 export const mapOutputSchema = z.object({
-  steps: z.array(step).min(1).describe('The answer as steps, in the order they were said, covering all of it'),
   point: z.object({
-    restatement: z.string().describe('The point in one sentence, as a first-time listener understood it, said back to the speaker as "you"'),
-    quote: z.string().describe('The exact words where the point is said, or an empty string when there is no single point'),
+    restatement: z.string().describe('The point in one sentence, said back to the speaker as "you", from only what they put into words'),
+    quote: z.string().describe('Words from inside the point step where the point is said, or an empty string when no step is point'),
   }),
+  steps: z.array(step).min(1).describe('The answer as steps, in the order they were said, covering all of it'),
   didntFollow: z.array(z.object({ quote, why: z.string().describe('One short sentence') })).describe('Moments where a listener lost the thread; empty if none'),
   restarts: z.array(z.object({ quote })).describe('Sentences dropped and begun again; empty if none'),
   noticed: z
