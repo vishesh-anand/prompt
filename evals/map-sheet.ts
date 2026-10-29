@@ -71,7 +71,7 @@ await Deno.writeTextFile(
   `${JSON.stringify(
     {
       _help:
-        "Your hand labels for the Map eval, made with npm run evals:map-sheet (the words are in the git-ignored out/map-sheet.md). For each listener clip: one label per sentence, the sentence where the point is said (null = none), the sentences with a restart (numbers start at 1), and the question you answered. guideVersion is the map prompt's version you labelled against.",
+        "Your hand labels for the Map eval, made with npm run evals:map-sheet (the words are in the git-ignored out/map-sheet.md). For each listener clip: one label per sentence, the first sentence labelled point (null = none), the sentences with a restart (numbers start at 1), and the question you answered. guideVersion is the map prompt's version you labelled against.",
       guideVersion: saved.guideVersion,
       clips: sorted,
     },

@@ -16,7 +16,8 @@ export type SheetClip = {
   sentences: string[];
 };
 
-// One clip's labels as saved in map-labels.json. Sentence numbers start at 1, as on the sheet.
+// One clip's labels as saved in map-labels.json. Sentence numbers start at 1, as on the sheet. `point` is the first
+// sentence labelled point (null when none is), worked out from the labels.
 export type Labels = { question: string; sentences: number; labels: StepLabel[]; point: number | null; restarts: number[] };
 
 // map-labels.json. guideVersion is the map prompt's version the clips were labelled against.
@@ -36,7 +37,7 @@ export const labelsFileSchema = z.object({
 });
 
 // One clip as read back from the sheet: whatever the owner has typed so far.
-export type SheetEntry = { code: string; question: string; point: string; restarts: string; labels: string[] };
+export type SheetEntry = { code: string; question: string; restarts: string; labels: string[] };
 
 const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.round(seconds % 60)).padStart(2, '0')}`;
 
@@ -44,7 +45,7 @@ export const sheetIntro = `# Map labels (not committed: it holds your transcript
 
 Label every sentence with one word before the "|": direction, point, support, off_track or ending.
 The rules are the map prompt's: supabase/functions/_shared/prompts/map.ts.
-- point: the number of the sentence where the point is said, or "none". Exactly one run of sentences is point.
+Exactly one run of sentences in a row is point; with no single point, no sentence is.
 - restarts: the numbers of the sentences with a restart, separated by commas, or leave it empty.
 - question: correct it if you answered something else (older answers were saved under one placeholder question).
 Then run \`npm run evals:map-sheet\` again: finished clips are saved to map-labels.json.
@@ -58,7 +59,6 @@ export function sheetSection(clip: SheetClip, saved?: Labels): string {
     '',
     `${clip.round} · ${clip.category} · ${clock(clip.seconds)}${clip.timerStopped ? ' · stopped by the timer' : ''}`,
     `question: ${saved?.question ?? clip.question}`,
-    `point: ${saved ? (saved.point ?? 'none') : ''}`,
     `restarts: ${saved ? saved.restarts.join(', ') : ''}`,
     '',
     ...clip.sentences.map((text, i) => `${i + 1}. ${saved?.labels[i] ?? ''} | ${text}`),
@@ -74,14 +74,14 @@ export function readSheet(text: string): SheetEntry[] {
   for (const line of text.split('\n')) {
     const heading = line.match(/^## (c\d+)\s*$/);
     if (heading) {
-      current = { code: heading[1], question: '', point: '', restarts: '', labels: [] };
+      current = { code: heading[1], question: '', restarts: '', labels: [] };
       entries.push(current);
       continue;
     }
     if (!current) continue;
-    const field = line.match(/^(question|point|restarts):(.*)$/);
+    const field = line.match(/^(question|restarts):(.*)$/);
     if (field) {
-      current[field[1] as 'question' | 'point' | 'restarts'] = field[2].trim();
+      current[field[1] as 'question' | 'restarts'] = field[2].trim();
       continue;
     }
     const sentence = line.match(/^(\d+)\.([^|]*)\|/);
@@ -100,7 +100,7 @@ function asLabel(typed: string): StepLabel | null {
 // breaks a rule, so the owner can fix it before it counts.
 export function checkEntry(entry: SheetEntry, sentenceCount: number): { labels: Labels } | { todo: true } | { problems: string[] } {
   const typed = Array.from({ length: sentenceCount }, (_, i) => entry.labels[i] ?? '');
-  if (entry.point === '' || typed.some((t) => t === '')) return { todo: true };
+  if (typed.some((t) => t === '')) return { todo: true };
 
   const problems: string[] = [];
   const labels = typed.map((t, i) => {
@@ -112,14 +112,7 @@ export function checkEntry(entry: SheetEntry, sentenceCount: number): { labels: 
   const pointRows = labels.flatMap((l, i) => (l === 'point' ? [i + 1] : []));
   if (pointRows.some((n, i) => i > 0 && n !== pointRows[i - 1] + 1)) problems.push('point sentences must be one run: exactly one step is point');
 
-  let point: number | null = null;
-  if (entry.point.toLowerCase() === 'none') {
-    if (pointRows.length > 0) problems.push('point is "none", but some sentences are labelled point');
-  } else {
-    point = Number(entry.point);
-    if (!Number.isInteger(point) || point < 1 || point > sentenceCount) problems.push(`point "${entry.point}" is not a sentence number or "none"`);
-    else if (labels[point - 1] !== 'point') problems.push(`point is sentence ${point}, but that sentence is not labelled point`);
-  }
+  const point = pointRows[0] ?? null;
 
   const restarts = entry.restarts === '' ? [] : entry.restarts.split(',').map((s) => Number(s.trim()));
   if (restarts.some((n) => !Number.isInteger(n) || n < 1 || n > sentenceCount)) problems.push(`restarts "${entry.restarts}" must be sentence numbers separated by commas`);

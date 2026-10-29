@@ -15,7 +15,6 @@ const clip: SheetClip = {
 const entry = (changes: Partial<ReturnType<typeof readSheet>[number]> = {}) => ({
   code: 'c03',
   question: 'What do you like?',
-  point: '2',
   restarts: '',
   labels: ['off_track', 'point', 'support'],
   ...changes,
@@ -24,14 +23,14 @@ const entry = (changes: Partial<ReturnType<typeof readSheet>[number]> = {}) => (
 Deno.test('a new clip on the sheet shows its numbered sentences with nothing filled in', () => {
   assertEquals(
     sheetSection(clip),
-    ['## c03', '', 'main · everyday · 1:02', 'question: What do you like?', 'point: ', 'restarts: ', '', '1.  | Um, so.', '2.  | I like cats.', '3.  | They are calm.', ''].join('\n'),
+    ['## c03', '', 'main · everyday · 1:02', 'question: What do you like?', 'restarts: ', '', '1.  | Um, so.', '2.  | I like cats.', '3.  | They are calm.', ''].join('\n'),
   );
 });
 
 Deno.test('what the owner types is read back, and a saved clip comes back the same', () => {
   const saved: Labels = { question: 'What pets do you like?', sentences: 3, labels: ['off_track', 'point', 'support'], point: 2, restarts: [1] };
   const [read] = readSheet(`# intro\n\n${sheetSection({ ...clip, timerStopped: true }, saved)}`);
-  assertEquals(read, { code: 'c03', question: 'What pets do you like?', point: '2', restarts: '1', labels: ['off_track', 'point', 'support'] });
+  assertEquals(read, { code: 'c03', question: 'What pets do you like?', restarts: '1', labels: ['off_track', 'point', 'support'] });
   assertEquals(checkEntry(read, 3), { labels: saved });
 });
 
@@ -39,10 +38,13 @@ Deno.test('a sentence with a "|" in its words keeps the label before the first o
   assertEquals(readSheet('## c01\n1. support | A | B\n')[0].labels, ['support']);
 });
 
-Deno.test('a clip with an empty label or no point yet is still to do', () => {
+Deno.test('a clip with an empty label is still to do', () => {
   assertEquals(checkEntry(entry({ labels: ['off_track', '', 'support'] }), 3), { todo: true });
   assertEquals(checkEntry(entry({ labels: ['off_track', 'point'] }), 3), { todo: true });
-  assertEquals(checkEntry(entry({ point: '' }), 3), { todo: true });
+});
+
+Deno.test('a point line left from an older sheet is ignored', () => {
+  assertEquals(readSheet('## c01\npoint: 2\nrestarts: \n1. support | A\n')[0], { code: 'c01', question: '', restarts: '', labels: ['support'] });
 });
 
 Deno.test('labels are forgiving about case and spaces, and strict about the five words', () => {
@@ -51,12 +53,11 @@ Deno.test('labels are forgiving about case and spaces, and strict about the five
   assertEquals(checkEntry(entry({ labels: ['aside', 'point', 'support'] }), 3), { problems: ['sentence 1: "aside" is not one of direction, point, support, off_track, ending'] });
 });
 
-Deno.test('the point rules: one run of point sentences, and the point sentence is one of them', () => {
-  assertEquals(checkEntry(entry({ labels: ['point', 'support', 'point'], point: '1' }), 3), { problems: ['point sentences must be one run: exactly one step is point'] });
-  assertEquals(checkEntry(entry({ point: '3' }), 3), { problems: ['point is sentence 3, but that sentence is not labelled point'] });
-  assertEquals(checkEntry(entry({ point: '9' }), 3), { problems: ['point "9" is not a sentence number or "none"'] });
-  assertEquals(checkEntry(entry({ point: 'none' }), 3), { problems: ['point is "none", but some sentences are labelled point'] });
-  const none = checkEntry(entry({ point: 'None', labels: ['off_track', 'support', 'support'] }), 3);
+Deno.test('the point is the first sentence labelled point, in one run, and none when no sentence is', () => {
+  const run = checkEntry(entry({ labels: ['off_track', 'point', 'point'] }), 3);
+  assertEquals('labels' in run && run.labels.point, 2);
+  assertEquals(checkEntry(entry({ labels: ['point', 'support', 'point'] }), 3), { problems: ['point sentences must be one run: exactly one step is point'] });
+  const none = checkEntry(entry({ labels: ['off_track', 'support', 'support'] }), 3);
   assertEquals('labels' in none && none.labels.point, null);
 });
 
