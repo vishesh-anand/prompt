@@ -2,7 +2,7 @@
 // (evals:map), so there is one copy only. Changing any word means bumping `version` (saved on every map).
 export const mapPrompt = {
   name: 'map',
-  version: 3,
+  version: 4,
   text: `You are a first-time listener. Someone has just answered one question out loud, without preparing, and you heard it once. You are given:
 - the question;
 - a transcript of exactly what they said, filler words kept, with long silences written as "[2.3 s pause]". It is machine-made and may have misheard a word. If the meaning is clear from the words around it, read it as meant;
@@ -42,9 +42,9 @@ The labels:
   - A hint is not enough: if someone who heard that sentence would still be guessing, it isn't point yet.
   - If it takes two sentences in a row to say it, both are point.
   - Exactly one step is point. If there is no main idea, or a listener would have to piece it together from parts far apart, no step is point.
-- support: a reason, an example, or background the point needs, including a story that builds towards it.
-- off_track: a part a listener wouldn't miss if it were cut: an aside that goes nowhere, circling around the topic before finding the point, or saying the same idea again without adding anything.
-- ending: a deliberate wrap-up at the end that comes back to the point, sums up or draws a conclusion. An empty sign-off ("so yeah, that's about it") is not an ending; it joins the step before. An answer that just stops after its last detail has no ending step. If the time limit stopped the recording, label the last part by what it does; a missing ending is not the speaker's choice.
+- support: a reason, an example, a detail or background that adds to the point, including a story that builds towards it.
+- off_track: a part that adds nothing to the point: an aside that leads away, circling around the topic before finding the point, or saying the same idea again.
+- ending: a wrap-up at the end that comes back to the point, sums up or draws a conclusion. An empty sign-off ("so yeah, that's about it") is not an ending; it joins the step before. An answer that just stops after its last detail has no ending step. If the time limit stopped the recording, label the last part by what it does; a missing ending is not the speaker's choice.
 
 When the point is said again later: ending if it closes the answer, support if it ties the part before back to the point, off_track if it only says it again. If the answer makes two separate points, the first is point and the second is support.
 
@@ -53,7 +53,8 @@ A late point can be chosen or found:
 - Found: talking around the topic until they work out what they think (off_track), then the point.
 
 Tie rules:
-- support or off_track: would a listener miss this part if it were cut? If not, it is off_track.
+- support or off_track: does this part add something to the point, even a small detail? If it adds nothing, or leads away, it is off_track.
+- If no step is point, judge support and off_track against what the answer is mostly about.
 - direction or support: only words that say where the answer is going are direction.
 
 ## 3. didntFollow
@@ -98,7 +99,7 @@ Example 2, a late point that was found. Question: "What's the most useful thing 
 4. "So I guess, I guess the most useful thing was learning to ask for help early." point
 5. "Because before, I'd get stuck for days." support
 6. "So yeah, asking early, that's basically it." ending
-Steps: off_track (1 to 3), point (4), support (5), ending (6). Sentences 1 to 3 circle the year before the point is found; a listener wouldn't miss them. Point quote: "the most useful thing was learning to ask for help early". Restatement: "The most useful thing you learned this year was to ask for help early, because you used to get stuck for days." didntFollow: "the new team does things differently", because it isn't clear how it connects to what you learned. restarts: empty ("I guess, I guess" is a repeat). noticed: hedge, "So I guess, I guess the most useful", because it makes you sound unsure of your own point. Effort 4: for the first three sentences you were trying to work out where it was going.
+Steps: off_track (1 to 3), point (4), support (5), ending (6). Sentences 1 to 3 circle the year before the point is found; they add nothing to the point. Point quote: "the most useful thing was learning to ask for help early". Restatement: "The most useful thing you learned this year was to ask for help early, because you used to get stuck for days." didntFollow: "the new team does things differently", because it isn't clear how it connects to what you learned. restarts: empty ("I guess, I guess" is a repeat). noticed: hedge, "So I guess, I guess the most useful", because it makes you sound unsure of your own point. Effort 4: for the first three sentences you were trying to work out where it was going.
 
 If the input has a previousAttemptProblem, your last reply was rejected for that reason. Fix exactly that in this reply.`,
 } as const;
