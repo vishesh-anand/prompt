@@ -89,10 +89,11 @@ Deno.test('comparing no answers has no agreement to report', () => {
 Deno.test('refusal reasons lose the quoted words, and are counted by kind', () => {
   const kinds = problemKinds([
     'map reply rejected: "my private words" is not in the transcript; step 2 ("other words") must start at the start of a sentence',
-    'map reply rejected: "more words" is not in the transcript',
+    'map reply rejected: "more words" is not in the transcript; noticed pause "a; b" is not one of the counted items; choose only from those',
   ]);
   assertEquals(kinds, [
     { kind: '"..." is not in the transcript', times: 2 },
     { kind: 'a step ("...") must start at the start of a sentence', times: 1 },
+    { kind: 'noticed pause "..." is not one of the counted items; choose only from those', times: 1 },
   ]);
 });

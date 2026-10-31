@@ -36,6 +36,10 @@ const clips = Object.entries(file.clips)
   .slice(0, limit);
 if (clips.length === 0) throw new Error('No labelled clips in map-labels.json yet. Run npm run evals:map-sheet.');
 
+// Your labels as they were before you saw any map (commit 6947a74). They stay fixed, so a review of the disagreements
+// can only ever be read next to them.
+const blind = labelsFileSchema.parse(JSON.parse(await Deno.readTextFile('map-labels-blind.json'))).clips;
+
 const transcripts = await loadTranscripts(clips);
 const savedOf = (clip: { answerId: string }) => transcripts.get(clip.answerId)!;
 
@@ -90,6 +94,12 @@ const spokenSeconds = (code: string) => {
 };
 const done = runs.filter((r): r is Run & { reading: Reading; map: SavedMap } => r.reading !== undefined && r.map !== undefined);
 const withYours = done.map((r) => ({ clip: r.clip, first: yours.get(r.clip)!, second: r.reading }));
+const withBlind = done.flatMap((r) => {
+  const before = blind[r.clip];
+  const clip = clips.find((c) => c.code === r.clip)!;
+  return before ? [{ clip: r.clip, first: readLabels(before.labels, before.restarts, savedOf(clip).transcript), second: r.reading }] : [];
+});
+const reviewChanges = clips.reduce((sum, c) => sum + (blind[c.code]?.labels.filter((label, i) => label !== c.labels[i]).length ?? 0), 0);
 // The clips where both runs worked: the AI against itself.
 const twice = clips.flatMap((c) => {
   const [one, two] = [1, 2].map((n) => done.find((r) => r.clip === c.code && r.run === n));
@@ -134,6 +144,12 @@ const lines = [
   `Each run counts on its own. Range for kappa, resampling clips: ${rangeText(kappaRange(withYours))}.`,
   '',
   ...comparisonRows(compareReadings(withYours), 'you', 'AI'),
+  '',
+  '## Against your blind labels',
+  '',
+  `Your labels before you saw any map. A review only rechecks disagreements, so this is the low end and the section above the high end. Sentence labels changed since: ${reviewChanges}. Range for kappa: ${rangeText(kappaRange(withBlind))}.`,
+  '',
+  ...comparisonRows(compareReadings(withBlind), 'you', 'AI'),
   '',
   '## The same result twice',
   '',

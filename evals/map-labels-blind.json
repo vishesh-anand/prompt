@@ -1,0 +1,287 @@
+{
+  "_help": "Your hand labels for the Map eval, made with npm run evals:map-sheet (the words are in the git-ignored out/map-sheet.md). For each listener clip: one label per sentence, the first sentence labelled point (null = none), the sentences with a restart (numbers start at 1), and the question you answered. guideVersion is the map prompt's version you labelled against.",
+  "guideVersion": 7,
+  "clips": {
+    "c03": {
+      "answerId": "7747bef0-6a61-4a58-9b83-9a7294d3b7b9",
+      "question": "What are your thoughts on philosophy?",
+      "sentences": 9,
+      "labels": [
+        "point",
+        "point",
+        "support",
+        "support",
+        "support",
+        "support",
+        "support",
+        "support",
+        "support"
+      ],
+      "point": 1,
+      "restarts": []
+    },
+    "c08": {
+      "answerId": "33e3bb77-4f9b-4637-81e4-f5892a965610",
+      "question": "What is a skill you would like to learn, and why?",
+      "sentences": 6,
+      "labels": [
+        "support",
+        "point",
+        "support",
+        "support",
+        "support",
+        "support"
+      ],
+      "point": 2,
+      "restarts": []
+    },
+    "c09": {
+      "answerId": "48ec573e-d896-4e57-8444-303bf0b02c83",
+      "question": "Tell me about a time something went wrong at work or school.",
+      "sentences": 10,
+      "labels": [
+        "support",
+        "support",
+        "support",
+        "off_track",
+        "off_track",
+        "direction",
+        "support",
+        "support",
+        "off_track",
+        "support"
+      ],
+      "point": null,
+      "restarts": [
+        2
+      ]
+    },
+    "c10": {
+      "answerId": "1d9ec811-961f-4296-8976-e14bd5215c2e",
+      "question": "What is the best meal you have ever had?",
+      "sentences": 6,
+      "labels": [
+        "direction",
+        "point",
+        "support",
+        "support",
+        "support",
+        "ending"
+      ],
+      "point": 2,
+      "restarts": []
+    },
+    "c11": {
+      "answerId": "e5aa7b63-f060-4611-b521-162802a93ddd",
+      "question": "What would you change about your daily routine?",
+      "sentences": 8,
+      "labels": [
+        "point",
+        "point",
+        "support",
+        "support",
+        "off_track",
+        "off_track",
+        "support",
+        "support"
+      ],
+      "point": 1,
+      "restarts": [
+        5
+      ]
+    },
+    "c12": {
+      "answerId": "977fb7c5-e8f5-468b-81ed-10cc6c11d608",
+      "question": "Describe a person who influenced you.",
+      "sentences": 5,
+      "labels": [
+        "point",
+        "support",
+        "support",
+        "support",
+        "support"
+      ],
+      "point": 1,
+      "restarts": [
+        3,
+        5
+      ]
+    },
+    "c13": {
+      "answerId": "d7648d1c-12e9-45ee-b0a2-6c607ff98673",
+      "question": "Explain how you would teach a friend something you know well.",
+      "sentences": 6,
+      "labels": [
+        "point",
+        "point",
+        "support",
+        "support",
+        "support",
+        "support"
+      ],
+      "point": 1,
+      "restarts": [
+        5
+      ]
+    },
+    "c14": {
+      "answerId": "aaee8de1-0fd5-47cf-9757-023c3bc03fdd",
+      "question": "Tell me about a trip you remember well.",
+      "sentences": 8,
+      "labels": [
+        "point",
+        "off_track",
+        "support",
+        "support",
+        "support",
+        "off_track",
+        "support",
+        "ending"
+      ],
+      "point": 1,
+      "restarts": []
+    },
+    "c15": {
+      "answerId": "e5669315-6ed2-46e7-a675-be528f68491b",
+      "question": "What is a hobby or app you would recommend to a friend?",
+      "sentences": 8,
+      "labels": [
+        "point",
+        "point",
+        "support",
+        "support",
+        "support",
+        "off_track",
+        "support",
+        "support"
+      ],
+      "point": 1,
+      "restarts": [
+        1
+      ]
+    },
+    "c16": {
+      "answerId": "21aec571-ab6e-414d-83ec-f2f41b74bad0",
+      "question": "What advice would you give a new coworker?",
+      "sentences": 3,
+      "labels": [
+        "support",
+        "support",
+        "support"
+      ],
+      "point": null,
+      "restarts": [
+        1
+      ]
+    },
+    "c17": {
+      "answerId": "fcd60f03-85e3-4fcd-ae5a-4b8b2e866c05",
+      "question": "Why do people feel lost in their twenties?",
+      "sentences": 6,
+      "labels": [
+        "point",
+        "point",
+        "support",
+        "support",
+        "support",
+        "support"
+      ],
+      "point": 1,
+      "restarts": [
+        2,
+        4
+      ]
+    },
+    "c19": {
+      "answerId": "765b55c4-c15b-4ecd-9859-fe2c4f1cad8b",
+      "question": "Tell me about a time you had to explain something complicated to someone.",
+      "sentences": 4,
+      "labels": [
+        "point",
+        "support",
+        "support",
+        "ending"
+      ],
+      "point": 1,
+      "restarts": [
+        1
+      ]
+    },
+    "c21": {
+      "answerId": "a225d285-3139-4f98-afb9-4e0aa6a020e5",
+      "question": "Tell me about a time you had to explain something complicated to someone.",
+      "sentences": 4,
+      "labels": [
+        "support",
+        "point",
+        "support",
+        "support"
+      ],
+      "point": 2,
+      "restarts": [
+        2,
+        3
+      ]
+    },
+    "c22": {
+      "answerId": "7116b6e3-1df8-45c3-ac1c-92147f7d4b78",
+      "question": "Tell me about a time you had to explain something complicated to someone.",
+      "sentences": 4,
+      "labels": [
+        "point",
+        "point",
+        "support",
+        "support"
+      ],
+      "point": 1,
+      "restarts": [
+        2
+      ]
+    },
+    "c23": {
+      "answerId": "2595b456-af57-4b0d-9dd9-38fe24735438",
+      "question": "Tell me about a time you had to explain something complicated to someone.",
+      "sentences": 5,
+      "labels": [
+        "point",
+        "point",
+        "support",
+        "support",
+        "off_track"
+      ],
+      "point": 1,
+      "restarts": [
+        5
+      ]
+    },
+    "c25": {
+      "answerId": "9233e784-8471-436a-891a-d41816159fe1",
+      "question": "Tell me about a time you had to explain something complicated to someone.",
+      "sentences": 5,
+      "labels": [
+        "point",
+        "point",
+        "support",
+        "support",
+        "ending"
+      ],
+      "point": 1,
+      "restarts": []
+    },
+    "c26": {
+      "answerId": "d0871cf8-5603-42e4-a995-54da6bce67b3",
+      "question": "What did you have for breakfast, and is it your usual?",
+      "sentences": 6,
+      "labels": [
+        "point",
+        "support",
+        "support",
+        "support",
+        "off_track",
+        "off_track"
+      ],
+      "point": 1,
+      "restarts": []
+    }
+  }
+}

@@ -106,6 +106,6 @@ export function compareReadings(pairs: { first: Reading; second: Reading }[]): C
 
 // The kinds of reason a reply was refused, with the person's words taken out, so they can go in the committed report.
 export function problemKinds(problems: string[]): { kind: string; times: number }[] {
-  const kinds = problems.flatMap((p) => p.replace(/^map reply rejected: /, '').split('; ')).map((p) => p.replace(/"[^"]*"/g, '"..."').replace(/step \d+/, 'a step').replace(/after step \d+/, 'after the step before').slice(0, 120));
+  const kinds = problems.flatMap((p) => p.replace(/^map reply rejected: /, '').replace(/"[^"]*"/g, '"..."').split(/; (?!choose|quote)/)).map((p) => p.replace(/step \d+/, 'a step').replace(/after step \d+/, 'after the step before').slice(0, 120));
   return [...Map.groupBy(kinds, (k) => k)].map(([kind, list]) => ({ kind, times: list.length })).sort((a, b) => b.times - a.times);
 }

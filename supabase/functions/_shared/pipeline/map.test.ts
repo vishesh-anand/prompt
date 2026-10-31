@@ -149,9 +149,13 @@ Deno.test('quotes: each is in the transcript and said only once', () => {
 Deno.test('noticed fillers and pauses must be ones Measure counted', () => {
   assertEquals(mapProblems(noticing({ kind: 'fillers', quote: 'Um, so yesterday I had', why: 'w' }), transcript, metrics), []);
   assertEquals(mapProblems(noticing({ kind: 'fillers', quote: 'yesterday I had a meeting', why: 'w' }), transcript, metrics).length, 1);
-  // A pause counts only when the quote spans a counted mid-sentence pause.
+  // A pause counts when the quote spans a counted mid-sentence pause, or ends or starts right beside it.
+  assertEquals(mapProblems(noticing({ kind: 'pause', quote: 'point is ship early', why: 'w' }), transcript, metrics), []);
+  assertEquals(mapProblems(noticing({ kind: 'pause', quote: 'My point is', why: 'w' }), transcript, metrics), []);
+  assertEquals(mapProblems(noticing({ kind: 'pause', quote: 'ship early. Users told', why: 'w' }), transcript, metrics), []);
+  // Words not beside it are still refused, and so is a quote with no counted pause near it.
+  assertEquals(mapProblems(noticing({ kind: 'pause', quote: 'My point', why: 'w' }), transcript, metrics).length, 1);
   assertEquals(mapProblems(noticing({ kind: 'pause', quote: 'Users told us. So', why: 'w' }), transcript, metrics).length, 1);
-  assertEquals(mapProblems(noticing({ kind: 'pause', quote: 'My point is', why: 'w' }), transcript, metrics).length, 1);
   assertEquals(mapProblems(noticing({ kind: 'pattern', quote: 'Users told us. So', why: 'w' }), transcript, metrics), []);
 });
 

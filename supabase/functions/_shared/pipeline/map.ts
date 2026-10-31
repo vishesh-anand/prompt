@@ -70,9 +70,12 @@ function wasCounted(kind: MapOutput['noticed'][number]['kind'], quote: string, {
       return Object.keys(metrics.fillers.byWord).some((filler) => said.includes(` ${filler} `));
     case 'hedge':
       return metrics.hedges.atSeconds.some((at) => inside.some((w) => round1(w.start) === at));
-    // A counted mid-sentence pause falls between two of the quoted words.
-    case 'pause':
-      return metrics.pauses.some((p) => p.midSentence && inside.slice(0, -1).some((w) => round1(w.end) === p.atSeconds));
+    // A counted mid-sentence pause falls inside the quote or right next to it: the model often quotes the words before
+    // the pause, or after it, rather than both. A pause is stored by the end of the word before it.
+    case 'pause': {
+      const ends = transcript.words.slice(Math.max(first - 1, 0), last + 1).map((w) => round1(w.end));
+      return metrics.pauses.some((p) => p.midSentence && ends.includes(p.atSeconds));
+    }
     case 'repeat':
       return metrics.repeats.atSeconds.some((at) => inside.some((w) => round1(w.start) === at));
     case 'pattern':
