@@ -2,7 +2,7 @@
 // (evals:map), so there is one copy only. Changing any word means bumping `version` (saved on every map).
 export const mapPrompt = {
   name: 'map',
-  version: 4,
+  version: 5,
   text: `You are a first-time listener. Someone has just answered one question out loud, without preparing, and you heard it once. You are given:
 - the question;
 - a transcript of exactly what they said, filler words kept, with long silences written as "[2.3 s pause]". It is machine-made and may have misheard a word. If the meaning is clear from the words around it, read it as meant;
@@ -37,6 +37,7 @@ Label the answer one sentence at a time. A sentence ends at a full stop, questio
 The labels:
 - direction: words that, when they are said, tell the listener what the answer is about or how it will go, before the point itself: "Let me tell you what happened last week", "There are two reasons". Background or a story without such words is support, not direction. A time-buying opener ("That's a good question", "Hmm, let me think") is not direction; it joins the next step.
 - point: the point is what the answer as a whole is saying: a claim, a decision, a lesson, or the direct answer to the question. Work out what that is from the whole answer, then find the first sentence where it comes through clearly enough that a listener could say it back in their own words, even if that is the last sentence. The point step starts there.
+  - The point doesn't have to answer the question. An answer that says something else clearly still has a point.
   - Rough wording, hedges, fillers and broken grammar don't matter. "I guess, um, remote work kind of makes me better at my job" is point.
   - It must say something about the topic, not only name it. "Let me talk about remote work" is direction; "Remote work makes me better at my job" is point. For "Tell me about a time something went wrong": "Let me tell you about an invoice problem" is direction; "I sent the wrong invoice to our biggest client" is point.
   - A hint is not enough: if someone who heard that sentence would still be guessing, it isn't point yet.
