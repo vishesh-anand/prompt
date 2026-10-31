@@ -52,3 +52,13 @@ export function iccWords(value: number): string {
   if (value < 0.9) return 'good';
   return 'excellent';
 }
+
+// Cohen's kappa: how often two lists of labels agree, after taking out the agreement chance alone would give.
+// 1 = always agree, 0 = no better than chance. NaN when chance alone would already explain it all (one label everywhere).
+export function cohenKappa(a: string[], b: string[]): number {
+  if (a.length !== b.length || a.length === 0) throw new Error('cohenKappa needs two lists of the same length');
+  const share = (list: string[], label: string) => list.filter((l) => l === label).length / list.length;
+  const observed = a.filter((label, i) => label === b[i]).length / a.length;
+  const chance = [...new Set([...a, ...b])].reduce((sum, label) => sum + share(a, label) * share(b, label), 0);
+  return chance === 1 ? NaN : (observed - chance) / (1 - chance);
+}

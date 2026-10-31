@@ -50,7 +50,7 @@ export function withoutPauseMarks(quote: string): string {
 const locate = (transcript: Transcript, quote: string, from?: number) => findQuote(transcript, withoutPauseMarks(quote), from);
 
 // Where each step starts, as a word position, searching on from the step before. Null for a step not found there.
-function stepWords(output: MapOutput, transcript: Transcript): (number | null)[] {
+export function stepWords(output: MapOutput, transcript: Transcript): (number | null)[] {
   let from = 0;
   return output.steps.map((step) => {
     const found = locate(transcript, step.startsWith, from);

@@ -1,6 +1,6 @@
 import { assertAlmostEquals, assertEquals, assertThrows } from 'jsr:@std/assert@1';
 
-import { bootstrap, icc, iccWords } from './listenerStats.ts';
+import { bootstrap, cohenKappa, icc, iccWords } from './listenerStats.ts';
 
 // The worked example in Shrout & Fleiss (1979), Table 2: 6 targets, 4 judges. Published ICC(2,1) = .29, ICC(2,4) = .62.
 const shroutFleiss = [
@@ -37,4 +37,27 @@ Deno.test('bootstrap range is repeatable and contains the estimate', () => {
 
 Deno.test('icc words follow Koo and Li', () => {
   assertEquals([0.49, 0.5, 0.8, 0.95].map(iccWords), ['poor', 'moderate', 'good', 'excellent']);
+});
+
+// A table of two raters' yes/no answers as two lists: yes-yes, yes-no, no-yes, no-no.
+const fromTable = (yy: number, yn: number, ny: number, nn: number): [string[], string[]] => {
+  const repeat = (label: string, n: number) => Array<string>(n).fill(label);
+  return [
+    [...repeat('y', yy + yn), ...repeat('n', ny + nn)],
+    [...repeat('y', yy), ...repeat('n', yn), ...repeat('y', ny), ...repeat('n', nn)],
+  ];
+};
+
+Deno.test('cohenKappa matches the textbook worked examples', () => {
+  // 50 proposals: observed .70, chance .50, kappa .40.
+  assertAlmostEquals(cohenKappa(...fromTable(20, 5, 10, 15)), 0.4, 1e-9);
+  // The same 60% agreement with lopsided answers scores lower: 45, 15, 25, 15 gives .1304.
+  assertAlmostEquals(cohenKappa(...fromTable(45, 15, 25, 15)), 0.1304, 1e-4);
+});
+
+Deno.test('cohenKappa: full agreement is 1, opposite answers are below 0, and one label everywhere has no answer', () => {
+  assertEquals(cohenKappa(['a', 'b', 'c'], ['a', 'b', 'c']), 1);
+  assertEquals(cohenKappa(['a', 'b'], ['b', 'a']), -1);
+  assertEquals(cohenKappa(['a', 'a'], ['a', 'a']), NaN);
+  assertThrows(() => cohenKappa(['a'], ['a', 'b']));
 });
