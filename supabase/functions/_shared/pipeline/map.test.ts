@@ -5,7 +5,7 @@ import type { Model, PromptFile } from '../providers/model.ts';
 import { type MapOutput, mapOutputSchema } from '../schemas/map.ts';
 import type { Transcript } from '../schemas/metrics.ts';
 import { testMetrics } from '../testMetrics.ts';
-import { mapAnswer, mapProblems, transcriptWithPauses, withoutPauseMarks } from './map.ts';
+import { mapAnswer, mapProblems, mapVersion, transcriptWithPauses, withoutPauseMarks } from './map.ts';
 import { measure } from './measure.ts';
 
 // "Um, so yesterday I had a meeting. My point is [2.0 s pause] ship early. Users told us. So ship early."
@@ -72,7 +72,7 @@ Deno.test('plain code adds each step time, when the point came and the off-track
   assertEquals(map.pointAtSeconds, 7);
   // Off track from 2 s to "My" at 9 s: 7 of the 19 seconds spoken.
   assertEquals(map.offTrackShare, 0.37);
-  assertEquals(map.version, 2);
+  assertEquals(map.version, mapVersion);
   assertEquals(map.point, good.point);
   assertEquals(map.effort, 2);
 });
