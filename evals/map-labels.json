@@ -15,7 +15,7 @@
         "support",
         "support",
         "support",
-        "support"
+        "off_track"
       ],
       "point": 1,
       "restarts": []
@@ -46,12 +46,12 @@
         "off_track",
         "off_track",
         "direction",
+        "point",
+        "point",
         "support",
-        "support",
-        "off_track",
         "support"
       ],
-      "point": null,
+      "point": 7,
       "restarts": [
         2
       ]
@@ -76,16 +76,16 @@
       "question": "What would you change about your daily routine?",
       "sentences": 8,
       "labels": [
-        "point",
-        "point",
+        "direction",
+        "direction",
         "support",
         "support",
         "off_track",
         "off_track",
-        "support",
+        "point",
         "support"
       ],
-      "point": 1,
+      "point": 7,
       "restarts": [
         5
       ]
@@ -130,11 +130,11 @@
       "sentences": 8,
       "labels": [
         "point",
-        "off_track",
+        "point",
         "support",
         "support",
         "support",
-        "off_track",
+        "support",
         "support",
         "ending"
       ],
@@ -146,7 +146,7 @@
       "question": "What is a hobby or app you would recommend to a friend?",
       "sentences": 8,
       "labels": [
-        "point",
+        "direction",
         "point",
         "support",
         "support",
@@ -155,7 +155,7 @@
         "support",
         "support"
       ],
-      "point": 1,
+      "point": 2,
       "restarts": [
         1
       ]
@@ -179,14 +179,14 @@
       "question": "Why do people feel lost in their twenties?",
       "sentences": 6,
       "labels": [
-        "point",
+        "direction",
         "point",
         "support",
         "support",
         "support",
         "support"
       ],
-      "point": 1,
+      "point": 2,
       "restarts": [
         2,
         4
@@ -197,12 +197,12 @@
       "question": "Tell me about a time you had to explain something complicated to someone.",
       "sentences": 4,
       "labels": [
-        "point",
+        "direction",
         "support",
         "support",
-        "ending"
+        "point"
       ],
-      "point": 1,
+      "point": 4,
       "restarts": [
         1
       ]
@@ -212,10 +212,10 @@
       "question": "Tell me about a time you had to explain something complicated to someone.",
       "sentences": 4,
       "labels": [
-        "support",
+        "off_track",
         "point",
         "support",
-        "support"
+        "ending"
       ],
       "point": 2,
       "restarts": [
@@ -228,12 +228,12 @@
       "question": "Tell me about a time you had to explain something complicated to someone.",
       "sentences": 4,
       "labels": [
-        "point",
+        "off_track",
         "point",
         "support",
         "support"
       ],
-      "point": 1,
+      "point": 2,
       "restarts": [
         2
       ]
@@ -243,13 +243,13 @@
       "question": "Tell me about a time you had to explain something complicated to someone.",
       "sentences": 5,
       "labels": [
+        "direction",
+        "direction",
         "point",
-        "point",
-        "support",
         "support",
         "off_track"
       ],
-      "point": 1,
+      "point": 3,
       "restarts": [
         5
       ]
@@ -259,13 +259,13 @@
       "question": "Tell me about a time you had to explain something complicated to someone.",
       "sentences": 5,
       "labels": [
-        "point",
+        "direction",
         "point",
         "support",
         "support",
-        "ending"
+        "support"
       ],
-      "point": 1,
+      "point": 2,
       "restarts": []
     },
     "c26": {

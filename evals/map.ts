@@ -198,13 +198,15 @@ const details = ['# Map eval: the maps next to your labels (not committed)', '']
 for (const clip of clips) {
   const { transcript } = savedOf(clip);
   const these = done.filter((r) => r.clip === clip.code);
+  const tableRow = (cells: unknown[]) => `| ${cells.join(' | ')} |`;
   details.push(`## ${clip.code}`, '', `question: ${clip.question}`, '');
-  details.push(`| # | You | ${these.map((r) => `Run ${r.run}`).join(' | ')} | Sentence |`, `|---|---|${these.map(() => '---|').join('')}---|`);
+  details.push(tableRow(['#', 'You', ...these.map((r) => `Run ${r.run}`), 'Sentence']), tableRow(['---', '---', ...these.map(() => '---'), '---']));
   splitSentences(transcript).forEach(({ first, last }, i) => {
     const text = transcript.words.slice(first, last + 1).map((w) => w.punctuated).join(' ').replaceAll('|', '/');
-    details.push(`| ${i + 1} | ${clip.labels[i]} | ${these.map((r) => r.reading.labels[i]).join(' | ')} | ${text} |`);
+    details.push(tableRow([i + 1, clip.labels[i], ...these.map((r) => r.reading.labels[i]), text]));
   });
   details.push('');
+  for (const r of runs.filter((r) => r.clip === clip.code && r.error)) details.push(`Run ${r.run} failed, so it has no labels: ${r.error}`, '');
   for (const r of these) {
     details.push(`Run ${r.run}, effort ${r.map.effort}: ${r.map.point.restatement}`);
     for (const d of r.map.didntFollow) details.push(`- Didn't follow "${d.quote}": ${d.why}`);
