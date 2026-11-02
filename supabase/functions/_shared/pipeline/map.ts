@@ -99,12 +99,15 @@ export function mapProblems(output: MapOutput, transcript: Transcript, metrics: 
     if (found === null || found.last > sentences[last].last) problems.push(`point.quote "${pointQuote}" is not inside the point step`);
   }
 
-  // Every other quote is real and said only once, so the moment it names is the right one.
-  const quotes = [pointQuote, ...output.didntFollow.map((d) => d.quote), ...output.restarts.map((r) => r.quote), ...output.noticed.map((n) => n.quote)];
-  for (const quote of quotes.filter((q) => q !== '')) {
+  // Every other quote is there, real and said only once, so the moment it names is the right one. Only the point quote
+  // may be empty (no point). A second match that overlaps the first ("I think I think" in "I think I think I think")
+  // names the same moment, so it doesn't count as said again.
+  const quotes = [...output.didntFollow.map((d) => d.quote), ...output.restarts.map((r) => r.quote), ...output.noticed.map((n) => n.quote)];
+  if (quotes.some((q) => q.trim() === '')) problems.push('a quote is empty; every didntFollow, restarts and noticed item quotes the words');
+  for (const quote of [pointQuote, ...quotes].filter((q) => q.trim() !== '')) {
     const found = locate(transcript, quote);
     if (found === null) problems.push(`"${quote}" is not in the transcript`);
-    else if (locate(transcript, quote, found.first + 1) !== null) problems.push(`"${quote}" appears more than once; quote words that appear only once`);
+    else if (locate(transcript, quote, found.last + 1) !== null) problems.push(`"${quote}" appears more than once; quote words that appear only once`);
   }
 
   // What a listener noticed is chosen from what Measure counted, never added to it.
@@ -133,6 +136,7 @@ function stepsOf(labels: StepLabel[]): { label: StepLabel; first: number; last: 
 // track. Times are seconds from the first spoken word. The evals read the owner's labels with this too.
 export function placeLabels(labels: StepLabel[], transcript: Transcript): Pick<SavedMap, 'steps' | 'pointAtSeconds' | 'offTrackShare'> {
   const words = transcript.words;
+  if (words.length === 0) throw new Error('there are no words to place');
   const sentences = splitSentences(transcript);
   if (labels.length !== sentences.length) throw new Error(`${labels.length} labels for ${sentences.length} sentences`);
   const startOf = (i: number) => words[sentences[i].first].start;

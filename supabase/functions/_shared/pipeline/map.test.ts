@@ -135,6 +135,22 @@ Deno.test('point: exactly one point step, and the point quote is inside it', () 
   assertEquals(mapProblems({ ...good, point: { ...good.point, restatement: ' ' } }, transcript, metrics), ['the point restatement is empty']);
 });
 
+Deno.test('quotes: only the point quote may be empty', () => {
+  const empty = 'a quote is empty; every didntFollow, restarts and noticed item quotes the words';
+  assertEquals(mapProblems(noticing({ kind: 'hedge', quote: '', why: 'w' }), transcript, metrics), [empty]);
+  assertEquals(mapProblems({ ...good, didntFollow: [{ quote: ' ', why: 'w' }] }, transcript, metrics), [empty]);
+  assertEquals(mapProblems({ ...good, restarts: [{ quote: '' }] }, transcript, metrics), [empty]);
+});
+
+Deno.test('quotes: words repeated in a row are said once when the second match overlaps the first', () => {
+  const said = ['I', 'think', 'I', 'think', 'I', 'think', 'the', 'plan', 'works.'];
+  const stutter: Transcript = { words: said.map((punctuated, i) => ({ text: punctuated.toLowerCase().replace(/[^a-z]/g, ''), punctuated, start: i, end: i + 0.5 })) };
+  const reply = { ...labelled('point'), point: { ...good.point, quote: 'the plan works' }, noticed: [], didntFollow: [] };
+  assertEquals(mapProblems({ ...reply, restarts: [{ quote: 'I think I think I think' }] }, stutter, measure({ transcript: stutter })), []);
+  assertEquals(mapProblems({ ...reply, restarts: [{ quote: 'I think I think' }] }, stutter, measure({ transcript: stutter })), []);
+  assertStringIncludes(mapProblems({ ...reply, restarts: [{ quote: 'I think' }] }, stutter, measure({ transcript: stutter })).join(), 'appears more than once');
+});
+
 Deno.test('quotes: each is in the transcript and said only once', () => {
   assertEquals(mapProblems({ ...good, restarts: [{ quote: 'We went to the' }] }, transcript, metrics), ['"We went to the" is not in the transcript']);
   assertEquals(mapProblems({ ...good, didntFollow: [{ quote: 'ship early', why: 'w' }] }, transcript, metrics), ['"ship early" appears more than once; quote words that appear only once']);

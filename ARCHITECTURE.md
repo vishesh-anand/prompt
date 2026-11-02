@@ -122,7 +122,7 @@ All tables use Row Level Security: a person can only ever read or change their o
 - `feedback_flagged` ("This feedback is wrong" was pressed)
 - `listener_confirmed` ("That's what I meant" = yes, "Not quite" = no, not tapped = empty). Like `feedback_flagged`, the phone may write only this column on its own answers.
 
-The old `judgement` column (the three marks) is dropped in a new migration once the map has replaced it.
+The old `judgement` column (the three marks) and the `judged` status are dropped in a new migration after step F, once nothing reads them.
 
 **coach_notebooks**
 - `user_id`, `notes` (short text), `updated_at`
@@ -144,13 +144,13 @@ Streaks, charts, and "which questions have I seen" are all calculated from `answ
 
 1. **Transcribe.** Send audio to the voice-to-text provider. Must keep filler words and return timings for every word.
 2. **Measure.** Plain code, no AI. From the word timings: filler count and which ones, fillers a minute, words per minute, long pauses and whether each falls mid-sentence or between sentences (from the transcript's punctuation), repeats (the same 1 to 3 words said twice in a row), hedges ("kind of", "sort of", "I guess"), vague words ("thing", "a lot", "some") and "and" chaining. Fast, free, and always the same answer for the same input. Vague words and "and" chaining are stored but not shown until the listener check shows they matter.
-3. **Map.** Claude reads the transcript once, as a first-time listener, with long pauses marked in the text ("[2.3 s pause]"). It cannot hear tone. It returns:
-   - the answer's steps, each labelled Direction, Point, Support, Off track or Ending, with its words and times;
+3. **Map.** Claude reads the transcript once, as a first-time listener, as numbered sentences (split at full stops, question marks and exclamation marks, the same way the owner labels them), with long pauses marked in the text ("[2.3 s pause]"). It cannot hear tone. It returns:
+   - one label for each sentence, by its number: Direction, Point, Support, Off track or Ending. Neighbouring sentences with the same label form one step, and plain code works out each step's time, when the listener first knew where the answer was going, and the off-track share;
    - the point, restated in one sentence as a listener understood it, and "what I didn't follow", quoting the moments;
    - true restarts (a sentence dropped and begun again), quoting the words;
    - which of the counted fillers, pauses, repeats and hedges a listener would notice, and why, plus patterns code can't count (five sentences in a row starting with "So", one sentence running for 30 seconds), each quoting the moment.
 
-   It never changes a count from Measure; it only decides which counted items matter. Plain code checks that every quote really appears in the transcript. Output must match a strict schema or the stage retries once.
+   It never changes a count from Measure; it only decides which counted items matter. Plain code checks that every sentence is labelled once and in order, and that every quote really appears in the transcript. Output must match a strict schema or the stage retries once.
 4. **Coach.** Plain code first picks the one thing the tip is about (`pipeline/tipFocus.ts`, from the map and the measurements). It also works out "chose it vs found it" from the labels before the point: Direction or Support before the point means the late point was chosen; Off track before it means it was found while talking. A "say your point first" tip is chosen only when the question wanted a direct answer or circling came before the point. Then Claude reads the metrics, the map, that focus, and the coach's notebook, and writes one tip about it, a better version of the answer with its own steps labelled the same way, and one line saying what changed, in the coach voice from DESIGN.md. The better version may reorder, tighten and cut, and never adds facts, examples or opinions; `npm run evals:coach` checks this.
 5. **Update notebook.** Claude updates the short notebook: recurring habits, what's improving, what to focus on next. Kept under a fixed length. Updates happen in the order answers were given: the notebook remembers the time of the newest answer it has absorbed (`last_answer_at`), an older answer never changes it, and two answers processed at once can't overwrite each other.
 
@@ -276,10 +276,10 @@ Built:
 7. **Home, streak, reminders, onboarding.**
 8. **Progress:** chart, weekly note, starting-point comparison. (Not yet checked on a real iPhone; see FOLLOWUPS.md.)
 - **B. New measures and the timer:** pause location, fillers a minute, repeats, hedges, vague words, "and" chaining; 2 minutes on a first try, 90 seconds on a retry. Checked on a real iPhone on 2026-10-24.
+- **C. The Map stage:** the stage and its prompt, the `map` column, the map eval against the owner's labels (`evals:map`), and every saved answer mapped (`map:old`). It runs only from scripts on the Mac: step D puts it into `process-answer` with the new coach, and the judge keeps running until then. Nothing on the phone changed. The parts that need step A part 2's clips and ratings are in FOLLOWUPS.md.
 
 Next, the feedback redesign:
-- **A. Listener check:** record clips, build the rating page, friends rate. Part 1 (the page and setup) is built; part 2 (new clips and the ratings) is next. Runs alongside C.
-- **C. The Map stage replaces the judge:** the map eval (needs A's clips), mapping old answers, dropping the marks.
+- **A. Listener check:** record clips, build the rating page, friends rate. Part 1 (the page and setup) is built; part 2 (new clips and the ratings) is next. Runs alongside D.
 - **D. Coach and the new feedback screen:** listener restatement and the tap, the tip from the map, the better version with its steps and "what changed", noticed lines. The visual design is done in Claude Design before this step.
 - **E. Retry:** the instruction carried over, the 90-second retry, the new before and after.
 - **F. Progress:** rolling 14 days, the new lines (decided by A's results), the coach's note every 3 practice days.
@@ -289,10 +289,10 @@ Then:
 
 Evals are built alongside step 4 and grow with steps 5 and 6, then with A to F.
 
-**Where the code is:** this file describes the app after A to F. Until those steps land, the code still has the judge stage and its three marks (`judgement`, `evals:judge`), and the calendar-week note and chart. Each step's plan says what it changes.
+**Where the code is:** this file describes the app after A to F. Until those steps land, the code still has the judge stage and its three marks (`judgement`, `evals:judge`), and the calendar-week note and chart. The Map stage exists but runs only from scripts until step D. Each step's plan says what it changes.
 
 ## Open decisions
 
 - **Voice-to-text provider: decided (2026-10-03), ElevenLabs Scribe v2.** Tested on 4 labelled recordings of one speaker (17 um/uh sounds): Scribe caught 17, Deepgram Nova-2 15, Nova-3 10. AssemblyAI Universal-3.5 Pro also caught 17 but gave different counts on repeat runs of the same audio. Revisit with more speakers and natural (unscripted) clips once beta testers are recording, and check ElevenLabs' data-retention terms before the privacy note is written.
-- **Map, coach and notebook model: Claude Sonnet 5.5, kept from the judge decision below; the map eval (step C) checks it.** History, from when the judge existed: **Judge, coach and notebook model: decided (2026-10-07), Claude Sonnet 5.5.** On 9 labelled answers (guide v1) it agreed with the owner's marks on 65% of marks against 72% for Sonnet 5, a gap of 4 marks that is within noise on 9 clips. Both gave the same marks on 8 of 9 clips run twice. Sonnet 5.5 is the current Sonnet, faster (3.2 s against 5.0 s a call) and cheaper. See `evals/results/judge.md`. Known gaps in guide v1: a timer cut-off is scored 0 on ending even when the answer wrapped up, and "reason or example" is the least reliable mark. Plain code handles the first (a timer-stopped answer never gets an ending tip, and the screen says "Time ran out" for the ending instead of a mark) and ranks the second last when choosing the tip. Revisit when the judge is redesigned with more answers and more than one rater.
+- **Map, coach and notebook model: Claude Sonnet 5.5, kept from the judge decision below.** The map eval (step C, 2026-11-03, 17 clips) found agreement with the owner's blind labels of about 0.47 (kappa over sentences) and 0.83 between two runs; see `evals/results/map.md`. History, from when the judge existed: **Judge, coach and notebook model: decided (2026-10-07), Claude Sonnet 5.5.** On 9 labelled answers (guide v1) it agreed with the owner's marks on 65% of marks against 72% for Sonnet 5, a gap of 4 marks that is within noise on 9 clips. Both gave the same marks on 8 of 9 clips run twice. Sonnet 5.5 is the current Sonnet, faster (3.2 s against 5.0 s a call) and cheaper. See `evals/results/judge.md`. Known gaps in guide v1: a timer cut-off is scored 0 on ending even when the answer wrapped up, and "reason or example" is the least reliable mark. Plain code handles the first (a timer-stopped answer never gets an ending tip, and the screen says "Time ran out" for the ending instead of a mark) and ranks the second last when choosing the tip. Revisit when the judge is redesigned with more answers and more than one rater.
 - **Recording circle:** Reanimated for the circle, `react-native-svg` for the ring. Skia only if it can't look smooth on a real phone.
