@@ -1,11 +1,11 @@
-import { stepWords, withoutPauseMarks } from '../supabase/functions/_shared/pipeline/map.ts';
-import { findQuote, secondsIntoAnswer, splitSentences } from '../supabase/functions/_shared/pipeline/transcriptText.ts';
+import { placeLabels, withoutPauseMarks } from '../supabase/functions/_shared/pipeline/map.ts';
+import { findQuote, splitSentences } from '../supabase/functions/_shared/pipeline/transcriptText.ts';
 import type { MapOutput, StepLabel } from '../supabase/functions/_shared/schemas/map.ts';
 import type { Transcript } from '../supabase/functions/_shared/schemas/metrics.ts';
 import { cohenKappa } from './listenerStats.ts';
 
-// The Map eval's sums. An AI map is turned into the same shape as the owner's labels (one label per sentence), so the
-// two can be compared. Sentence numbers start at 1, as on the sheet.
+// The Map eval's sums. The AI and the owner both give one label per sentence, so the two compare directly. Sentence
+// numbers start at 1, as on the sheet.
 
 export type Reading = {
   labels: StepLabel[];
@@ -14,16 +14,6 @@ export type Reading = {
   pointAtSeconds: number | null;
   offTrackShare: number;
 };
-
-// Each sentence gets the label of the step it starts in.
-export function sentenceLabels(map: MapOutput, transcript: Transcript): StepLabel[] {
-  const starts = stepWords(map, transcript);
-  return splitSentences(transcript).map(({ first }) => {
-    const step = starts.findLastIndex((at) => at !== null && at <= first);
-    if (step === -1) throw new Error('a sentence falls before the first step');
-    return map.steps[step].label;
-  });
-}
 
 // The sentences a map's restart quotes fall in.
 export function restartSentences(map: MapOutput, transcript: Transcript): number[] {
@@ -35,29 +25,16 @@ export function restartSentences(map: MapOutput, transcript: Transcript): number
   return [...new Set(found)].sort((a, b) => a - b);
 }
 
-// A reading from labels alone, using the same rules for time as the Map stage: when the listener first knew where the
-// answer was going, and the share of the time spoken in off-track sentences.
+// A reading from labels, with the Map stage's own rules for time: when the listener first knew where the answer was
+// going, and the share of the time spoken in off-track sentences.
 export function readLabels(labels: StepLabel[], restarts: number[], transcript: Transcript): Reading {
-  const words = transcript.words;
-  const sentences = splitSentences(transcript);
-  if (sentences.length !== labels.length) throw new Error(`${labels.length} labels for ${sentences.length} sentences`);
-  const startOf = (i: number) => words[sentences[i].first].start;
-  const lastEnd = words[words.length - 1].end;
-  const spoken = lastEnd - words[0].start;
-  const offTrack = labels.reduce((sum, label, i) => (label === 'off_track' ? sum + ((i + 1 < sentences.length ? startOf(i + 1) : lastEnd) - startOf(i)) : sum), 0);
-  const firstDirection = labels.findIndex((l) => l === 'direction' || l === 'point');
+  const { pointAtSeconds, offTrackShare } = placeLabels(labels, transcript);
   const firstPoint = labels.indexOf('point');
-  return {
-    labels,
-    point: firstPoint === -1 ? null : firstPoint + 1,
-    restarts,
-    pointAtSeconds: firstDirection === -1 ? null : Math.round(secondsIntoAnswer(transcript, startOf(firstDirection)) * 10) / 10,
-    offTrackShare: spoken > 0 ? Math.round((offTrack / spoken) * 100) / 100 : 0,
-  };
+  return { labels, point: firstPoint === -1 ? null : firstPoint + 1, restarts, pointAtSeconds, offTrackShare };
 }
 
 export function readMap(map: MapOutput, transcript: Transcript): Reading {
-  return readLabels(sentenceLabels(map, transcript), restartSentences(map, transcript), transcript);
+  return readLabels(map.sentences.map((s) => s.label), restartSentences(map, transcript), transcript);
 }
 
 export type Comparison = {
@@ -104,8 +81,8 @@ export function compareReadings(pairs: { first: Reading; second: Reading }[]): C
   };
 }
 
-// The kinds of reason a reply was refused, with the person's words taken out, so they can go in the committed report.
+// The kinds of reason a reply was refused, with the person's words and the numbers taken out, so they can go in the committed report.
 export function problemKinds(problems: string[]): { kind: string; times: number }[] {
-  const kinds = problems.flatMap((p) => p.replace(/^map reply rejected: /, '').replace(/"[^"]*"/g, '"..."').split(/; (?!choose|quote)/)).map((p) => p.replace(/step \d+/, 'a step').replace(/after step \d+/, 'after the step before').slice(0, 120));
+  const kinds = problems.flatMap((p) => p.replace(/^map reply rejected: /, '').replace(/"[^"]*"/g, '"..."').split(/; (?!choose|quote)/)).map((p) => p.replace(/\d+(, \d+)*/g, 'N').slice(0, 120));
   return [...Map.groupBy(kinds, (k) => k)].map(([kind, list]) => ({ kind, times: list.length })).sort((a, b) => b.times - a.times);
 }

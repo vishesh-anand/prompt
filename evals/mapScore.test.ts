@@ -2,7 +2,7 @@ import { assertAlmostEquals, assertEquals, assertThrows } from 'jsr:@std/assert@
 
 import type { MapOutput, StepLabel } from '../supabase/functions/_shared/schemas/map.ts';
 import type { Transcript } from '../supabase/functions/_shared/schemas/metrics.ts';
-import { compareReadings, problemKinds, readLabels, readMap, type Reading, restartSentences, sentenceLabels } from './mapScore.ts';
+import { compareReadings, problemKinds, readLabels, readMap, type Reading, restartSentences } from './mapScore.ts';
 
 // Four sentences, from 2 s, one word a second, each word half a second long. Spoken from 2 s to 11.5 s: 9.5 seconds.
 const said = ['So', 'yesterday.', 'I', 'like', 'cats.', 'Cats', 'are', 'calm.', 'So', 'cats.'];
@@ -12,11 +12,11 @@ const transcript: Transcript = {
 
 const map: MapOutput = {
   point: { restatement: 'You like cats.', quote: 'I like cats.' },
-  steps: [
-    { label: 'off_track', startsWith: 'So yesterday.' },
-    { label: 'point', startsWith: 'I like cats.' },
-    { label: 'support', startsWith: 'Cats are calm.' },
-    { label: 'ending', startsWith: 'So cats.' },
+  sentences: [
+    { sentence: 1, label: 'off_track' },
+    { sentence: 2, label: 'point' },
+    { sentence: 3, label: 'support' },
+    { sentence: 4, label: 'ending' },
   ],
   didntFollow: [],
   restarts: [{ quote: 'are calm.' }],
@@ -25,12 +25,6 @@ const map: MapOutput = {
 };
 
 const reading = (labels: StepLabel[], changes: Partial<Reading> = {}): Reading => ({ labels, point: labels.includes('point') ? labels.indexOf('point') + 1 : null, restarts: [], pointAtSeconds: 0, offTrackShare: 0, ...changes });
-
-Deno.test('each sentence gets the label of the step it starts in, also when a step covers several sentences', () => {
-  assertEquals(sentenceLabels(map, transcript), ['off_track', 'point', 'support', 'ending']);
-  const twoSentences = { ...map, steps: [{ label: 'support' as const, startsWith: 'So yesterday.' }, { label: 'ending' as const, startsWith: 'So cats.' }] };
-  assertEquals(sentenceLabels(twoSentences, transcript), ['support', 'support', 'support', 'ending']);
-});
 
 Deno.test('restart quotes become sentence numbers, each once', () => {
   assertEquals(restartSentences(map, transcript), [3]);
@@ -88,12 +82,12 @@ Deno.test('comparing no answers has no agreement to report', () => {
 
 Deno.test('refusal reasons lose the quoted words, and are counted by kind', () => {
   const kinds = problemKinds([
-    'map reply rejected: "my private words" is not in the transcript; step 2 ("other words") must start at the start of a sentence',
+    'map reply rejected: "my private words" is not in the transcript; label sentences 1 to 4, each once and in order (the reply labels 1, 2, 4)',
     'map reply rejected: "more words" is not in the transcript; noticed pause "a; b" is not one of the counted items; choose only from those',
   ]);
   assertEquals(kinds, [
     { kind: '"..." is not in the transcript', times: 2 },
-    { kind: 'a step ("...") must start at the start of a sentence', times: 1 },
+    { kind: 'label sentences N to N, each once and in order (the reply labels N)', times: 1 },
     { kind: 'noticed pause "..." is not one of the counted items; choose only from those', times: 1 },
   ]);
 });

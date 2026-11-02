@@ -1,15 +1,15 @@
 import { mapPrompt } from '../prompts/map.ts';
 import type { Model } from '../providers/model.ts';
 import { plainWord } from '../providers/transcriber.ts';
-import { type MapOutput, mapOutputSchema, type SavedMap } from '../schemas/map.ts';
+import { type MapOutput, mapOutputSchema, type SavedMap, type StepLabel } from '../schemas/map.ts';
 import type { Metrics, Transcript } from '../schemas/metrics.ts';
 import { longPauseMs } from './measure.ts';
-import { findQuote, secondsIntoAnswer, sentenceEnd } from './transcriptText.ts';
+import { findQuote, secondsIntoAnswer, splitSentences } from './transcriptText.ts';
 import { problemOf, twice } from './twice.ts';
 
 // Stage 3 (from step D; step C runs it from the evals only): Map. Claude reads the answer once as a first-time listener
-// and returns its steps, the point, what it didn't follow, restarts and what a listener would notice. Plain code checks
-// every quote is real and works out all the times. It never counts anything: counts stay in Measure, and the model
+// and returns a label for each numbered sentence, the point, what it didn't follow, restarts and what a listener would
+// notice. Plain code checks every quote is real, joins the sentences into steps and works out all the times. It never counts anything: counts stay in Measure, and the model
 // only picks which counted items a listener would notice.
 export const mapVersion = mapPrompt.version;
 
@@ -21,15 +21,18 @@ type Span = { first: number; last: number };
 
 const round1 = (x: number) => Math.round(x * 10) / 10;
 
-// The answer as text, with each long silence written where it fell: "I went [2.3 s pause] outside." Same length rule
-// as the pauses Measure counts, so the model sees the pauses that were counted.
-export function transcriptWithPauses(transcript: Transcript): string {
-  return transcript.words
-    .map((w, i) => {
-      const gapMs = i === 0 ? 0 : Math.round((w.start - transcript.words[i - 1].end) * 1000);
-      return gapMs >= longPauseMs ? `[${(gapMs / 1000).toFixed(1)} s pause] ${w.punctuated}` : w.punctuated;
-    })
-    .join(' ');
+// The answer as numbered sentences, split as on the owner's labelling sheet, one per line, with each long silence
+// written where it fell: "2. I went [2.3 s pause] outside." Same length rule as the pauses Measure counts, so the model
+// sees the pauses that were counted.
+export function numberedSentences(transcript: Transcript): string {
+  const words = transcript.words;
+  const withPause = (i: number) => {
+    const gapMs = i === 0 ? 0 : Math.round((words[i].start - words[i - 1].end) * 1000);
+    return gapMs >= longPauseMs ? `[${(gapMs / 1000).toFixed(1)} s pause] ${words[i].punctuated}` : words[i].punctuated;
+  };
+  return splitSentences(transcript)
+    .map(({ first, last }, n) => `${n + 1}. ${words.slice(first, last + 1).map((_, j) => withPause(first + j)).join(' ')}`)
+    .join('\n');
 }
 
 // What Measure counted, for the model to choose from. Repeats and pauses are given as how many; the text shows the pauses.
@@ -48,17 +51,6 @@ export function withoutPauseMarks(quote: string): string {
 }
 
 const locate = (transcript: Transcript, quote: string, from?: number) => findQuote(transcript, withoutPauseMarks(quote), from);
-
-// Where each step starts, as a word position, searching on from the step before. Null for a step not found there.
-export function stepWords(output: MapOutput, transcript: Transcript): (number | null)[] {
-  let from = 0;
-  return output.steps.map((step) => {
-    const found = locate(transcript, step.startsWith, from);
-    if (found === null) return null;
-    from = found.first + 1;
-    return found.first;
-  });
-}
 
 // Did Measure count a thing of this kind at the quoted moment? Fillers have no saved positions, so for them the quote
 // must contain a filler word that was counted somewhere in the answer.
@@ -86,36 +78,25 @@ function wasCounted(kind: MapOutput['noticed'][number]['kind'], quote: string, {
 // Everything plain code can check about a reply. An empty list means it is fine to save.
 export function mapProblems(output: MapOutput, transcript: Transcript, metrics: Metrics): string[] {
   const problems: string[] = [];
-  const words = transcript.words;
   if (output.point.restatement.trim() === '') problems.push('the point restatement is empty');
 
-  // Steps start at sentence starts, in order, with opening words that appear nowhere earlier, and the first step starts
-  // at the first word, so every word belongs to a step.
-  const starts = stepWords(output, transcript);
-  const firstWord = words.findIndex((w) => plainWord(w.punctuated) !== '');
-  output.steps.forEach((step, i) => {
-    const at = starts[i];
-    const name = `step ${i + 1} ("${step.startsWith}")`;
-    if (at === null) {
-      problems.push(`${name} is not in the transcript after step ${i}`);
-      return;
-    }
-    if (i === 0 && at !== firstWord) problems.push(`${name} must start at the first word, "${words[firstWord].punctuated}"`);
-    if (i > 0 && !sentenceEnd.test(words[at - 1].punctuated)) problems.push(`${name} must start at the start of a sentence`);
-    if (locate(transcript, step.startsWith)?.first !== at) problems.push(`${name} also appears earlier in the answer; quote opening words that appear only once`);
-  });
+  // Every sentence is labelled once, in order, so each label is the one given for that sentence.
+  const sentences = splitSentences(transcript);
+  const numbers = output.sentences.map((s) => s.sentence);
+  const inOrder = numbers.length === sentences.length && numbers.every((n, i) => n === i + 1);
+  if (!inOrder) problems.push(`label sentences 1 to ${sentences.length}, each once and in order (the reply labels ${numbers.join(', ')})`);
 
   // Exactly one point step when there is a point, none when there isn't, and the point quote is inside it.
-  const pointSteps = output.steps.flatMap((s, i) => (s.label === 'point' ? [i] : []));
+  const labels = output.sentences.map((s) => s.label);
+  const pointSteps = stepsOf(labels).filter((s) => s.label === 'point');
   const pointQuote = output.point.quote.trim();
   if (pointSteps.length > 1) problems.push(`${pointSteps.length} steps are point; exactly one step is point`);
   if (pointSteps.length === 0 && pointQuote !== '') problems.push('point.quote is given, but no step is point');
   if (pointSteps.length === 1 && pointQuote === '') problems.push('a step is point, but point.quote is empty');
-  if (pointSteps.length === 1 && pointQuote !== '') {
-    const from = starts[pointSteps[0]];
-    const to = starts[pointSteps[0] + 1] ?? words.length;
-    const found = from === null ? null : locate(transcript, pointQuote, from);
-    if (from !== null && (found === null || found.last >= to)) problems.push(`point.quote "${pointQuote}" is not inside the point step`);
+  if (inOrder && pointSteps.length === 1 && pointQuote !== '') {
+    const { first, last } = pointSteps[0];
+    const found = locate(transcript, pointQuote, sentences[first].first);
+    if (found === null || found.last > sentences[last].last) problems.push(`point.quote "${pointQuote}" is not inside the point step`);
   }
 
   // Every other quote is real and said only once, so the moment it names is the right one.
@@ -136,25 +117,33 @@ export function mapProblems(output: MapOutput, transcript: Transcript, metrics: 
   return problems;
 }
 
-// The times plain code adds to a reply that mapProblems passed.
-export function placeSteps(output: MapOutput, transcript: Transcript): Omit<SavedMap, 'version'> {
-  const words = transcript.words;
-  const firstStart = words[0].start;
-  const lastEnd = words[words.length - 1].end;
-
-  const starts = stepWords(output, transcript).map((at, i) => {
-    if (at === null) throw new Error(`step ${i + 1} could not be placed`);
-    return words[at].start;
+// Neighbouring sentences with the same label, as one step: its label and its first and last sentence (from 0).
+function stepsOf(labels: StepLabel[]): { label: StepLabel; first: number; last: number }[] {
+  const steps: { label: StepLabel; first: number; last: number }[] = [];
+  labels.forEach((label, i) => {
+    const step = steps.at(-1);
+    if (step?.label === label) step.last = i;
+    else steps.push({ label, first: i, last: i });
   });
+  return steps;
+}
 
-  const spoken = lastEnd - firstStart;
-  const offTrack = output.steps.reduce((sum, step, i) => (step.label === 'off_track' ? sum + ((starts[i + 1] ?? lastEnd) - starts[i]) : sum), 0);
-  const firstDirection = output.steps.findIndex((s) => s.label === 'direction' || s.label === 'point');
-
+// The steps and times plain code works out from one label per sentence: when each step starts, when the listener first
+// knew where the answer was going (the first Direction or Point sentence), and the share of the time spoken that is off
+// track. Times are seconds from the first spoken word. The evals read the owner's labels with this too.
+export function placeLabels(labels: StepLabel[], transcript: Transcript): Pick<SavedMap, 'steps' | 'pointAtSeconds' | 'offTrackShare'> {
+  const words = transcript.words;
+  const sentences = splitSentences(transcript);
+  if (labels.length !== sentences.length) throw new Error(`${labels.length} labels for ${sentences.length} sentences`);
+  const startOf = (i: number) => words[sentences[i].first].start;
+  const at = (i: number) => round1(secondsIntoAnswer(transcript, startOf(i)));
+  const lastEnd = words[words.length - 1].end;
+  const spoken = lastEnd - words[0].start;
+  const offTrack = labels.reduce((sum, label, i) => (label === 'off_track' ? sum + ((i + 1 < sentences.length ? startOf(i + 1) : lastEnd) - startOf(i)) : sum), 0);
+  const firstDirection = labels.findIndex((l) => l === 'direction' || l === 'point');
   return {
-    ...output,
-    steps: output.steps.map((step, i) => ({ ...step, atSeconds: round1(secondsIntoAnswer(transcript, starts[i])) })),
-    pointAtSeconds: firstDirection === -1 ? null : round1(secondsIntoAnswer(transcript, starts[firstDirection])),
+    steps: stepsOf(labels).map(({ label, first }) => ({ label, sentence: first + 1, atSeconds: at(first) })),
+    pointAtSeconds: firstDirection === -1 ? null : at(firstDirection),
     offTrackShare: spoken > 0 ? Math.round((offTrack / spoken) * 100) / 100 : 0,
   };
 }
@@ -167,7 +156,7 @@ export function mapAnswer(input: Input, model: Model, { onAttemptFailed }: Optio
       prompt: mapPrompt,
       input: {
         question: input.question,
-        transcript: transcriptWithPauses(input.transcript),
+        transcript: numberedSentences(input.transcript),
         stoppedByTimeLimit: input.stoppedByTimeLimit,
         counted: countedItems(input.metrics),
         ...(previousError ? { previousAttemptProblem: problemOf(previousError) } : {}),
@@ -176,6 +165,7 @@ export function mapAnswer(input: Input, model: Model, { onAttemptFailed }: Optio
     });
     const problems = mapProblems(output, input.transcript, input.metrics);
     if (problems.length > 0) throw new Error(`map reply rejected: ${problems.join('; ')}`);
-    return { ...placeSteps(output, input.transcript), version: mapVersion };
+    const labels = output.sentences.map((s) => s.label);
+    return { ...output, ...placeLabels(labels, input.transcript), version: mapVersion };
   }, onAttemptFailed);
 }

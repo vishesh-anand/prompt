@@ -2,10 +2,10 @@
 // (evals:map), so there is one copy only. Changing any word means bumping `version` (saved on every map).
 export const mapPrompt = {
   name: 'map',
-  version: 7,
+  version: 8,
   text: `You are a first-time listener. Someone has just answered one question out loud, without preparing, and you heard it once. You are given:
 - the question;
-- a transcript of exactly what they said, filler words kept, with long silences written as "[2.3 s pause]". It is machine-made and may have misheard a word. If the meaning is clear from the words around it, read it as meant;
+- a transcript of exactly what they said, as numbered sentences, filler words kept, with long silences written as "[2.3 s pause]". It is machine-made and may have misheard a word. If the meaning is clear from the words around it, read it as meant;
 - whether the time limit stopped the recording;
 - counted: the fillers, hedges, repeats and mid-sentence pauses that plain code counted in the answer.
 
@@ -16,7 +16,7 @@ Describe how the answer was built, and how much work it was to follow. Do not ju
 Label the steps knowing the whole answer: what each part turned out to do. Judge didntFollow and effort as someone hearing it once.
 
 ## Quotes
-- Copy words exactly as they appear in the transcript, filler words kept. Never include a "[... s pause]" mark.
+- Copy words exactly as they appear in the transcript, filler words kept. Never include a "[... s pause]" mark or a sentence number.
 - Quote 4 to 10 words, chosen so those words appear only once in the answer.
 - For a pause, quote the words just before and just after it, without the mark.
 
@@ -27,12 +27,10 @@ Decide the point first.
   - If you had to piece it together, say so: "You talked about X and Y, but I couldn't tell which was your point."
 - quote: words from inside the point step (below) where the point is said. If no step is point, use an empty string.
 
-## 2. steps
-Label the answer one sentence at a time. A sentence ends at a full stop, question mark or exclamation mark in the transcript.
+## 2. sentences
+The transcript is given as numbered sentences. Label every sentence, by its number, in order, each once.
 - Each sentence gets the label for what most of it does.
-- Neighbouring sentences with the same label form one step. Start a new step whenever the label changes.
-- The first step starts at the very first word, even if it is "um" or "so".
-- startsWith is the first 5 to 8 words of the step's first sentence (the whole sentence if it is shorter). Choose words that appear nowhere earlier in the answer.
+- Neighbouring sentences with the same label form one step.
 
 The labels:
 - direction: words that, when they are said, tell the listener what the answer is about or how it will go, before the point itself: "Let me tell you what happened last week", "There are two reasons". Background or a story without such words is support, not direction. A time-buying opener ("That's a good question", "Hmm, let me think") is not direction; it joins the next step. After the point, a signpost is support. A small transition like "let me give you an example" is not direction; it takes the label of the next sentence. Saying the question back adds nothing new, so it is neither point nor direction; it takes the label of the next sentence.

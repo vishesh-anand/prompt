@@ -2,10 +2,10 @@ import { assertEquals, assertRejects, assertStringIncludes, assertThrows } from 
 import { zodOutputFormat } from 'npm:@anthropic-ai/sdk@0.131.0/helpers/zod';
 
 import type { Model, PromptFile } from '../providers/model.ts';
-import { type MapOutput, mapOutputSchema } from '../schemas/map.ts';
+import { type MapOutput, mapOutputSchema, type StepLabel } from '../schemas/map.ts';
 import type { Transcript } from '../schemas/metrics.ts';
 import { testMetrics } from '../testMetrics.ts';
-import { mapAnswer, mapProblems, mapVersion, transcriptWithPauses, withoutPauseMarks } from './map.ts';
+import { mapAnswer, mapProblems, mapVersion, numberedSentences, placeLabels, withoutPauseMarks } from './map.ts';
 import { measure } from './measure.ts';
 
 // "Um, so yesterday I had a meeting. My point is [2.0 s pause] ship early. Users told us. So ship early."
@@ -23,11 +23,11 @@ const input = { question: 'Should we ship early?', transcript, metrics, stoppedB
 
 const good: MapOutput = {
   point: { restatement: 'You think we should ship early.', quote: 'My point is ship early' },
-  steps: [
-    { label: 'off_track', startsWith: 'Um, so yesterday I had' },
-    { label: 'point', startsWith: 'My point is ship early.' },
-    { label: 'support', startsWith: 'Users told us.' },
-    { label: 'ending', startsWith: 'So ship early.' },
+  sentences: [
+    { sentence: 1, label: 'off_track' },
+    { sentence: 2, label: 'point' },
+    { sentence: 3, label: 'support' },
+    { sentence: 4, label: 'ending' },
   ],
   didntFollow: [{ quote: 'yesterday I had a meeting', why: 'The meeting never comes back.' }],
   restarts: [],
@@ -35,7 +35,8 @@ const good: MapOutput = {
   effort: 2,
 };
 
-const withSteps = (...steps: MapOutput['steps']): MapOutput => ({ ...good, steps });
+const labelled = (...labels: StepLabel[]): MapOutput => ({ ...good, sentences: labels.map((label, i) => ({ sentence: i + 1, label })) });
+const numbered = (...sentence: number[]): MapOutput => ({ ...good, sentences: sentence.map((n) => ({ sentence: n, label: 'support' })) });
 const noticing = (...noticed: MapOutput['noticed']): MapOutput => ({ ...good, noticed });
 
 // A model that replies with each reply in turn, and remembers what it was asked.
@@ -50,8 +51,8 @@ function modelThatSays(...replies: MapOutput[]) {
   return { model, seen };
 }
 
-Deno.test('long silences are written into the text where they fell; short gaps are not', () => {
-  assertEquals(transcriptWithPauses(transcript), 'Um, so yesterday I had a meeting. My point is [2.0 s pause] ship early. Users told us. So ship early.');
+Deno.test('the text is numbered sentences, with long silences written where they fell; short gaps are not', () => {
+  assertEquals(numberedSentences(transcript), '1. Um, so yesterday I had a meeting.\n2. My point is [2.0 s pause] ship early.\n3. Users told us.\n4. So ship early.');
 });
 
 Deno.test('the model gets the question, the text with pauses, the timer and what Measure counted, and nothing else', async () => {
@@ -59,7 +60,7 @@ Deno.test('the model gets the question, the text with pauses, the timer and what
   await mapAnswer({ ...input, stoppedByTimeLimit: true }, model);
   assertEquals(seen[0].prompt.name, 'map');
   assertEquals(seen[0].input.question, 'Should we ship early?');
-  assertStringIncludes(String(seen[0].input.transcript), 'is [2.0 s pause] ship');
+  assertStringIncludes(String(seen[0].input.transcript), '2. My point is [2.0 s pause] ship');
   assertEquals(seen[0].input.stoppedByTimeLimit, true);
   assertEquals(seen[0].input.counted, { fillers: { um: 1, so: 1 }, hedges: {}, repeats: 0, midSentencePauses: 1 });
   assertEquals(Object.keys(seen[0].input).sort(), ['counted', 'question', 'stoppedByTimeLimit', 'transcript']);
@@ -68,7 +69,8 @@ Deno.test('the model gets the question, the text with pauses, the timer and what
 Deno.test('plain code adds each step time, when the point came and the off-track share', async () => {
   const { model } = modelThatSays(good);
   const map = await mapAnswer(input, model);
-  assertEquals(map.steps.map((s) => s.atSeconds), [0, 7, 13.5, 16.5]);
+  assertEquals(map.steps.map((s) => [s.sentence, s.atSeconds]), [[1, 0], [2, 7], [3, 13.5], [4, 16.5]]);
+  assertEquals(map.sentences, good.sentences);
   assertEquals(map.pointAtSeconds, 7);
   // Off track from 2 s to "My" at 9 s: 7 of the 19 seconds spoken.
   assertEquals(map.offTrackShare, 0.37);
@@ -79,7 +81,7 @@ Deno.test('plain code adds each step time, when the point came and the off-track
 
 Deno.test('a frame before the point is when the listener knew where it was going', async () => {
   const { model } = modelThatSays(
-    withSteps({ label: 'direction', startsWith: 'Um, so yesterday' }, { label: 'point', startsWith: 'My point is' }, { label: 'support', startsWith: 'Users told us.' }),
+    labelled('direction', 'point', 'support', 'support'),
   );
   const map = await mapAnswer(input, model);
   assertEquals(map.pointAtSeconds, 0);
@@ -88,7 +90,7 @@ Deno.test('a frame before the point is when the listener knew where it was going
 
 Deno.test('an answer with no point has no point step, no point quote and no point time', async () => {
   const { model } = modelThatSays({
-    ...withSteps({ label: 'off_track', startsWith: 'Um, so' }, { label: 'support', startsWith: 'Users told us.' }),
+    ...labelled('off_track', 'off_track', 'support', 'support'),
     point: { restatement: 'You talked about a meeting and shipping, but I could not tell which was your point.', quote: '' },
   });
   const map = await mapAnswer(input, model);
@@ -97,10 +99,10 @@ Deno.test('an answer with no point has no point step, no point quote and no poin
   assertEquals(map.offTrackShare, 0.71);
 });
 
-Deno.test('a timer-stopped answer with no ending step is a normal map', async () => {
-  const { model } = modelThatSays(withSteps({ label: 'point', startsWith: 'Um, so yesterday' }, { label: 'support', startsWith: 'Users told us.' }));
+Deno.test('neighbouring sentences with the same label are one step, and a timer-stopped answer needs no ending', async () => {
+  const { model } = modelThatSays({ ...labelled('point', 'point', 'support', 'support'), point: { ...good.point, quote: 'I had a meeting. My point' } });
   const map = await mapAnswer({ ...input, stoppedByTimeLimit: true }, model);
-  assertEquals(map.steps.map((s) => s.label), ['point', 'support']);
+  assertEquals(map.steps, [{ label: 'point', sentence: 1, atSeconds: 0 }, { label: 'support', sentence: 3, atSeconds: 13.5 }]);
 });
 
 Deno.test('a good reply has no problems, and a quote across a pause mark still matches', () => {
@@ -109,33 +111,25 @@ Deno.test('a good reply has no problems, and a quote across a pause mark still m
   assertEquals(mapProblems({ ...good, point: { ...good.point, quote: 'My point is [2.0 s pause] ship early' } }, transcript, metrics), []);
 });
 
-Deno.test('steps: the first starts at the first word, so a late point is never moved to the start', () => {
-  // Taken as given, this would put the point at 0 s and lose the 7 seconds before it.
-  const skipped = withSteps({ label: 'point', startsWith: 'My point is' }, { label: 'support', startsWith: 'Users told us.' });
-  assertStringIncludes(mapProblems(skipped, transcript, metrics).join(), 'must start at the first word, "Um,"');
+Deno.test('sentences: each labelled once, in order, from 1 to the last', () => {
+  const refused = 'label sentences 1 to 4, each once and in order (the reply labels';
+  assertEquals(mapProblems(numbered(1, 2, 3, 4), transcript, metrics).filter((p) => p.startsWith('label')), []);
+  for (const wrong of [[1, 2, 4], [1, 2, 2, 3, 4], [1, 3, 2, 4], [1, 2, 3], [0, 1, 2, 3]]) {
+    assertStringIncludes(mapProblems(numbered(...wrong), transcript, metrics).join(), `${refused} ${wrong.join(', ')}`);
+  }
 });
 
-Deno.test('steps: each starts at the start of a sentence', () => {
-  const midSentence = withSteps({ label: 'off_track', startsWith: 'Um, so yesterday' }, { label: 'point', startsWith: 'a meeting. My point is' });
-  assertStringIncludes(mapProblems(midSentence, transcript, metrics).join(), 'must start at the start of a sentence');
-});
-
-Deno.test('steps: opening words that appear earlier are refused, so a step is never placed at the wrong mention', () => {
-  // "So" starts the last sentence, but also appears at the second word.
-  const early = withSteps({ label: 'point', startsWith: 'Um, so yesterday' }, { label: 'support', startsWith: 'Users told us.' }, { label: 'ending', startsWith: 'So' });
-  assertStringIncludes(mapProblems(early, transcript, metrics).join(), 'also appears earlier');
-});
-
-Deno.test('steps: in order, and every one is in the transcript', () => {
-  const backwards = withSteps({ label: 'off_track', startsWith: 'Um, so yesterday' }, { label: 'support', startsWith: 'Users told us.' }, { label: 'point', startsWith: 'My point is ship' });
-  assertStringIncludes(mapProblems(backwards, transcript, metrics).join(), 'step 3 ("My point is ship") is not in the transcript after step 2');
+Deno.test('a sentence starting with any word, "And" included, gets its own label: no words are copied to place it', () => {
+  const cats: Transcript = { words: ['I', 'like', 'cats.', 'And', 'I', 'would', 'recommend', 'them.'].map((punctuated, i) => ({ text: punctuated.toLowerCase().replace(/[^a-z]/g, ''), punctuated, start: i, end: i + 0.5 })) };
+  assertEquals(placeLabels(['point', 'ending'], cats).steps, [{ label: 'point', sentence: 1, atSeconds: 0 }, { label: 'ending', sentence: 2, atSeconds: 3 }]);
+  assertThrows(() => placeLabels(['point'], cats));
 });
 
 Deno.test('point: exactly one point step, and the point quote is inside it', () => {
-  const twoPoints = withSteps({ label: 'point', startsWith: 'Um, so yesterday' }, { label: 'point', startsWith: 'My point is' });
+  const twoPoints = labelled('point', 'off_track', 'point', 'ending');
   assertStringIncludes(mapProblems(twoPoints, transcript, metrics).join(), '2 steps are point');
   assertEquals(mapProblems({ ...good, point: { ...good.point, quote: '' } }, transcript, metrics), ['a step is point, but point.quote is empty']);
-  const noPointStep = withSteps({ label: 'off_track', startsWith: 'Um, so yesterday' }, { label: 'support', startsWith: 'Users told us.' });
+  const noPointStep = labelled('off_track', 'support', 'support', 'support');
   assertEquals(mapProblems(noPointStep, transcript, metrics), ['point.quote is given, but no step is point']);
   assertEquals(mapProblems({ ...good, point: { ...good.point, quote: 'Users told us' } }, transcript, metrics), ['point.quote "Users told us" is not inside the point step']);
   assertEquals(mapProblems({ ...good, point: { ...good.point, restatement: ' ' } }, transcript, metrics), ['the point restatement is empty']);
@@ -191,10 +185,10 @@ Deno.test('an answer with no words is never sent to the model', async () => {
   assertEquals(seen.length, 0);
 });
 
-Deno.test('the SDK parse every reply goes through accepts a map, and refuses an unknown label, an effort of 6 or no steps', () => {
+Deno.test('the SDK parse every reply goes through accepts a map, and refuses an unknown label, an effort of 6 or no sentences', () => {
   const format = zodOutputFormat(mapOutputSchema);
   assertEquals(format.parse(JSON.stringify(good)), good);
   assertThrows(() => format.parse(JSON.stringify({ ...good, effort: 6 })));
-  assertThrows(() => format.parse(JSON.stringify(withSteps({ label: 'aside' as 'off_track', startsWith: 'Um, so' }))));
-  assertThrows(() => format.parse(JSON.stringify(withSteps())));
+  assertThrows(() => format.parse(JSON.stringify(labelled('aside' as 'off_track'))));
+  assertThrows(() => format.parse(JSON.stringify(labelled())));
 });
