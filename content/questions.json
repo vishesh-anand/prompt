@@ -1,402 +1,502 @@
 [
   {
     "category": "work",
-    "text": "What do you do at work, in a way a friend outside your field would understand?"
+    "text": "What do you do at work, in a way a friend outside your field would understand?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "What did you work on this week, and what comes next?"
+    "text": "What did you work on this week, and what comes next?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "What is one thing you are good at in your job, and how do you know?"
+    "text": "What is one thing you are good at in your job, and how do you know?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Describe a typical day in your work."
+    "text": "Describe a typical day in your work.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "What is a tool or habit that makes your work easier?"
+    "text": "What is a tool or habit that makes your work easier?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Tell me about a project you are proud of, and why."
+    "text": "Tell me about a project you are proud of, and why.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "Your manager asks how your week went. What do you say?"
+    "text": "Your manager asks how your week went. What do you say?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Introduce yourself to a new team in one minute."
+    "text": "Introduce yourself to a new team in one minute.",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "What is the best piece of advice a colleague has given you?"
+    "text": "What is the best piece of advice a colleague has given you?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Describe a colleague you learned a lot from."
+    "text": "Describe a colleague you learned a lot from.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "What would you change about how your team works, and why?"
+    "text": "What would you change about how your team works, and why?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Explain a recent task to someone who joins the project today."
+    "text": "Explain a recent task to someone who joins the project today.",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Tell me about a mistake you made at work and what you changed after."
+    "text": "Tell me about a mistake you made at work and what you changed after.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "Describe a decision you made at work that you would make differently now."
+    "text": "Describe a decision you made at work that you would make differently now.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "What is the hardest part of your job right now?"
+    "text": "What is the hardest part of your job right now?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Pitch an idea to improve how your team works."
+    "text": "Pitch an idea to improve how your team works.",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "A colleague disagrees with your plan in a meeting. Make your case."
+    "text": "A colleague disagrees with your plan in a meeting. Make your case.",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Tell me about a time you had to explain something complicated to someone."
+    "text": "Tell me about a time you had to explain something complicated to someone.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "Why should someone hire you for the job you do now?"
+    "text": "Why should someone hire you for the job you do now?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "What are you working to get better at this year, and how?"
+    "text": "What are you working to get better at this year, and how?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Describe a time you helped a teammate who was stuck."
+    "text": "Describe a time you helped a teammate who was stuck.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "What makes a meeting worth attending?"
+    "text": "What makes a meeting worth attending?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Tell me about a deadline you nearly missed and how you handled it."
+    "text": "Tell me about a deadline you nearly missed and how you handled it.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "Give feedback to a teammate whose work was late. What do you say?"
+    "text": "Give feedback to a teammate whose work was late. What do you say?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "What is a risk you took at work, and what happened?"
+    "text": "What is a risk you took at work, and what happened?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "How do you decide what to work on first when everything feels urgent?"
+    "text": "How do you decide what to work on first when everything feels urgent?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Describe a time you changed your mind at work."
+    "text": "Describe a time you changed your mind at work.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "Tell me about a time you worked with someone you found difficult."
+    "text": "Tell me about a time you worked with someone you found difficult.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "What does good teamwork look like to you?"
+    "text": "What does good teamwork look like to you?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Explain why your work matters to someone who does not care about it."
+    "text": "Explain why your work matters to someone who does not care about it.",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "You are asked to say no to a request from a senior colleague. How do you do it?"
+    "text": "You are asked to say no to a request from a senior colleague. How do you do it?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Describe a time you had to learn something quickly."
+    "text": "Describe a time you had to learn something quickly.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "What would you tell a new hire on their first day?"
+    "text": "What would you tell a new hire on their first day?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Tell me about a time you led without being the boss."
+    "text": "Tell me about a time you led without being the boss.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "What is a goal you are working toward, and what is in the way?"
+    "text": "What is a goal you are working toward, and what is in the way?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Walk me through how you solved a hard problem recently."
+    "text": "Walk me through how you solved a hard problem recently.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "What is the most useful thing you learned from a failure?"
+    "text": "What is the most useful thing you learned from a failure?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Describe a time you asked for help and it paid off."
+    "text": "Describe a time you asked for help and it paid off.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "How would you explain a delay to a client who is unhappy?"
+    "text": "How would you explain a delay to a client who is unhappy?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "What do you want to be doing in your work in three years?"
+    "text": "What do you want to be doing in your work in three years?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Tell me about a time you had to persuade someone."
+    "text": "Tell me about a time you had to persuade someone.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "What is your approach when you are asked a question you cannot answer?"
+    "text": "What is your approach when you are asked a question you cannot answer?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Describe a time you received tough feedback. What did you do with it?"
+    "text": "Describe a time you received tough feedback. What did you do with it?",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "What is something your team does well that others could copy?"
+    "text": "What is something your team does well that others could copy?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Make the case for a tool or process you think your team should adopt."
+    "text": "Make the case for a tool or process you think your team should adopt.",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Tell me about a time you had to deliver bad news."
+    "text": "Tell me about a time you had to deliver bad news.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "How do you stay focused on a long, hard project?"
+    "text": "How do you stay focused on a long, hard project?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "work",
-    "text": "Describe the best manager you have had and what made them good."
+    "text": "Describe the best manager you have had and what made them good.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "Summarize your career so far in one minute."
+    "text": "Summarize your career so far in one minute.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "work",
-    "text": "If you could give your team one piece of advice, what would it be?"
+    "text": "If you could give your team one piece of advice, what would it be?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "What did you have for breakfast, and is it your usual?"
+    "text": "What did you have for breakfast, and is it your usual?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Describe your morning routine."
+    "text": "Describe your morning routine.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What is a small thing that made your week better?"
+    "text": "What is a small thing that made your week better?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Tell me about your favorite place to eat and why you go back."
+    "text": "Tell me about your favorite place to eat and why you go back.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What is something you are looking forward to?"
+    "text": "What is something you are looking forward to?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Describe your ideal weekend."
+    "text": "Describe your ideal weekend.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "Recommend a book, show or film to a friend and say why."
+    "text": "Recommend a book, show or film to a friend and say why.",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Tell me about a place you would take a visitor to your town."
+    "text": "Tell me about a place you would take a visitor to your town.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What is a hobby you enjoy, and how did you start it?"
+    "text": "What is a hobby you enjoy, and how did you start it?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Describe the home you grew up in."
+    "text": "Describe the home you grew up in.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What is your favorite season, and what do you do in it?"
+    "text": "What is your favorite season, and what do you do in it?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Tell me about a meal you cooked that turned out well, or badly."
+    "text": "Tell me about a meal you cooked that turned out well, or badly.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What is a song you never get tired of?"
+    "text": "What is a song you never get tired of?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Describe a friend you have known for a long time."
+    "text": "Describe a friend you have known for a long time.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What is something you changed your mind about recently?"
+    "text": "What is something you changed your mind about recently?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Tell me about the best trip you have taken."
+    "text": "Tell me about the best trip you have taken.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What is a skill you would like to learn, and why?"
+    "text": "What is a skill you would like to learn, and why?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Describe a stranger who was kind to you."
+    "text": "Describe a stranger who was kind to you.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What would you do with a free day and no plans?"
+    "text": "What would you do with a free day and no plans?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Tell me about a time you got lost."
+    "text": "Tell me about a time you got lost.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What is a tradition in your family or friend group?"
+    "text": "What is a tradition in your family or friend group?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Describe a teacher who stayed with you."
+    "text": "Describe a teacher who stayed with you.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What is the best gift you have given or received?"
+    "text": "What is the best gift you have given or received?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Tell me about a time something went wrong and turned out fine."
+    "text": "Tell me about a time something went wrong and turned out fine.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What is a habit you are trying to build or break?"
+    "text": "What is a habit you are trying to build or break?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Describe your favorite room and what you do there."
+    "text": "Describe your favorite room and what you do there.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "Tell me about a time you were nervous and did it anyway."
+    "text": "Tell me about a time you were nervous and did it anyway.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What is something you own that you would hate to lose?"
+    "text": "What is something you own that you would hate to lose?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Explain a game or sport to someone who has never played it."
+    "text": "Explain a game or sport to someone who has never played it.",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "What is the best advice you have ever been given?"
+    "text": "What is the best advice you have ever been given?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Describe a moment this year you want to remember."
+    "text": "Describe a moment this year you want to remember.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "Tell me about someone you admire and why."
+    "text": "Tell me about someone you admire and why.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What do you do when you cannot sleep?"
+    "text": "What do you do when you cannot sleep?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Describe a place that makes you feel calm."
+    "text": "Describe a place that makes you feel calm.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What would you tell your younger self?"
+    "text": "What would you tell your younger self?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Tell me about a time you laughed so hard you could not stop."
+    "text": "Tell me about a time you laughed so hard you could not stop.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What is something most people get wrong about you?"
+    "text": "What is something most people get wrong about you?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Describe how you celebrate a birthday, yours or someone else's."
+    "text": "Describe how you celebrate a birthday, yours or someone else's.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What is a rule you live by?"
+    "text": "What is a rule you live by?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Tell me about a time you had to wait a long time for something."
+    "text": "Tell me about a time you had to wait a long time for something.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What is a food you could eat every day?"
+    "text": "What is a food you could eat every day?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Describe a neighbor, past or present."
+    "text": "Describe a neighbor, past or present.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What is something you are proud of that few people know about?"
+    "text": "What is something you are proud of that few people know about?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Tell me about a time you helped someone you did not know."
+    "text": "Tell me about a time you helped someone you did not know.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What is a place you want to visit, and what would you do there?"
+    "text": "What is a place you want to visit, and what would you do there?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Describe a day that did not go as planned."
+    "text": "Describe a day that did not go as planned.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "What is the most useful thing you have learned outside of school or work?"
+    "text": "What is the most useful thing you have learned outside of school or work?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "Tell me about a time you disagreed with a friend."
+    "text": "Tell me about a time you disagreed with a friend.",
+    "wantsDirectAnswer": false
   },
   {
     "category": "everyday",
-    "text": "If you could live anywhere for a year, where would it be and why?"
+    "text": "If you could live anywhere for a year, where would it be and why?",
+    "wantsDirectAnswer": true
   },
   {
     "category": "everyday",
-    "text": "What is one thing you would like to be remembered for?"
+    "text": "What is one thing you would like to be remembered for?",
+    "wantsDirectAnswer": true
   }
 ]

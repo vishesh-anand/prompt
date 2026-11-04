@@ -1,0 +1,70 @@
+-- Build step D, part 1: the Map stage runs in process-answer, between Measure and the judge.
+-- 1. A new status, mapped: uploaded -> transcribed -> measured -> mapped -> judged -> coached (or failed).
+alter table public.answers drop constraint answers_status_check;
+alter table public.answers add constraint answers_status_check
+  check (status in ('uploaded', 'transcribed', 'measured', 'mapped', 'judged', 'coached', 'failed'));
+
+-- 2. Whether a question asks for a direct answer, so a late point is worth a tip even when it was chosen (PRODUCT.md,
+-- screen 5). Copied from content/questions.json (a test checks they match). Set by text, because the table also holds
+-- the old placeholders. Questions stay read-only for the phone.
+alter table public.questions add column wants_direct_answer boolean not null default false;
+
+update public.questions set wants_direct_answer = true where text in (
+  ('What do you do at work, in a way a friend outside your field would understand?'),
+  ('What did you work on this week, and what comes next?'),
+  ('What is one thing you are good at in your job, and how do you know?'),
+  ('What is a tool or habit that makes your work easier?'),
+  ('Your manager asks how your week went. What do you say?'),
+  ('Introduce yourself to a new team in one minute.'),
+  ('What is the best piece of advice a colleague has given you?'),
+  ('What would you change about how your team works, and why?'),
+  ('Explain a recent task to someone who joins the project today.'),
+  ('What is the hardest part of your job right now?'),
+  ('Pitch an idea to improve how your team works.'),
+  ('A colleague disagrees with your plan in a meeting. Make your case.'),
+  ('Why should someone hire you for the job you do now?'),
+  ('What are you working to get better at this year, and how?'),
+  ('What makes a meeting worth attending?'),
+  ('Give feedback to a teammate whose work was late. What do you say?'),
+  ('What is a risk you took at work, and what happened?'),
+  ('How do you decide what to work on first when everything feels urgent?'),
+  ('What does good teamwork look like to you?'),
+  ('Explain why your work matters to someone who does not care about it.'),
+  ('You are asked to say no to a request from a senior colleague. How do you do it?'),
+  ('What would you tell a new hire on their first day?'),
+  ('What is a goal you are working toward, and what is in the way?'),
+  ('What is the most useful thing you learned from a failure?'),
+  ('How would you explain a delay to a client who is unhappy?'),
+  ('What do you want to be doing in your work in three years?'),
+  ('What is your approach when you are asked a question you cannot answer?'),
+  ('What is something your team does well that others could copy?'),
+  ('Make the case for a tool or process you think your team should adopt.'),
+  ('How do you stay focused on a long, hard project?'),
+  ('If you could give your team one piece of advice, what would it be?'),
+  ('What did you have for breakfast, and is it your usual?'),
+  ('What is a small thing that made your week better?'),
+  ('What is something you are looking forward to?'),
+  ('Recommend a book, show or film to a friend and say why.'),
+  ('What is a hobby you enjoy, and how did you start it?'),
+  ('What is your favorite season, and what do you do in it?'),
+  ('What is a song you never get tired of?'),
+  ('What is something you changed your mind about recently?'),
+  ('What is a skill you would like to learn, and why?'),
+  ('What would you do with a free day and no plans?'),
+  ('What is a tradition in your family or friend group?'),
+  ('What is the best gift you have given or received?'),
+  ('What is a habit you are trying to build or break?'),
+  ('What is something you own that you would hate to lose?'),
+  ('Explain a game or sport to someone who has never played it.'),
+  ('What is the best advice you have ever been given?'),
+  ('What do you do when you cannot sleep?'),
+  ('What would you tell your younger self?'),
+  ('What is something most people get wrong about you?'),
+  ('What is a rule you live by?'),
+  ('What is a food you could eat every day?'),
+  ('What is something you are proud of that few people know about?'),
+  ('What is a place you want to visit, and what would you do there?'),
+  ('What is the most useful thing you have learned outside of school or work?'),
+  ('If you could live anywhere for a year, where would it be and why?'),
+  ('What is one thing you would like to be remembered for?')
+);
