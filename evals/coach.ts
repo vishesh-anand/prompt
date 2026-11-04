@@ -1,7 +1,7 @@
 import { z } from 'npm:zod@4';
 
 import { coach } from '../supabase/functions/_shared/pipeline/coach.ts';
-import { judge } from '../supabase/functions/_shared/pipeline/judge.ts';
+import { mapAnswer } from '../supabase/functions/_shared/pipeline/map.ts';
 import { measure } from '../supabase/functions/_shared/pipeline/measure.ts';
 import { updateNotebook } from '../supabase/functions/_shared/pipeline/notebook.ts';
 import { chooseFocus } from '../supabase/functions/_shared/pipeline/tipFocus.ts';
@@ -11,12 +11,11 @@ import { coachCheckPrompt } from '../supabase/functions/_shared/prompts/coachChe
 import { notebookPrompt } from '../supabase/functions/_shared/prompts/notebook.ts';
 import { anthropicModel, type Usage } from '../supabase/functions/_shared/providers/anthropic.ts';
 import { maxTipWords, tipWordsTarget, wordCount } from '../supabase/functions/_shared/schemas/coaching.ts';
-import { savedJudgementSchema } from '../supabase/functions/_shared/schemas/judgement.ts';
 import type { Clip } from './score.ts';
 import { newWords } from './novelty.ts';
 import { loadTranscripts } from './transcripts.ts';
 
-// Run from this folder with `npm run evals:coach` (add `-- --limit 1` to try one clip). Runs the real Judge, Coach and
+// Run from this folder with `npm run evals:coach` (add `-- --limit 1` to try one clip). Runs the real Map, Coach and
 // Notebook stages on the clips you scored, then checks the coach's work:
 //  - the better version never adds a fact, example, number, name or opinion (a plain-code check and a Claude checker),
 //  - the tip follows the voice rules that can be counted,
@@ -48,6 +47,12 @@ const clips = labels.clips
   .slice(0, limit);
 if (clips.length === 0) throw new Error('No scored clips in labels.json.');
 const transcripts = await loadTranscripts(clips);
+// Whether each clip's question wants a direct answer, from the question bank. A clip whose question isn't in the bank
+// (the owner's early placeholder questions) counts as not wanting one.
+const bank: { text: string; wantsDirectAnswer: boolean }[] = JSON.parse(await Deno.readTextFile('../content/questions.json'));
+const wantsDirect = (question: string) => bank.find((q) => q.text === question)?.wantsDirectAnswer ?? false;
+// The judge still runs in the live pipeline until step F, but not here: its cost per answer is from the coach v5 report.
+const judgeCostFromV5 = 0.0075;
 
 // ---- usage per stage ----
 const usage: Record<string, { in: number; out: number }> = {};
@@ -89,6 +94,8 @@ type Row = {
   unsupported: { text: string; why: string }[];
   tipAddressesFocus: boolean;
   tipReason: string;
+  whatChangedProblems: string[];
+  coachSecondTries: number;
   seconds: number;
   error?: string;
 };
@@ -96,7 +103,9 @@ const rows: Row[] = [];
 const examples: string[] = ['# Coach examples (full text, stays on this Mac)', ''];
 const controls: { name: string; caught: boolean; flagged: number }[] = [];
 
-const judgeModel = modelFor('judge', pipelineModel);
+const mapModel = modelFor('map', pipelineModel);
+let mapSecondTries = 0;
+const mapFailures: string[] = [];
 const coachModel = modelFor('coach', pipelineModel);
 const notebookModel = modelFor('notebook', pipelineModel);
 const transcribeCost: number[] = [];
@@ -109,15 +118,27 @@ for (const clip of clips) {
   transcribeCost.push((durationMs / 60_000) * transcribePerMinute);
   const text = transcript.words.map((w) => w.punctuated).join(' ');
 
-  const judged = await judge({ question: clip.question!, transcript, stoppedByTimeLimit: timeLimit }, judgeModel);
-  const judgement = savedJudgementSchema.parse({ ...judged.judgement, mainPointAtSeconds: judged.mainPointAtSeconds });
-  const focus = chooseFocus({ metrics, judgement, stoppedByTimeLimit: timeLimit });
+  const wantsDirectAnswer = wantsDirect(clip.question!);
+  let map;
+  try {
+    map = await mapAnswer({ question: clip.question!, transcript, metrics, stoppedByTimeLimit: timeLimit }, mapModel, { onAttemptFailed: () => mapSecondTries++ });
+  } catch (error) {
+    mapFailures.push(`${short}: ${error instanceof Error ? error.message : String(error)}`);
+    console.log(`${short}: the map failed twice, so the clip is skipped`);
+    continue;
+  }
+  const focus = chooseFocus({ metrics, map, transcript, wantsDirectAnswer, stoppedByTimeLimit: timeLimit });
 
   for (let run = 1; run <= runsPerClip; run++) {
     const started = performance.now();
+    let coachSecondTries = 0;
     try {
-      const coaching = await coach({ question: clip.question!, transcript, focus, notebook: '', stoppedByTimeLimit: timeLimit }, coachModel);
-      if (run === 1) await updateNotebook({ previousNotes: '', judgement, metrics, tip: coaching.tip }, notebookModel);
+      const coaching = await coach(
+        { question: clip.question!, wantsDirectAnswer, transcript, map, focus, notebook: '', stoppedByTimeLimit: timeLimit },
+        coachModel,
+        { onAttemptFailed: () => coachSecondTries++ },
+      );
+      if (run === 1) await updateNotebook({ previousNotes: '', map, metrics, tip: coaching.tip }, notebookModel);
       const seconds = (performance.now() - started) / 1000;
       const checked = await check(text, coaching.betterVersion, coaching.tip, focus);
       const novelty = newWords(transcript, coaching.betterVersion);
@@ -129,13 +150,22 @@ for (const clip of clips) {
         ...(coaching.tip.includes('!') ? ['exclamation mark'] : []),
         ...bannedPraise.filter((p) => lower.includes(p)).map((p) => `generic praise: "${p}"`),
       ];
+      const changed = coaching.whatChanged ?? '';
+      const whatChangedProblems = [
+        ...(changed === '' ? ['empty'] : []),
+        ...(/[.?!]\s+\S/.test(changed) ? ['more than one sentence'] : []),
+        ...(wordCount(changed) > 25 ? [`${wordCount(changed)} words`] : []),
+        ...(changed.includes('!') ? ['exclamation mark'] : []),
+        ...bannedPraise.filter((p) => changed.toLowerCase().includes(p)).map((p) => `generic praise: "${p}"`),
+      ];
       rows.push({
         clip: short, run, focus: focus.kind, tipSentences: sentences, tipWords: wordCount(coaching.tip), tipProblems,
         lengthRatio: coaching.betterVersion.split(/\s+/).length / transcript.words.length,
         novelNumbers: novelty.numbers, novelNames: novelty.names, novelWords: novelty.words.length,
-        unsupported: checked.unsupported, tipAddressesFocus: checked.tipAddressesFocus, tipReason: checked.tipReason, seconds,
+        unsupported: checked.unsupported, tipAddressesFocus: checked.tipAddressesFocus, tipReason: checked.tipReason,
+        whatChangedProblems, coachSecondTries, seconds,
       });
-      examples.push(`## Clip ${short}, run ${run} (focus: ${focus.kind})`, '', `Tip: ${coaching.tip}`, '', `Better version: ${coaching.betterVersion}`, '', `New words: ${novelty.words.join(', ') || 'none'}`, `Tip vs focus: ${checked.tipAddressesFocus ? 'on focus' : 'off focus'} (${checked.tipReason})`, `Checker: ${checked.unsupported.length === 0 ? 'nothing unsupported' : checked.unsupported.map((u) => `"${u.text}" (${u.why})`).join('; ')}`, '');
+      examples.push(`## Clip ${short}, run ${run} (focus: ${focus.kind})`, '', `Tip: ${coaching.tip}`, '', `Better version: ${coaching.betterVersion}`, '', `Steps: ${(coaching.betterSteps ?? []).map((st) => st.label).join(', ')}`, `What changed: ${changed}`, '', `New words: ${novelty.words.join(', ') || 'none'}`, `Tip vs focus: ${checked.tipAddressesFocus ? 'on focus' : 'off focus'} (${checked.tipReason})`, `Checker: ${checked.unsupported.length === 0 ? 'nothing unsupported' : checked.unsupported.map((u) => `"${u.text}" (${u.why})`).join('; ')}`, '');
 
       // Test the checker once, on the first reply that comes back: it has to catch an invented sentence and an invented detail.
       if (controls.length === 0) {
@@ -147,7 +177,7 @@ for (const clip of clips) {
         }
       }
     } catch (error) {
-      rows.push({ clip: short, run, focus: focus.kind, tipSentences: 0, tipWords: 0, tipProblems: [], lengthRatio: 0, novelNumbers: [], novelNames: [], novelWords: 0, unsupported: [], tipAddressesFocus: false, tipReason: '', seconds: (performance.now() - started) / 1000, error: error instanceof Error ? error.message : String(error) });
+      rows.push({ clip: short, run, focus: focus.kind, tipSentences: 0, tipWords: 0, tipProblems: [], lengthRatio: 0, novelNumbers: [], novelNames: [], novelWords: 0, unsupported: [], tipAddressesFocus: false, tipReason: '', whatChangedProblems: [], coachSecondTries, seconds: (performance.now() - started) / 1000, error: error instanceof Error ? error.message : String(error) });
     }
     const last = rows[rows.length - 1];
     console.log(`${short} run ${run}: focus ${last.focus}${last.error ? ` FAILED ${last.error}` : `, unsupported ${last.unsupported.length}, new numbers/names ${last.novelNumbers.length + last.novelNames.length}, tip problems ${last.tipProblems.length}`}`);
@@ -164,11 +194,13 @@ const onFocus = ok.filter((r) => r.tipAddressesFocus);
 const caughtControls = controls.filter((c) => c.caught).length;
 const perAnswer = {
   transcription: transcribeCost.reduce((a, b) => a + b, 0) / clips.length,
-  judge: cost(usage.judge ?? { in: 0, out: 0 }, pipelineModel) / clips.length,
+  map: cost(usage.map ?? { in: 0, out: 0 }, pipelineModel) / clips.length,
+  judge: judgeCostFromV5,
   coach: cost(usage.coach ?? { in: 0, out: 0 }, pipelineModel) / clips.length / runsPerClip,
   notebook: cost(usage.notebook ?? { in: 0, out: 0 }, pipelineModel) / clips.length,
 };
-const total = perAnswer.transcription + perAnswer.judge + perAnswer.coach + perAnswer.notebook;
+const total = perAnswer.transcription + perAnswer.map + perAnswer.judge + perAnswer.coach + perAnswer.notebook;
+const focusCounts = Object.entries(Object.groupBy(rows.filter((r) => r.run === 1), (r) => r.focus)).map(([k, v]) => `${k} ${v!.length}`).join(', ');
 const trim = (s: string, n = 110) => (s.length > n ? `${s.slice(0, n)}...` : s);
 
 const lines = [
@@ -188,7 +220,11 @@ const lines = [
   `| Tip length (target ${tipWordsTarget} words) | ${ok.length === 0 ? 'n/a' : `${Math.round(ok.reduce((a, r) => a + r.tipWords, 0) / ok.length)} words on average, longest ${Math.max(...ok.map((r) => r.tipWords))}`} |`,
   `| Tip is about the chosen focus (checker's yes or no) | ${onFocus.length} of ${ok.length} |`,
   `| Better version length compared with the answer | ${ok.length === 0 ? 'n/a' : `${Math.round((ok.reduce((a, r) => a + r.lengthRatio, 0) / ok.length) * 100)}% on average`} |`,
+  `| What changed is one plain sentence (at most 25 words, no "!", no generic praise) | ${ok.filter((r) => r.whatChangedProblems.length === 0).length} of ${ok.length} |`,
+  `| Focus chosen, per clip | ${focusCounts || 'n/a'} |`,
   `| Median time for the coach stage | ${median(ok.map((r) => r.seconds))?.toFixed(1) ?? 'n/a'} s |`,
+  `| Coach second tries (a reply refused, then asked again) | ${rows.reduce((a, r) => a + r.coachSecondTries, 0)} in ${rows.length} runs |`,
+  `| Map second tries, and maps that failed twice | ${mapSecondTries}, ${mapFailures.length} of ${clips.length} clips |`,
   `| Failed runs | ${rows.length - ok.length} of ${rows.length} |`,
   '',
   '## Cost per answer',
@@ -198,7 +234,8 @@ const lines = [
   '| Stage | Cost |',
   '|---|---|',
   `| Transcription (Scribe v2, about ${(clips.reduce((a, c) => a + transcripts.get(c.answerId)!.durationMs, 0) / clips.length / 1000).toFixed(0)} s of audio) | $${perAnswer.transcription.toFixed(4)} |`,
-  `| Judge | $${perAnswer.judge.toFixed(4)} |`,
+  `| Map | $${perAnswer.map.toFixed(4)} |`,
+  `| Judge (still runs live until step F; not run here, cost from the coach v5 report) | $${perAnswer.judge.toFixed(4)} |`,
   `| Coach | $${perAnswer.coach.toFixed(4)} |`,
   `| Notebook | $${perAnswer.notebook.toFixed(4)} |`,
   `| **Total** | **$${total.toFixed(4)}** |`,
@@ -216,9 +253,10 @@ const problems = ok.flatMap((r) => [
   ...(r.novelNumbers.length ? [`- Clip ${r.clip} run ${r.run}: new number in the better version: ${r.novelNumbers.join(', ')}`] : []),
   ...(r.novelNames.length ? [`- Clip ${r.clip} run ${r.run}: new name in the better version: ${r.novelNames.join(', ')}`] : []),
   ...r.tipProblems.map((p) => `- Clip ${r.clip} run ${r.run}: tip problem: ${p}`),
+  ...r.whatChangedProblems.map((p) => `- Clip ${r.clip} run ${r.run}: what changed problem: ${p}`),
   ...(r.tipAddressesFocus ? [] : [`- Clip ${r.clip} run ${r.run}: checker says the tip is not about the chosen focus (${r.focus}): ${r.tipReason}`]),
 ]);
-lines.push(...(problems.length ? problems : ['None.']), ...rows.filter((r) => r.error).map((r) => `- Clip ${r.clip} run ${r.run} failed: ${r.error}`), '');
+lines.push(...(problems.length ? problems : ['None.']), ...mapFailures.map((f) => `- Map failed twice on clip ${f}`), ...rows.filter((r) => r.error).map((r) => `- Clip ${r.clip} run ${r.run} failed: ${r.error}`), '');
 lines.push('## Per clip', '', '| Clip | Focus | Tip words | Better version vs answer | New words | Checker unsupported |', '|---|---|---|---|---|---|');
 for (const r of ok) lines.push(`| ${r.clip} run ${r.run} | ${r.focus} | ${r.tipWords} | ${Math.round(r.lengthRatio * 100)}% | ${r.novelWords} | ${r.unsupported.length} |`);
 lines.push('');

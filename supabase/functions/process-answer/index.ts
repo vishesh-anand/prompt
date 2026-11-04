@@ -10,6 +10,13 @@ import { runPipeline } from './runPipeline.ts';
 
 const bodySchema = z.object({ answerId: z.uuid() });
 
+// One deadline per model call, retries included (the SDK's own timeout is 10 minutes). The four AI stages usually take
+// about 20 seconds together; a call that hangs is cut off here, the stage tries once more, and if that fails too the
+// answer is marked failed and the app offers a retry. The platform stops the function after 150 seconds (400 on a paid
+// plan); each stage is saved as it finishes, so a retry picks up where it stopped.
+const modelDeadlineMs = 45_000;
+const makeLimitedModel: typeof makeModel = (onUsage) => makeModel(onUsage, { deadlineMs: modelDeadlineMs });
+
 function reply(body: Record<string, unknown>, status: number) {
   return Response.json(body, { status });
 }
@@ -77,7 +84,7 @@ export default {
     }
 
     // Reply now and keep working: leaving the screen or locking the phone doesn't stop processing.
-    EdgeRuntime.waitUntil(runPipeline(ctx.supabaseAdmin, answer, { transcriber, transcriberVersion, makeModel, modelName }));
+    EdgeRuntime.waitUntil(runPipeline(ctx.supabaseAdmin, answer, { transcriber, transcriberVersion, makeModel: makeLimitedModel, modelName }));
     return reply({ status: 'started' }, 202);
   }),
 };
