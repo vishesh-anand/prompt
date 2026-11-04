@@ -22,7 +22,7 @@ export default {
     // ctx.supabase only sees the caller's own rows (Row Level Security), so a row someone else owns looks like it doesn't exist.
     const { data: answer, error } = await ctx.supabase
       .from('answers')
-      .select('id, user_id, question_id, audio_path, duration_ms, time_limit_ms, status, transcript, metrics, judgement, coaching, created_at')
+      .select('id, user_id, question_id, audio_path, duration_ms, time_limit_ms, status, transcript, metrics, map, judgement, coaching, created_at')
       .eq('id', body.data.answerId)
       .maybeSingle();
     if (error) {
@@ -58,7 +58,17 @@ export default {
 
     // A failed answer goes back to its last good stage, so the screen says "listening" again straight away.
     if (answer.status === 'failed') {
-      const lastGood = answer.coaching ? 'coached' : answer.judgement ? 'judged' : answer.metrics ? 'measured' : answer.transcript ? 'transcribed' : 'uploaded';
+      const lastGood = answer.coaching
+        ? 'coached'
+        : answer.judgement
+          ? 'judged'
+          : answer.map
+            ? 'mapped'
+            : answer.metrics
+              ? 'measured'
+              : answer.transcript
+                ? 'transcribed'
+                : 'uploaded';
       const { error: resetError } = await ctx.supabaseAdmin.from('answers').update({ status: lastGood }).eq('id', answer.id);
       if (resetError) {
         console.error('process-answer could not reset the status', resetError);

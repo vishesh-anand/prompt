@@ -2,6 +2,7 @@ import type { SupabaseClient } from 'npm:@supabase/supabase-js@2';
 
 import { coach, coachVersion } from '../_shared/pipeline/coach.ts';
 import { judge, judgeVersion } from '../_shared/pipeline/judge.ts';
+import { mapAnswer, mapVersion } from '../_shared/pipeline/map.ts';
 import { measure, measureVersion } from '../_shared/pipeline/measure.ts';
 import { notebookVersion, updateNotebook } from '../_shared/pipeline/notebook.ts';
 import { chooseFocus, tipFocusVersion } from '../_shared/pipeline/tipFocus.ts';
@@ -12,7 +13,8 @@ import type { Usage } from '../_shared/providers/anthropic.ts';
 import type { Model } from '../_shared/providers/model.ts';
 import type { Transcriber } from '../_shared/providers/transcriber.ts';
 import { coachingSchema } from '../_shared/schemas/coaching.ts';
-import { type SavedJudgement, savedJudgementSchema } from '../_shared/schemas/judgement.ts';
+import { savedJudgementSchema } from '../_shared/schemas/judgement.ts';
+import { type SavedMap, savedMapSchema } from '../_shared/schemas/map.ts';
 import { type Metrics, metricsSchema, type Transcript, transcriptSchema } from '../_shared/schemas/metrics.ts';
 import { readNotebook, updateNotebookInOrder } from './notebookStore.ts';
 
@@ -27,6 +29,7 @@ export type AnswerRow = {
   created_at: string;
   transcript: unknown;
   metrics: unknown;
+  map: unknown;
   judgement: unknown;
   coaching: unknown;
 };
@@ -58,6 +61,7 @@ export async function runPipeline(admin: SupabaseClient, answer: AnswerRow, prov
   const pipelineVersion = () => ({
     transcriber: providers.transcriberVersion,
     measure: measureVersion,
+    map: mapVersion,
     judge: judgeVersion,
     tipFocus: tipFocusVersion,
     coach: coachVersion,
@@ -73,9 +77,20 @@ export async function runPipeline(admin: SupabaseClient, answer: AnswerRow, prov
 
   let freshCoaching: { tip: string } | null = null;
   let metrics: Metrics;
-  let judgement: SavedJudgement;
+  let map: SavedMap;
   let transcript: Transcript;
   let notebookBefore = '';
+
+  // The question, loaded once and only when a stage needs it.
+  let question: { text: string; wants_direct_answer: boolean } | undefined;
+  async function loadQuestion() {
+    if (!question) {
+      const { data, error } = await admin.from('questions').select('text, wants_direct_answer').eq('id', answer.question_id).single();
+      if (error) throw error;
+      question = data as { text: string; wants_direct_answer: boolean };
+    }
+    return question;
+  }
 
   try {
     const savedTranscript = transcriptSchema.safeParse(answer.transcript);
@@ -97,30 +112,36 @@ export async function runPipeline(admin: SupabaseClient, answer: AnswerRow, prov
       await save({ metrics, status: 'measured' });
     }
 
-    // Nothing was said, so there is nothing to judge or coach.
+    // Nothing was said, so there is nothing to map, judge or coach.
     if (metrics.wordCount === 0) return;
 
     const timeLimit = stoppedByTimeLimit(answer.duration_ms, answer.time_limit_ms);
 
-    const savedJudgement = savedJudgementSchema.safeParse(answer.judgement);
-    if (savedJudgement.success) {
-      judgement = savedJudgement.data;
+    // A saved map is kept as it is, whichever map prompt made it (map:old may have made it before this run).
+    const savedMap = savedMapSchema.safeParse(answer.map);
+    if (savedMap.success) {
+      map = savedMap.data;
     } else {
-      const { data, error } = await admin.from('questions').select('text').eq('id', answer.question_id).single();
-      if (error) throw error;
-      const result = await judge({ question: data.text, transcript, stoppedByTimeLimit: timeLimit }, modelFor('judge'));
-      judgement = savedJudgementSchema.parse({ ...result.judgement, mainPointAtSeconds: result.mainPointAtSeconds });
+      const { text } = await loadQuestion();
+      map = await mapAnswer({ question: text, transcript, metrics, stoppedByTimeLimit: timeLimit }, modelFor('map'));
+      await save({ map, status: 'mapped' });
+    }
+
+    // The judge's three marks still feed Progress, the weekly note and the before-and-after screen until step F.
+    if (!savedJudgementSchema.safeParse(answer.judgement).success) {
+      const { text } = await loadQuestion();
+      const result = await judge({ question: text, transcript, stoppedByTimeLimit: timeLimit }, modelFor('judge'));
+      const judgement = savedJudgementSchema.parse({ ...result.judgement, mainPointAtSeconds: result.mainPointAtSeconds });
       await save({ judgement, status: 'judged' });
     }
 
     if (!coachingSchema.safeParse(answer.coaching).success) {
-      const { data: question, error: questionError } = await admin.from('questions').select('text').eq('id', answer.question_id).single();
-      if (questionError) throw questionError;
+      const { text, wants_direct_answer } = await loadQuestion();
       notebookBefore = (await readNotebook(admin, answer.user_id))?.notes ?? '';
 
-      const focus = chooseFocus({ metrics, judgement, stoppedByTimeLimit: timeLimit });
+      const focus = chooseFocus({ metrics, map, transcript, wantsDirectAnswer: wants_direct_answer, stoppedByTimeLimit: timeLimit });
       const coaching = await coach(
-        { question: question.text, transcript, focus, notebook: notebookBefore, stoppedByTimeLimit: timeLimit },
+        { question: text, wantsDirectAnswer: wants_direct_answer, transcript, map, focus, notebook: notebookBefore, stoppedByTimeLimit: timeLimit },
         modelFor('coach'),
       );
       await save({ coaching, status: 'coached' });
@@ -139,7 +160,7 @@ export async function runPipeline(admin: SupabaseClient, answer: AnswerRow, prov
     const { tip } = freshCoaching;
     try {
       const outcome = await updateNotebookInOrder(admin, { userId: answer.user_id, answerAt: answer.created_at }, (previousNotes) =>
-        updateNotebook({ previousNotes, judgement, metrics, tip }, modelFor('notebook')),
+        updateNotebook({ previousNotes, map, metrics, tip }, modelFor('notebook')),
       );
       if (outcome === 'saved') {
         // The notebook's tokens are only known now, so they are added to the answer's saved cost.

@@ -15,7 +15,7 @@ export const answerSchema = z.object({
   duration_ms: z.number(),
   // The limit it was recorded with: 2 minutes on a first try, 90 seconds on a retry, 60 seconds before step B.
   time_limit_ms: z.number(),
-  status: z.enum(['uploaded', 'transcribed', 'measured', 'judged', 'coached', 'failed']),
+  status: z.enum(['uploaded', 'transcribed', 'measured', 'mapped', 'judged', 'coached', 'failed']),
   metrics: metricsSchema.nullable(),
   judgement: judgementSchema.nullable(),
   coaching: coachingSchema.nullable(),

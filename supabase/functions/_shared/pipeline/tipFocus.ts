@@ -1,69 +1,120 @@
-import type { SavedJudgement } from '../schemas/judgement.ts';
-import type { Metrics } from '../schemas/metrics.ts';
-import { latePointSeconds } from './transcriptText.ts';
+import type { SavedMap } from '../schemas/map.ts';
+import type { Metrics, Transcript } from '../schemas/metrics.ts';
+import { findQuote, latePointSeconds, secondsIntoAnswer, splitSentences } from './transcriptText.ts';
 
-// Plain code, no AI: which single thing the tip is about. Claude only writes the tip about this focus.
+// Plain code, no AI: which single thing the tip is about, read from the map. Claude only writes the tip about this focus.
 // Bump this when any rule below changes, and save it in pipeline_version.
-export const tipFocusVersion = 4;
+export const tipFocusVersion = 5;
 
-export type FocusKind = 'main_point' | 'ending' | 'reason_or_example' | 'fillers' | 'speed' | 'polish';
+export type FocusKind = 'no_point' | 'found_late' | 'direct_late' | 'off_track' | 'ending' | 'noticed' | 'speed' | 'support' | 'polish';
 
-// `facts` are the real numbers and the person's own words the coach may cite. `judgeNote` is the judge's one-line
-// reason for the mark, so the tip can be about what was actually wrong (late, split, vague) and not just the number.
+// `facts` are the real times and the person's own words the coach may cite.
 export type Focus = { kind: FocusKind; facts: Record<string, unknown> };
 
-type Input = { metrics: Metrics; judgement: SavedJudgement; stoppedByTimeLimit: boolean };
+type Input = { metrics: Metrics; map: SavedMap; transcript: Transcript; wantsDirectAnswer: boolean; stoppedByTimeLimit: boolean };
 
-// Fillers per 100 words said, and how many make it severe, moderate or mild. First guesses, to tune on real answers
-// the way the speed bands in measure.ts were.
-export const fillerBands = { severe: 8, moderate: 5, mild: 3 } as const;
+// An answer with at least this share of its time off track gets a tip about it. A first guess, to tune on real answers.
+export const offTrackShareForTip = 0.25;
 
-// Highest severity wins. On a tie the one earlier in this list wins. Reason or example is last: it is the judge's
-// least reliable mark (evals/results/judge.md), so it only drives the tip when nothing else is worth a tip.
-const order: FocusKind[] = ['main_point', 'ending', 'fillers', 'speed', 'reason_or_example'];
+// Two restarts or more join what a listener noticed. One is normal speech.
+const restartsForTip = 2;
 
-export function fillersPer100Words(metrics: Metrics): number {
-  return metrics.wordCount === 0 ? 0 : (metrics.fillers.total / metrics.wordCount) * 100;
+// When the noticed kinds tie on how many moments they have, the earlier one here wins.
+const noticedOrder = ['fillers', 'pause', 'hedge', 'repeat', 'pattern', 'restart'] as const;
+
+const round1 = (x: number) => Math.round(x * 10) / 10;
+
+// How the point arrived: no point step, early (the listener knew where it was going within 15 seconds), late and found
+// while talking (off track before it), or late and chosen (a frame or a build-up first). The notebook records this too.
+export type PointArrival = 'none' | 'early' | 'found_late' | 'chosen_late';
+
+export function pointArrival({ steps, pointAtSeconds }: Pick<SavedMap, 'steps' | 'pointAtSeconds'>): PointArrival {
+  if (!steps.some((s) => s.label === 'point') || pointAtSeconds === null) return 'none';
+  if (pointAtSeconds <= latePointSeconds) return 'early';
+  const firstDirection = steps.findIndex((s) => s.label === 'direction' || s.label === 'point');
+  return steps.slice(0, firstDirection).some((s) => s.label === 'off_track') ? 'found_late' : 'chosen_late';
 }
 
-export function chooseFocus({ metrics, judgement, stoppedByTimeLimit }: Input): Focus {
-  const candidates: { kind: FocusKind; severity: number; facts: Record<string, unknown> }[] = [];
-  const add = (kind: FocusKind, severity: number, facts: Record<string, unknown>) => {
-    if (severity > 0) candidates.push({ kind, severity, facts });
+// The first rule that matches is the focus, in this order: the point first (a listener who never gets it can't be
+// helped by anything else), then how much work it was to follow, then how it sounded, then what's missing.
+// A late point that was chosen (a frame or a build-up, then the point) is a skill, so it is never the focus on its own;
+// only a question that wanted a direct answer makes it one (PRODUCT.md, screen 5).
+export function chooseFocus({ metrics, map, transcript, wantsDirectAnswer, stoppedByTimeLimit }: Input): Focus {
+  const sentences = splitSentences(transcript);
+  // The first few words of a sentence (numbered from 1), so the coach can name the moment.
+  const opening = (sentence: number) => {
+    const { first, last } = sentences[sentence - 1];
+    return transcript.words.slice(first, Math.min(last, first + 7) + 1).map((w) => w.punctuated).join(' ');
+  };
+  const momentOf = (quote: string) => {
+    const found = findQuote(transcript, quote.replace(/\[[\d.]+ s pause\]/g, ' '));
+    return found === null ? null : round1(secondsIntoAnswer(transcript, transcript.words[found.first].start));
   };
 
-  const { mainPoint, reasonOrExample, ending } = judgement;
-  add('main_point', mainPoint.score === 0 ? 3 : mainPoint.score === 1 ? 2 : 0, {
-    quote: mainPoint.quotes[0],
-    judgeNote: mainPoint.why,
-    startsAtSeconds: judgement.mainPointAtSeconds,
-    cameLate: judgement.mainPointAtSeconds > latePointSeconds,
-  });
+  const { steps, pointAtSeconds } = map;
+  const pointStep = steps.find((s) => s.label === 'point');
+  const pointQuote = map.point.quote;
 
-  // The time limit stopped the answer, so a missing ending isn't something the person can fix by talking differently.
-  if (!stoppedByTimeLimit) add('ending', ending.score === 0 ? 3 : ending.score === 1 ? 2 : 0, { lastWords: ending.quotes[0], judgeNote: ending.why });
+  const arrival = pointArrival(map);
+  if (!pointStep || arrival === 'none') return { kind: 'no_point', facts: { listenerHeard: map.point.restatement } };
 
-  // The least reliable of the three marks, so it ranks below everything else: even the mildest problem elsewhere
-  // (severity 1) beats it. A missing reason (0.5 more than a general one) is still a tip when nothing else is flagged.
-  add('reason_or_example', reasonOrExample.score === 0 ? 1 : reasonOrExample.score === 1 ? 0.5 : 0, { quote: reasonOrExample.quotes[0], judgeNote: reasonOrExample.why });
+  if (arrival === 'found_late') {
+    const firstDirection = steps.findIndex((s) => s.label === 'direction' || s.label === 'point');
+    return {
+      kind: 'found_late',
+      facts: {
+        listenerKnewWhereAtSeconds: pointAtSeconds,
+        passesAroundItFirst: steps.slice(0, firstDirection).filter((s) => s.label === 'off_track').length,
+        firstWords: opening(1),
+        pointQuote,
+      },
+    };
+  }
 
-  const rate = fillersPer100Words(metrics);
-  const topFillers = Object.entries(metrics.fillers.byWord)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 3)
-    .map(([word, times]) => ({ word, times }));
-  add('fillers', rate >= fillerBands.severe ? 3 : rate >= fillerBands.moderate ? 2 : rate >= fillerBands.mild ? 1 : 0, {
-    total: metrics.fillers.total,
-    per100Words: Math.round(rate * 10) / 10,
-    mostSaid: topFillers,
-  });
+  if (wantsDirectAnswer && pointStep.atSeconds > latePointSeconds) {
+    return {
+      kind: 'direct_late',
+      facts: { pointAtSeconds: pointStep.atSeconds, pointQuote, firstWords: opening(1), questionWantedADirectAnswer: true },
+    };
+  }
+
+  if (map.offTrackShare >= offTrackShareForTip) {
+    const offTrack = steps.filter((s) => s.label === 'off_track');
+    return {
+      kind: 'off_track',
+      facts: {
+        offTrackPercent: Math.round(map.offTrackShare * 100),
+        offTrackParts: offTrack.map((s) => ({ atSeconds: s.atSeconds, firstWords: opening(s.sentence) })),
+      },
+    };
+  }
+
+  if (!stoppedByTimeLimit && !steps.some((s) => s.label === 'ending')) {
+    const words = transcript.words;
+    return { kind: 'ending', facts: { lastWords: words.slice(-8).map((w) => w.punctuated).join(' '), pointQuote } };
+  }
+
+  const moments = [
+    ...map.noticed.map((n) => ({ kind: n.kind, quote: n.quote, why: n.why })),
+    ...(map.restarts.length >= restartsForTip ? map.restarts.map((r) => ({ kind: 'restart' as const, quote: r.quote, why: 'A sentence dropped and begun again.' })) : []),
+  ];
+  if (moments.length > 0) {
+    const count = (kind: string) => moments.filter((m) => m.kind === kind).length;
+    const kind = [...noticedOrder].sort((a, b) => count(b) - count(a))[0];
+    return {
+      kind: 'noticed',
+      facts: {
+        what: kind,
+        moments: moments.filter((m) => m.kind === kind).map((m) => ({ quote: m.quote, atSeconds: momentOf(m.quote), why: m.why })),
+        ...(kind === 'fillers' ? { fillerCounts: metrics.fillers.byWord } : {}),
+      },
+    };
+  }
 
   const { band, wordsPerMinute } = metrics.pace;
-  add('speed', band === 'too_fast' || band === 'too_slow' ? 2 : 0, { band, wordsPerMinute });
+  if (band === 'too_fast' || band === 'too_slow') return { kind: 'speed', facts: { band, wordsPerMinute } };
 
-  // Repeats ("I think, I think") are counted but never the tip: listeners take them in about as fast as fluent speech.
+  if (!steps.some((s) => s.label === 'support')) return { kind: 'support', facts: { pointQuote } };
 
-  candidates.sort((a, b) => b.severity - a.severity || order.indexOf(a.kind) - order.indexOf(b.kind));
-  const best = candidates[0];
-  return best ? { kind: best.kind, facts: best.facts } : { kind: 'polish', facts: { fillersTotal: metrics.fillers.total } };
+  return { kind: 'polish', facts: {} };
 }

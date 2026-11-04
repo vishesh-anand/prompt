@@ -1,10 +1,18 @@
 import { z } from 'npm:zod@4';
 
+import { stepLabels } from './map.ts';
+
+// The better version as steps, labelled like the answer's map: neighbouring sentences with the same label, joined.
+export const betterStepSchema = z.object({ label: z.enum(stepLabels), text: z.string() });
+
 // What is saved on the answer row, and what the app reads. It has no length limit, so tips saved before the limit
-// existed still load. The app has a copy in app/src/lib/schemas/coaching.ts.
+// existed still load. betterSteps and whatChanged come from coach prompt version 6; older answers don't have them.
+// The app has a copy in app/src/lib/schemas/coaching.ts.
 export const coachingSchema = z.object({
   tip: z.string(),
   betterVersion: z.string(),
+  betterSteps: z.array(betterStepSchema).optional(),
+  whatChanged: z.string().optional(),
 });
 
 export type Coaching = z.infer<typeof coachingSchema>;
@@ -19,15 +27,22 @@ export const maxTipWords = 35;
 
 export const wordCount = (text: string) => text.split(/\s+/).filter((w) => w !== '').length;
 
-// What the Coach is asked to produce: the same shape, with the tip limited.
+// What the Coach is asked to produce: the tip (limited), the better version one sentence at a time with a label each, and
+// one line saying what changed. Plain code joins the sentences into what is saved.
 export const coachingOutputSchema = z.object({
   tip: z
     .string()
     .describe(`One tip about the chosen focus, in the coach voice. At most ${tipWordsTarget} words.`)
     // The message names the real count, because the retry hands it back to the model.
     .refine((tip) => wordCount(tip) <= maxTipWords, { error: (issue) => `The tip is ${wordCount(String(issue.input))} words. It must be at most ${maxTipWords} words, so make it shorter.` }),
-  betterVersion: z.string().describe("The person's own answer, clearer and tighter, with nothing added"),
+  betterSentences: z
+    .array(z.object({ text: z.string(), label: z.enum(stepLabels) }))
+    .min(1)
+    .describe("The person's own answer, clearer and tighter, with nothing added: one sentence at a time, each with its label"),
+  whatChanged: z.string().describe('One short sentence saying what the better version changed, to "you"'),
 });
+
+export type CoachingOutput = z.infer<typeof coachingOutputSchema>;
 
 // What the Notebook hands back: the whole updated note, not an addition to it.
 export const notebookSchema = z.object({

@@ -1,8 +1,9 @@
 import { notebookPrompt } from '../prompts/notebook.ts';
 import type { Model } from '../providers/model.ts';
-import type { SavedJudgement } from '../schemas/judgement.ts';
+import type { SavedMap } from '../schemas/map.ts';
 import type { Metrics } from '../schemas/metrics.ts';
 import { notebookSchema } from '../schemas/coaching.ts';
+import { pointArrival } from './tipFocus.ts';
 import { twice } from './twice.ts';
 
 // Stage 5: Update notebook. A short private note about the person's speaking habits, rewritten after each answer
@@ -11,23 +12,18 @@ export const notebookVersion = notebookPrompt.version;
 
 export const notebookMaxChars = 600;
 
-type Input = { previousNotes: string; judgement: SavedJudgement; metrics: Metrics; tip: string };
+type Input = { previousNotes: string; map: SavedMap; metrics: Metrics; tip: string };
 
 type Options = { onAttemptFailed?: (error: Error) => void };
 
 // One try, plus one more if the model errors or writes more than the notebook can hold.
-export function updateNotebook({ previousNotes, judgement, metrics, tip }: Input, model: Model, { onAttemptFailed }: Options = {}): Promise<string> {
+export function updateNotebook({ previousNotes, map, metrics, tip }: Input, model: Model, { onAttemptFailed }: Options = {}): Promise<string> {
   return twice(async () => {
     const { notes } = await model.generate({
       prompt: notebookPrompt,
       input: {
         notes: previousNotes,
-        marks: {
-          mainPoint: judgement.mainPoint.score,
-          reasonOrExample: judgement.reasonOrExample.score,
-          ending: judgement.ending.score,
-          mainPointAtSeconds: judgement.mainPointAtSeconds,
-        },
+        built: notebookBuilt(map),
         measurements: notebookMeasurements(metrics),
         tipGiven: tip,
       },
@@ -38,6 +34,23 @@ export function updateNotebook({ previousNotes, judgement, metrics, tip }: Input
     if (text.length > notebookMaxChars) throw new Error(`notebook reply is ${text.length} characters, more than ${notebookMaxChars}`);
     return text;
   }, onAttemptFailed);
+}
+
+// How the answer was built, from the map: what the tip can talk about, never the person's words.
+function notebookBuilt(map: SavedMap) {
+  const has = (label: string) => map.steps.some((s) => s.label === label);
+  const noticed: Record<string, number> = {};
+  for (const n of map.noticed) noticed[n.kind] = (noticed[n.kind] ?? 0) + 1;
+  return {
+    point: pointArrival(map),
+    listenerKnewWhereAtSeconds: map.pointAtSeconds,
+    offTrackPercent: Math.round(map.offTrackShare * 100),
+    hasSupport: has('support'),
+    hasEnding: has('ending'),
+    listenerLostTheThread: map.didntFollow.length,
+    restarts: map.restarts.length,
+    noticed,
+  };
 }
 
 // Only what the feedback can talk about. Measures that are stored but not shown yet (vague words, "and") stay out, so

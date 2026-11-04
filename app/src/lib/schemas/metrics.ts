@@ -8,6 +8,7 @@ export const metricsSchema = z.object({
     total: z.number(),
     byWord: z.record(z.string(), z.number()),
     perMinute: z.number().nullable(),
+    atSeconds: z.array(z.number()).optional(),
   }),
   pace: z.object({
     wordsPerMinute: z.number().nullable(),

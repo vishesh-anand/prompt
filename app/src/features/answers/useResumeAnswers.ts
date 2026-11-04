@@ -32,7 +32,7 @@ export function useResumeAnswers() {
       const { data, error } = await supabase
         .from('answers')
         .select('id')
-        .in('status', ['uploaded', 'transcribed', 'measured', 'judged'])
+        .in('status', ['uploaded', 'transcribed', 'measured', 'mapped', 'judged'])
         .lt('created_at', new Date(now - unfinishedAfterMs).toISOString())
         .gte('created_at', new Date(now - resumeWindowMs).toISOString());
       if (error) throw error;

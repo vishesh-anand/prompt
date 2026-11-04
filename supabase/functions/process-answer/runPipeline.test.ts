@@ -1,6 +1,7 @@
 import { assertEquals } from 'jsr:@std/assert@1';
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2';
 
+import { placeLabels } from '../_shared/pipeline/map.ts';
 import { measure } from '../_shared/pipeline/measure.ts';
 import type { Model, PromptFile } from '../_shared/providers/model.ts';
 import type { Transcript } from '../_shared/schemas/metrics.ts';
@@ -14,7 +15,28 @@ const judgement = {
   reasonOrExample: { score: 1, quotes: ['Cats are calm and quiet.'], why: 'w' },
   ending: { score: 1, quotes: ['I think they are great pets, honestly.'], why: 'w' },
 };
-const coaching = { tip: 'Back your point up. Next time, name one real cat.', betterVersion: 'I like cats. They are calm and quiet.' };
+// What the model replies, and what is saved from it.
+const mapReply = {
+  point: { restatement: 'You like cats.', quote: 'I like cats' },
+  sentences: [
+    { sentence: 1, label: 'point' },
+    { sentence: 2, label: 'support' },
+    { sentence: 3, label: 'ending' },
+  ],
+  didntFollow: [],
+  restarts: [],
+  noticed: [],
+  effort: 1,
+};
+const coachReply = {
+  tip: 'Back your point up. Next time, name one real cat.',
+  betterSentences: [
+    { text: 'I like cats.', label: 'point' },
+    { text: 'They are calm and quiet.', label: 'support' },
+  ],
+  whatChanged: 'The opening "So" is gone.',
+};
+const coaching = { tip: coachReply.tip, betterVersion: 'I like cats. They are calm and quiet.' };
 
 // The times answers were created, as the database writes them.
 const noon = '2026-10-07T12:00:00.000000+00:00';
@@ -23,7 +45,7 @@ const later = '2026-10-07T18:00:00.000000+00:00';
 
 const row = (changes: Partial<AnswerRow> = {}): AnswerRow => ({
   id: 'answer-1', user_id: 'user-1', question_id: 7, audio_path: 'user-1/answer-1.m4a', duration_ms: 30_000, time_limit_ms: 120_000, created_at: noon,
-  transcript: null, metrics: null, judgement: null, coaching: null, ...changes,
+  transcript: null, metrics: null, map: null, judgement: null, coaching: null, ...changes,
 });
 
 type NotebookRow = { notes: string; last_answer_at: string | null };
@@ -32,6 +54,7 @@ type NotebookRow = { notes: string; last_answer_at: string | null };
 // same rules as the real one (one row per person, so a second insert is a "duplicate" error).
 function fakeAdmin(startingNotebook: NotebookRow | null = { notes: 'Says like often.', last_answer_at: null }) {
   const answerChanges: Record<string, unknown>[] = [];
+  const questionReads: string[] = [];
   const notebooks = new Map<string, NotebookRow>();
   if (startingNotebook) notebooks.set('user-1', { ...startingNotebook });
   const ok = Promise.resolve({ error: null });
@@ -69,19 +92,24 @@ function fakeAdmin(startingNotebook: NotebookRow | null = { notes: 'Says like of
   const admin = {
     from(table: string) {
       if (table === 'answers') return { update: (changes: Record<string, unknown>) => ({ eq: () => (answerChanges.push(changes), ok) }) };
-      if (table === 'questions') return { select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { text: 'What do you like?' }, error: null }) }) }) };
+      if (table === 'questions') {
+        return {
+          select: (columns: string) => (questionReads.push(columns), { eq: () => ({ single: () => Promise.resolve({ data: { text: 'What do you like?', wants_direct_answer: true }, error: null }) }) }),
+        };
+      }
       return notebookTable;
     },
     storage: { from: () => ({ download: () => Promise.resolve({ data: new Blob([new Uint8Array(3)]), error: null }) }) },
   } as unknown as SupabaseClient;
   const statuses = () => answerChanges.flatMap((c) => (typeof c.status === 'string' ? [c.status] : []));
-  return { admin, answerChanges, notebooks, statuses };
+  return { admin, answerChanges, notebooks, statuses, questionReads };
 }
 
 // Providers whose model answers by prompt name, and which remember what was called. The notebook reply is the
 // old notes plus a tag, so a test can see exactly which answers were folded in, and in what order.
 function fakeProviders({ fail = [] as string[], tag = 'x', beforeNotebookReply = () => Promise.resolve() } = {}) {
   const calls: string[] = [];
+  const seenInputs: Record<string, unknown> = {};
   let transcribed = 0;
   const providers = {
     transcriber: { transcribe: () => (transcribed++, Promise.resolve(transcript)) },
@@ -96,28 +124,83 @@ function fakeProviders({ fail = [] as string[], tag = 'x', beforeNotebookReply =
           await beforeNotebookReply();
           return { notes: `${(input as { notes: string }).notes}|${tag}` } as T;
         }
-        return (prompt.name === 'judge' ? judgement : coaching) as T;
+        seenInputs[prompt.name] = input;
+        return (prompt.name === 'judge' ? judgement : prompt.name === 'map' ? mapReply : coachReply) as T;
       },
     }),
   };
-  return { providers, calls, transcribed: () => transcribed };
+  return { providers, calls, seenInputs, transcribed: () => transcribed };
 }
 
+const savedMap = { ...mapReply, version: 7, ...placeLabels(['point', 'support', 'ending'], transcript) };
+
 const savedAnswer = (changes: Partial<AnswerRow> = {}) =>
-  row({ transcript, metrics: measure({ transcript }), judgement: { ...judgement, mainPointAtSeconds: 0.5 }, ...changes });
+  row({ transcript, metrics: measure({ transcript }), map: savedMap, judgement: { ...judgement, mainPointAtSeconds: 0.5 }, ...changes });
 
 Deno.test('runs every stage in order, saving each one before the next', async () => {
   const { admin, statuses, notebooks, answerChanges } = fakeAdmin();
   const { providers, calls } = fakeProviders({ tag: 'one' });
   await runPipeline(admin, row(), providers);
-  assertEquals(statuses(), ['transcribed', 'measured', 'judged', 'coached']);
-  assertEquals(calls, ['judge', 'coach', 'notebook']);
+  assertEquals(statuses(), ['transcribed', 'measured', 'mapped', 'judged', 'coached']);
+  assertEquals(calls, ['map', 'judge', 'coach', 'notebook']);
   assertEquals(notebooks.get('user-1')?.notes, 'Says like often.|one');
   // The last save carries the cost of every AI stage.
   const version = answerChanges[answerChanges.length - 1].pipeline_version as { usage: Record<string, unknown>; model: string };
-  assertEquals(Object.keys(version.usage), ['judge', 'coach', 'notebook']);
+  assertEquals(Object.keys(version.usage), ['map', 'judge', 'coach', 'notebook']);
   assertEquals(version.usage.coach, { inputTokens: 100, outputTokens: 50 });
   assertEquals(version.model, 'fake-model');
+});
+
+Deno.test('what is saved: the map with its times, and the coaching with its steps and what changed', async () => {
+  const { admin, answerChanges, questionReads } = fakeAdmin();
+  await runPipeline(admin, row(), fakeProviders().providers);
+  const saved = Object.assign({}, ...answerChanges) as Record<string, unknown>;
+  assertEquals((saved.map as { steps: unknown }).steps, savedMap.steps);
+  assertEquals((saved.map as { version: number }).version, 8);
+  assertEquals(saved.coaching, {
+    tip: coachReply.tip,
+    betterVersion: 'I like cats. They are calm and quiet.',
+    betterSteps: [
+      { label: 'point', text: 'I like cats.' },
+      { label: 'support', text: 'They are calm and quiet.' },
+    ],
+    whatChanged: 'The opening "So" is gone.',
+  });
+  assertEquals((saved.pipeline_version as { map: number }).map, 8);
+  // The question is read once, with its direct-answer flag.
+  assertEquals(questionReads, ['text, wants_direct_answer']);
+});
+
+Deno.test('the coach is told whether the question wanted a direct answer, and gets the map', async () => {
+  const { admin } = fakeAdmin();
+  const { providers, seenInputs } = fakeProviders();
+  await runPipeline(admin, row(), providers);
+  const sent = seenInputs.coach as { questionWantsDirectAnswer: boolean; map: { listenerHeard: string }; focus: { kind: string } };
+  assertEquals(sent.questionWantsDirectAnswer, true);
+  assertEquals(sent.map.listenerHeard, 'You like cats.');
+  // Point first, a reason, an ending, nothing noticed, a good pace: nothing to fix.
+  assertEquals(sent.focus.kind, 'polish');
+});
+
+Deno.test('a saved map is used as it is, never made again', async () => {
+  const { admin, statuses, answerChanges } = fakeAdmin();
+  const { providers, calls, seenInputs } = fakeProviders();
+  await runPipeline(admin, row({ transcript, metrics: measure({ transcript }), map: savedMap }), providers);
+  assertEquals(calls, ['judge', 'coach', 'notebook']);
+  assertEquals(statuses(), ['judged', 'coached']);
+  assertEquals(answerChanges.some((c) => 'map' in c), false);
+  assertEquals((seenInputs.coach as { map: { steps: unknown } }).map.steps, savedMap.steps);
+});
+
+Deno.test('a map that fails twice marks the answer failed, before the judge or coach, and keeps what was saved', async () => {
+  const { admin, statuses, answerChanges } = fakeAdmin();
+  const { providers, calls } = fakeProviders({ fail: ['map'] });
+  await runPipeline(admin, row(), providers);
+  assertEquals(statuses(), ['transcribed', 'measured', 'failed']);
+  assertEquals(calls, ['map', 'map']);
+  assertEquals(answerChanges.some((c) => 'metrics' in c), true);
+  // The recording is never touched: only the answer row changes.
+  assertEquals(answerChanges.every((c) => !('audio_path' in c)), true);
 });
 
 Deno.test('a restart picks up after the last saved stage', async () => {
@@ -137,7 +220,7 @@ Deno.test('an answer that is already fully done does nothing more', async () => 
   assertEquals(answerChanges, []);
 });
 
-Deno.test('nothing said means no judge, coach or notebook', async () => {
+Deno.test('nothing said means no map, judge, coach or notebook', async () => {
   const { admin, statuses } = fakeAdmin();
   const { providers, calls } = fakeProviders();
   await runPipeline(admin, row({ transcript: { words: [] } }), providers);
@@ -149,8 +232,8 @@ Deno.test('a coach that fails twice marks the answer failed but keeps the judgem
   const { admin, statuses, answerChanges } = fakeAdmin();
   const { providers, calls } = fakeProviders({ fail: ['coach'] });
   await runPipeline(admin, row(), providers);
-  assertEquals(statuses(), ['transcribed', 'measured', 'judged', 'failed']);
-  assertEquals(calls, ['judge', 'coach', 'coach']);
+  assertEquals(statuses(), ['transcribed', 'measured', 'mapped', 'judged', 'failed']);
+  assertEquals(calls, ['map', 'judge', 'coach', 'coach']);
   assertEquals(answerChanges.some((c) => 'judgement' in c), true);
 });
 
@@ -158,7 +241,7 @@ Deno.test('a notebook that fails leaves the answer coached', async () => {
   const { admin, statuses, notebooks } = fakeAdmin();
   const { providers } = fakeProviders({ fail: ['notebook'] });
   await runPipeline(admin, row(), providers);
-  assertEquals(statuses(), ['transcribed', 'measured', 'judged', 'coached']);
+  assertEquals(statuses(), ['transcribed', 'measured', 'mapped', 'judged', 'coached']);
   assertEquals(notebooks.get('user-1')?.notes, 'Says like often.');
 });
 
