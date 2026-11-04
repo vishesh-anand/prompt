@@ -27,6 +27,8 @@ export const metricsSchema = z.object({
     // Each filler that was said, with how many times: { um: 4, like: 3 }.
     byWord: z.record(z.string(), z.number()),
     perMinute: z.number().nullable(), // null when no time was spoken
+    // Where each filler started, in the order said. Saved from measure version 5; older answers don't have it.
+    atSeconds: z.array(z.number()).optional(),
   }),
   pace: z.object({
     wordsPerMinute: z.number().nullable(), // null when there are too few words to say

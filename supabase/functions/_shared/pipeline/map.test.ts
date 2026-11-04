@@ -156,9 +156,20 @@ Deno.test('quotes: each is in the transcript and said only once', () => {
   assertEquals(mapProblems({ ...good, didntFollow: [{ quote: 'ship early', why: 'w' }] }, transcript, metrics), ['"ship early" appears more than once; quote words that appear only once']);
 });
 
+Deno.test('answers measured before filler positions were saved: any counted filler word in the quote will do', () => {
+  const { atSeconds: _, ...fillers } = metrics.fillers;
+  const older = { ...metrics, fillers };
+  assertEquals(mapProblems(noticing({ kind: 'fillers', quote: 'so yesterday I had a', why: 'w' }), transcript, older), []);
+  assertEquals(mapProblems(noticing({ kind: 'fillers', quote: 'yesterday I had a meeting', why: 'w' }), transcript, older).length, 1);
+});
+
 Deno.test('noticed fillers and pauses must be ones Measure counted', () => {
   assertEquals(mapProblems(noticing({ kind: 'fillers', quote: 'Um, so yesterday I had', why: 'w' }), transcript, metrics), []);
   assertEquals(mapProblems(noticing({ kind: 'fillers', quote: 'yesterday I had a meeting', why: 'w' }), transcript, metrics).length, 1);
+  // "so" is a counted filler, but not this one: it follows "Um," inside a sentence. Only the later "So" was counted.
+  assertEquals(mapProblems(noticing({ kind: 'fillers', quote: 'so yesterday I had a', why: 'w' }), transcript, metrics).length, 1);
+  assertEquals(mapProblems(noticing({ kind: 'fillers', quote: 'told us. So ship early.', why: 'w' }), transcript, metrics), []);
+
   // A pause counts when the quote spans a counted mid-sentence pause, or ends or starts right beside it.
   assertEquals(mapProblems(noticing({ kind: 'pause', quote: 'point is ship early', why: 'w' }), transcript, metrics), []);
   assertEquals(mapProblems(noticing({ kind: 'pause', quote: 'My point is', why: 'w' }), transcript, metrics), []);

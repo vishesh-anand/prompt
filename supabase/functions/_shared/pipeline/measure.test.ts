@@ -64,6 +64,11 @@ Deno.test('counts a mix and totals it', () => {
   });
 });
 
+Deno.test('saves where each filler started, in the order said, "you know" at its first word', () => {
+  // Each word lasts 0.4 s: So 0, um 0.4, basically 0.8, ... like 2.0, ... you 2.8, know 3.2, So 3.6.
+  assertEquals(measure({ transcript: say('So um basically it was like fine, you know. So yes') }).fillers.atSeconds, [0, 0.4, 0.8, 2, 2.8, 3.6]);
+});
+
 // 20 words, so words per minute is easy to steer with the length of each word.
 const twenty = 'one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty';
 
@@ -184,7 +189,7 @@ Deno.test('an empty transcript measures as nothing', () => {
   assertEquals(measure({ transcript: { words: [] } }), {
     wordCount: 0,
     speakingSeconds: 0,
-    fillers: { total: 0, byWord: {}, perMinute: null },
+    fillers: { total: 0, byWord: {}, perMinute: null, atSeconds: [] },
     pace: { wordsPerMinute: null, band: null },
     pauses: [],
     repeats: { count: 0, atSeconds: [] },

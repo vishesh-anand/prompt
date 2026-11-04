@@ -52,14 +52,17 @@ export function withoutPauseMarks(quote: string): string {
 
 const locate = (transcript: Transcript, quote: string, from?: number) => findQuote(transcript, withoutPauseMarks(quote), from);
 
-// Did Measure count a thing of this kind at the quoted moment? Fillers have no saved positions, so for them the quote
-// must contain a filler word that was counted somewhere in the answer.
+// Did Measure count a thing of this kind at the quoted moment? Fillers measured before version 5 have no saved
+// positions, so for them the quote only has to contain a filler word that was counted somewhere in the answer.
 function wasCounted(kind: MapOutput['noticed'][number]['kind'], quote: string, { first, last }: Span, transcript: Transcript, metrics: Metrics): boolean {
   const said = ` ${withoutPauseMarks(quote).split(/\s+/).map(plainWord).filter((w) => w !== '').join(' ')} `;
   const inside = transcript.words.slice(first, last + 1);
   switch (kind) {
-    case 'fillers':
-      return Object.keys(metrics.fillers.byWord).some((filler) => said.includes(` ${filler} `));
+    case 'fillers': {
+      const at = metrics.fillers.atSeconds;
+      if (at === undefined) return Object.keys(metrics.fillers.byWord).some((filler) => said.includes(` ${filler} `));
+      return at.some((t) => inside.some((w) => round1(w.start) === t));
+    }
     case 'hedge':
       return metrics.hedges.atSeconds.some((at) => inside.some((w) => round1(w.start) === at));
     // A counted mid-sentence pause falls inside the quote or right next to it: the model often quotes the words before

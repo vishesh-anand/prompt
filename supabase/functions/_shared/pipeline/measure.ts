@@ -3,7 +3,7 @@ import { sentenceEnd } from './transcriptText.ts';
 
 // Stage 2: Measure. Plain code, no AI, no network. The same transcript always gives the same numbers.
 // Saved on every answer in pipeline_version, so bump it when any rule below changes.
-export const measureVersion = 4;
+export const measureVersion = 5;
 
 // Speed bands, in words per minute. Everyday speech is roughly 120 to 160. These are first guesses
 // to tune against real recordings.
@@ -71,17 +71,22 @@ export function measure({ transcript }: Input): Metrics {
   const pair = (i: number) => (i + 1 < words.length && !endsWithPunctuation.test(words[i].punctuated) ? `${text[i]} ${text[i + 1]}` : null);
 
   const fillers: Record<string, number> = {};
+  const fillerAt: number[] = [];
+  const addFiller = (i: number, filler: string) => {
+    add(fillers, filler);
+    fillerAt.push(round1(words[i].start));
+  };
   for (let i = 0; i < words.length; i++) {
     const word = text[i];
     const before = previous(i);
     const noise = noiseFiller(word);
-    if (noise) add(fillers, noise);
-    else if (word === 'basically' || word === 'actually') add(fillers, word);
-    else if (word === 'like' && !(before && likeIsRealAfter.has(before))) add(fillers, 'like');
+    if (noise) addFiller(i, noise);
+    else if (word === 'basically' || word === 'actually') addFiller(i, word);
+    else if (word === 'like' && !(before && likeIsRealAfter.has(before))) addFiller(i, 'like');
     else if (word === 'you' && text[i + 1] === 'know' && !(before && youKnowIsRealAfter.has(before))) {
-      add(fillers, 'you know');
+      addFiller(i, 'you know');
       i++; // "know" is part of this filler
-    } else if (word === 'so' && (i === 0 || sentenceEnd.test(words[i - 1].punctuated))) add(fillers, 'so');
+    } else if (word === 'so' && (i === 0 || sentenceEnd.test(words[i - 1].punctuated))) addFiller(i, 'so');
   }
   const fillerTotal = sum(fillers);
 
@@ -130,7 +135,12 @@ export function measure({ transcript }: Input): Metrics {
   return {
     wordCount: spoken,
     speakingSeconds: round1(speakingSeconds),
-    fillers: { total: fillerTotal, byWord: fillers, perMinute: speakingSeconds > 0 ? round1((fillerTotal / speakingSeconds) * 60) : null },
+    fillers: {
+      total: fillerTotal,
+      byWord: fillers,
+      perMinute: speakingSeconds > 0 ? round1((fillerTotal / speakingSeconds) * 60) : null,
+      atSeconds: fillerAt,
+    },
     pace: { wordsPerMinute, band },
     pauses,
     repeats: findRepeats(words, text),
