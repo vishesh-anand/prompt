@@ -115,7 +115,6 @@ for (const clip of clips) {
   const { transcript, durationMs, timeLimitMs } = transcripts.get(clip.answerId)!;
   const timeLimit = stoppedByTimeLimit(durationMs, timeLimitMs);
   const metrics = measure({ transcript });
-  transcribeCost.push((durationMs / 60_000) * transcribePerMinute);
   const text = transcript.words.map((w) => w.punctuated).join(' ');
 
   const wantsDirectAnswer = wantsDirect(clip.question!);
@@ -128,6 +127,7 @@ for (const clip of clips) {
     continue;
   }
   const focus = chooseFocus({ metrics, map, transcript, wantsDirectAnswer, stoppedByTimeLimit: timeLimit });
+  transcribeCost.push((durationMs / 60_000) * transcribePerMinute);
 
   for (let run = 1; run <= runsPerClip; run++) {
     const started = performance.now();
@@ -192,12 +192,14 @@ const clean = ok.filter((r) => r.unsupported.length === 0 && r.novelNumbers.leng
 const tipsFine = ok.filter((r) => r.tipProblems.length === 0);
 const onFocus = ok.filter((r) => r.tipAddressesFocus);
 const caughtControls = controls.filter((c) => c.caught).length;
+// Clips whose map failed twice have no coach or notebook runs, so those costs are shared by the mapped clips only.
+const mapped = Math.max(clips.length - mapFailures.length, 1);
 const perAnswer = {
-  transcription: transcribeCost.reduce((a, b) => a + b, 0) / clips.length,
+  transcription: transcribeCost.reduce((a, b) => a + b, 0) / mapped,
   map: cost(usage.map ?? { in: 0, out: 0 }, pipelineModel) / clips.length,
   judge: judgeCostFromV5,
-  coach: cost(usage.coach ?? { in: 0, out: 0 }, pipelineModel) / clips.length / runsPerClip,
-  notebook: cost(usage.notebook ?? { in: 0, out: 0 }, pipelineModel) / clips.length,
+  coach: cost(usage.coach ?? { in: 0, out: 0 }, pipelineModel) / mapped / runsPerClip,
+  notebook: cost(usage.notebook ?? { in: 0, out: 0 }, pipelineModel) / mapped,
 };
 const total = perAnswer.transcription + perAnswer.map + perAnswer.judge + perAnswer.coach + perAnswer.notebook;
 const focusCounts = Object.entries(Object.groupBy(rows.filter((r) => r.run === 1), (r) => r.focus)).map(([k, v]) => `${k} ${v!.length}`).join(', ');

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2';
+import { z } from 'npm:zod@4';
 
 import { coach, coachVersion } from '../_shared/pipeline/coach.ts';
 import { judge, judgeVersion } from '../_shared/pipeline/judge.ts';
@@ -45,6 +46,8 @@ export type Providers = {
 
 type StageUsage = { inputTokens: number; outputTokens: number };
 
+const questionSchema = z.object({ text: z.string(), wants_direct_answer: z.boolean() });
+
 // Runs the stages in order, saving each result (and the status) before the next stage starts.
 // It looks at which results are already saved, not at the status, so running it again after a
 // crash or a failure picks up where it stopped. The recording is never touched.
@@ -82,12 +85,12 @@ export async function runPipeline(admin: SupabaseClient, answer: AnswerRow, prov
   let notebookBefore = '';
 
   // The question, loaded once and only when a stage needs it.
-  let question: { text: string; wants_direct_answer: boolean } | undefined;
+  let question: z.infer<typeof questionSchema> | undefined;
   async function loadQuestion() {
     if (!question) {
       const { data, error } = await admin.from('questions').select('text, wants_direct_answer').eq('id', answer.question_id).single();
       if (error) throw error;
-      question = data as { text: string; wants_direct_answer: boolean };
+      question = questionSchema.parse(data);
     }
     return question;
   }

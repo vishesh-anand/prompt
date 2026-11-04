@@ -113,11 +113,9 @@ Deno.test('problems: the better version keeps exactly one point step when the an
   assertEquals(coachProblems(noPoint, transcript, pointless), []);
 });
 
-Deno.test('problems: what changed is one plain sentence', () => {
-  assertEquals(coachProblems(withOutput({ whatChanged: '' }), transcript, map).length, 1);
-  assertEquals(coachProblems(withOutput({ whatChanged: 'Much tighter!' }), transcript, map).length, 1);
-  assertEquals(coachProblems(withOutput({ whatChanged: 'Your point moved up. The aside is gone.' }), transcript, map).length, 1);
-  assertEquals(coachProblems(withOutput({ whatChanged: 'Your point moved to the front, and the timer aside is gone.' }), transcript, map), []);
+Deno.test('problems: only an empty what-changed line is refused, so it never fails an answer over its wording', () => {
+  assertEquals(coachProblems(withOutput({ whatChanged: ' ' }), transcript, map).length, 1);
+  assertEquals(coachProblems(withOutput({ whatChanged: 'Your point comes first, e.g. the reorg aside is gone.' }), transcript, map), []);
 });
 
 Deno.test('a rejected reply is asked for again once, then accepted', async () => {

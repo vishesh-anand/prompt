@@ -143,7 +143,7 @@ Streaks, charts, and "which questions have I seen" are all calculated from `answ
 
 `process-answer` runs these stages in order. **Each stage saves its result to the answer row before the next one starts.** The app is subscribed to that row, so each result appears on screen as soon as it's saved.
 
-Until step F, the old judge also runs, between Map and Coach (status `judged`), because Progress, the weekly note and the before-and-after screen still read its three marks. So today the status goes `uploaded` → `transcribed` → `measured` → `mapped` → `judged` → `coached`. Each model call has one 45-second deadline, retries included.
+Until step F, the old judge also runs, between Map and Coach (status `judged`), because Progress, the weekly note and the before-and-after screen still read its three marks. So today the status goes `uploaded` → `transcribed` → `measured` → `mapped` → `judged` → `coached`. Each model call has one 20-second deadline, retries included, so a stage (two tries) ends before the app calls it stuck at 45 seconds.
 
 1. **Transcribe.** Send audio to the voice-to-text provider. Must keep filler words and return timings for every word.
 2. **Measure.** Plain code, no AI. From the word timings: filler count, which ones and where each fell, fillers a minute, words per minute, long pauses and whether each falls mid-sentence or between sentences (from the transcript's punctuation), repeats (the same 1 to 3 words said twice in a row), hedges ("kind of", "sort of", "I guess"), vague words ("thing", "a lot", "some") and "and" chaining. Fast, free, and always the same answer for the same input. Vague words and "and" chaining are stored but not shown until the listener check shows they matter.

@@ -7,7 +7,8 @@ import { stoppedByTimeLimit } from '@/features/recording/limits';
 import { nextAction } from './nextAction';
 import { DailyLimitError, useProcessAnswer } from './useProcessAnswer';
 
-// If the answer sits at the same stage this long, the server run was probably cut off. Offer a retry.
+// If the answer sits at the same stage this long, the server run was probably cut off. Offer a retry. Keep it above
+// the longest a stage can take (two model calls of 20 seconds, modelDeadlineMs in supabase/functions/process-answer).
 export const stuckAfterMs = 45_000;
 
 export type FeedbackView = 'listening' | 'ready' | 'noWords' | 'problem' | 'limit';

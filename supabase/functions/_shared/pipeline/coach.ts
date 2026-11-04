@@ -37,9 +37,6 @@ function stepsOf(sentences: CoachingOutput['betterSentences']): { label: StepLab
   return steps;
 }
 
-// More than one sentence end inside the text, not counting the last character.
-const severalSentences = (text: string) => /[.?!]\s+\S/.test(text.trim());
-
 // Everything plain code can check about a reply. An empty list means it is fine to save.
 export function coachProblems(output: CoachingOutput, transcript: Transcript, map: SavedMap): string[] {
   const problems: string[] = [];
@@ -60,10 +57,9 @@ export function coachProblems(output: CoachingOutput, transcript: Transcript, ma
   if (pointSteps > 1) problems.push(`the better version has ${pointSteps} point steps; exactly one step is point`);
   if (answerHasPoint && pointSteps === 0) problems.push('the better version has no point step, but the answer has a point; label the sentence that says it point');
 
-  const changed = output.whatChanged.trim();
-  if (changed === '') problems.push('whatChanged is empty');
-  if (changed.includes('!')) problems.push('whatChanged has an exclamation mark');
-  if (severalSentences(changed)) problems.push('whatChanged is more than one sentence');
+  // Only an empty line is refused: a refusal can fail the whole answer, and this line is the least important part of it.
+  // Its length, sentences and exclamation marks are counted by `npm run evals:coach` instead.
+  if (output.whatChanged.trim() === '') problems.push('whatChanged is empty');
   return problems;
 }
 

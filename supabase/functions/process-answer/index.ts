@@ -10,11 +10,13 @@ import { runPipeline } from './runPipeline.ts';
 
 const bodySchema = z.object({ answerId: z.uuid() });
 
-// One deadline per model call, retries included (the SDK's own timeout is 10 minutes). The four AI stages usually take
-// about 20 seconds together; a call that hangs is cut off here, the stage tries once more, and if that fails too the
-// answer is marked failed and the app offers a retry. The platform stops the function after 150 seconds (400 on a paid
-// plan); each stage is saved as it finishes, so a retry picks up where it stopped.
-const modelDeadlineMs = 45_000;
+// One deadline per model call, retries included (the SDK's own timeout is 10 minutes). Calls take 3 to 6 seconds
+// (evals/results/map.md, coach.md), and the four AI stages about 20 seconds together. A call that hangs is cut off here
+// and the stage tries once more, so one stage takes at most 40 seconds: under the 45 seconds after which the app calls a
+// stage stuck (stuckAfterMs in app/src/features/feedback/useFeedback.ts), so the app never offers a retry while a second
+// try is still running. If both fail, the answer is marked failed and the app offers a retry. The platform stops the
+// function after 150 seconds (400 on a paid plan); each stage is saved as it finishes, so a retry picks up there.
+const modelDeadlineMs = 20_000;
 const makeLimitedModel: typeof makeModel = (onUsage) => makeModel(onUsage, { deadlineMs: modelDeadlineMs });
 
 function reply(body: Record<string, unknown>, status: number) {
