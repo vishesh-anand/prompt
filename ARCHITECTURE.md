@@ -107,6 +107,7 @@ All tables use Row Level Security: a person can only ever read or change their o
 
 **questions**
 - `id`, `category` (`work` or `everyday`), `text`, `active`
+- `wants_direct_answer` (the question asks for an answer first, not a story: every question except those starting "Describe", "Tell me about", "Walk me through" or "Summarize")
 
 **answers**
 - `id`, `user_id`, `question_id`, `created_at`
@@ -142,8 +143,10 @@ Streaks, charts, and "which questions have I seen" are all calculated from `answ
 
 `process-answer` runs these stages in order. **Each stage saves its result to the answer row before the next one starts.** The app is subscribed to that row, so each result appears on screen as soon as it's saved.
 
+Until step F, the old judge also runs, between Map and Coach (status `judged`), because Progress, the weekly note and the before-and-after screen still read its three marks. So today the status goes `uploaded` → `transcribed` → `measured` → `mapped` → `judged` → `coached`. Each model call has one 45-second deadline, retries included.
+
 1. **Transcribe.** Send audio to the voice-to-text provider. Must keep filler words and return timings for every word.
-2. **Measure.** Plain code, no AI. From the word timings: filler count and which ones, fillers a minute, words per minute, long pauses and whether each falls mid-sentence or between sentences (from the transcript's punctuation), repeats (the same 1 to 3 words said twice in a row), hedges ("kind of", "sort of", "I guess"), vague words ("thing", "a lot", "some") and "and" chaining. Fast, free, and always the same answer for the same input. Vague words and "and" chaining are stored but not shown until the listener check shows they matter.
+2. **Measure.** Plain code, no AI. From the word timings: filler count, which ones and where each fell, fillers a minute, words per minute, long pauses and whether each falls mid-sentence or between sentences (from the transcript's punctuation), repeats (the same 1 to 3 words said twice in a row), hedges ("kind of", "sort of", "I guess"), vague words ("thing", "a lot", "some") and "and" chaining. Fast, free, and always the same answer for the same input. Vague words and "and" chaining are stored but not shown until the listener check shows they matter.
 3. **Map.** Claude reads the transcript once, as a first-time listener, as numbered sentences (split at full stops, question marks and exclamation marks, the same way the owner labels them), with long pauses marked in the text ("[2.3 s pause]"). It cannot hear tone. It returns:
    - one label for each sentence, by its number: Direction, Point, Support, Off track or Ending. Neighbouring sentences with the same label form one step, and plain code works out each step's time, when the listener first knew where the answer was going, and the off-track share;
    - the point, restated in one sentence as a listener understood it, and "what I didn't follow", quoting the moments;
@@ -151,7 +154,7 @@ Streaks, charts, and "which questions have I seen" are all calculated from `answ
    - which of the counted fillers, pauses, repeats and hedges a listener would notice, and why, plus patterns code can't count (five sentences in a row starting with "So", one sentence running for 30 seconds), each quoting the moment.
 
    It never changes a count from Measure; it only decides which counted items matter. Plain code checks that every sentence is labelled once and in order, and that every quote really appears in the transcript. Output must match a strict schema or the stage retries once.
-4. **Coach.** Plain code first picks the one thing the tip is about (`pipeline/tipFocus.ts`, from the map and the measurements). It also works out "chose it vs found it" from the labels before the point: Direction or Support before the point means the late point was chosen; Off track before it means it was found while talking. A "say your point first" tip is chosen only when the question wanted a direct answer or circling came before the point. Then Claude reads the metrics, the map, that focus, and the coach's notebook, and writes one tip about it, a better version of the answer with its own steps labelled the same way, and one line saying what changed, in the coach voice from DESIGN.md. The better version may reorder, tighten and cut, and never adds facts, examples or opinions; `npm run evals:coach` checks this.
+4. **Coach.** Plain code first picks the one thing the tip is about (`pipeline/tipFocus.ts`, from the map and the measurements). It also works out "chose it vs found it" from the labels before the point: Direction or Support before the point means the late point was chosen; Off track before it means it was found while talking. A "say your point first" tip is chosen only when the question wanted a direct answer (`questions.wants_direct_answer`, from `content/questions.json`) or circling came before the point. Then Claude reads the metrics, the map, that focus, and the coach's notebook, and writes one tip about it, a better version of the answer with its own steps labelled the same way, and one line saying what changed, in the coach voice from DESIGN.md. The better version may reorder, tighten and cut, and never adds facts, examples or opinions; `npm run evals:coach` checks this.
 5. **Update notebook.** Claude updates the short notebook: recurring habits, what's improving, what to focus on next. Kept under a fixed length. Updates happen in the order answers were given: the notebook remembers the time of the newest answer it has absorbed (`last_answer_at`), an older answer never changes it, and two answers processed at once can't overwrite each other.
 
 Rules:
@@ -280,7 +283,9 @@ Built:
 
 Next, the feedback redesign:
 - **A. Listener check:** record clips, build the rating page, friends rate. Part 1 (the page and setup) is built; part 2 (new clips and the ratings) is next. Runs alongside D.
-- **D. Coach and the new feedback screen:** listener restatement and the tap, the tip from the map, the better version with its steps and "what changed", noticed lines. The visual design is done in Claude Design before this step.
+- **D. Coach and the new feedback screen,** in two parts:
+  - **D1 (built, 2026-11-04):** the Map runs in `process-answer`, the tip focus is read from the map, coach prompt version 6 writes the tip, the better version with its steps and "what changed", and notebook prompt version 2 reads the map. Questions say whether they want a direct answer. Nothing on the phone's screens changed. See FOLLOWUPS.md for its release.
+  - **D2 (next):** the new feedback screen: listener restatement and the tap, "See how they're built", the noticed lines. The visual design is done in Claude Design first.
 - **E. Retry:** the instruction carried over, the 90-second retry, the new before and after.
 - **F. Progress:** rolling 14 days, the new lines (decided by A's results), the coach's note every 3 practice days.
 
@@ -289,7 +294,7 @@ Then:
 
 Evals are built alongside step 4 and grow with steps 5 and 6, then with A to F.
 
-**Where the code is:** this file describes the app after A to F. Until those steps land, the code still has the judge stage and its three marks (`judgement`, `evals:judge`), and the calendar-week note and chart. The Map stage exists but runs only from scripts until step D. Each step's plan says what it changes.
+**Where the code is:** this file describes the app after A to F. Until those steps land, the code still has the judge stage and its three marks (`judgement`, `evals:judge`), and the calendar-week note and chart. Since step D1 the Map and the new coach run on every answer, but the feedback screen still shows the judge's marks until D2. Each step's plan says what it changes.
 
 ## Open decisions
 
