@@ -29,6 +29,7 @@ Update this section as commands change.
 - Start the app: `cd app && npx expo start`
 - Run on iPhone: `cd app && npx expo run:ios --device` (plug in and unlock the phone). Needed once, and again after adding a library with native code. JS edits after that reload live via `npx expo start`.
 - Design preview (dev builds only): open the app, tap "Design preview". Flip Appearance in Control Center to check dark mode.
+- Design system artifact: https://claude.ai/artifact/SbvXejS8SQqAwMH1AMvns2. Its tokens are copied in `design-system/tokens.json`, and `app/src/design/tokens.test.ts` fails when that copy and `app/src/design/` differ. After changing a token, update the copy and republish it to the artifact.
 - Add a library: `cd app && npx expo install <package>` (never `npm i`, so versions match the SDK)
 - Type check: `cd app && npx tsc --noEmit`
 - Lint: `cd app && npx expo lint`

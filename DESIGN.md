@@ -25,6 +25,13 @@ Put extra care into those three. Keep everything else simple and quiet.
 - No drop shadows, gradients, or decorative images.
 - Follow the phone's light or dark setting. Every screen must work in both from day one.
 - Use Apple's standard components (through `@expo/ui` SwiftUI) for buttons, lists, sheets, toggles, pickers, and settings. Build custom only for the three moments above and the progress chart.
+- Standard controls are tinted from the tokens (`accent`, `fill`), never left in the system's cool default grey.
+- One filled button per screen: the primary. Other actions are plain text buttons, and at most two actions are stacked.
+- Every custom control shows what it does on screen, with a word or an SF Symbol, not only through VoiceOver.
+- Every full-screen flow has a visible way out (Cancel or ✕ at the top). The back swipe stays, but is never the only way.
+- The main action sits within thumb reach, in the lower half of the screen.
+- Each top-level screen (Progress, Settings, the before-and-after) starts with its name in `largeTitle`, in the same place every time.
+- An empty or waiting state is one calm sentence, optionally with a faint outline of what will appear. One per screen, never a stack of "not yet" lines.
 
 ## Colors
 
@@ -32,22 +39,25 @@ Colors are defined once as named tokens and used everywhere by name. Never write
 
 | Token | Used for | Light | Dark |
 |---|---|---|---|
-| `background` | Screen background | `#FBF8F4` warm off-white | `#16130F` warm near-black |
+| `background` | Screen background | `#F5F1EB` warm off-white | `#16130F` warm near-black |
 | `surface` | Cards, sheets | `#FFFFFF` | `#221E19` |
 | `textPrimary` | Main text | `#1F1B16` | `#F3EEE8` |
 | `textSecondary` | Supporting text, labels | `#6B645C` | `#A39B91` |
 | `accent` | Record button, streak, main buttons | `#E8643C` warm coral | `#F07A52` |
 | `onAccent` | Label on an accent-colored button | `#1F1B16` | `#16130F` |
 | `accentText` | Accent-colored text and links | `#B8461F` | `#F59A78` |
-| `accentSoft` | Glow behind the circle, soft highlights | `#E8643C` at 15% | `#F07A52` at 20% |
+| `accentSoft` | Glow behind the circle, soft highlights | `#E8643C` at 15% | `#F07A52` at 12% |
 | `positive` | Improvement (fewer fillers, better score) | `#2F7549` | `#6BBF8A` |
 | `divider` | Rare separators only | `#ECE6DE` | `#2E2923` |
+| `fill` | Control fills: segmented track, quiet fills, pickers | `#ECE6DE` | `#2E2923` |
 
 Rules:
+- `background` and `surface` differ enough that a card shows by tone alone (light 1.13:1, about Apple's grouped background). It was `#FBF8F4` (1.06:1), where cards nearly vanished.
+- The dark glow is 12%, not 20%: at 20% it read as a muddy brown ring. Check it on a real phone.
 - The accent is precious. Use it only for the one thing you most want tapped, plus the streak.
 - Never show red. Mistakes are not failures in this app. A problem is shown with plain text, not an alarm color.
-- Button labels on `accent` use `onAccent` (dark), not white. White on the coral is only 3.3:1 in light and 2.8:1 in dark. `onAccent` is 5.2:1 and 6.7:1.
-- Light `positive` was darkened from `#3F8F5E` (3.7:1 on `background`) to `#2F7549` (5.3:1) so short lines of text pass.
+- Button labels on `accent` use `onAccent` (dark), not white. White on the coral is only 3.3:1 in light and 2.8:1 in dark. `onAccent` is 5.2:1 and 6.7:1. A deeper coral with white labels was considered and turned down: it only works in light mode (dark has no coral that passes with white), so the two modes would differ, and the coral would lose its brightness.
+- Light `positive` was darkened from `#3F8F5E` (3.7:1 on `background`) to `#2F7549` (5.3:1) so short lines of text pass. On today's warmer `background` it is 5.0:1.
 - Never use color alone to carry meaning. Always pair it with a word, number, or arrow.
 
 ## Lettering
@@ -61,12 +71,23 @@ Rules:
 
 | Style | Size | Weight | Font |
 |---|---|---|---|
+| Large title (the name of a top-level screen) | 34 | Bold | Standard |
 | Question | 28 | Regular | Serif |
-| Big number (streak, filler count) | 34 | Semibold | Standard |
-| Screen title | 22 | Semibold | Standard |
+| Big number (streak, filler count) | 34 | Semibold | Standard, tabular figures |
+| Title (a heading inside a screen) | 22 | Semibold | Standard |
+| Headline (a long, important line: the tip) | 17 | Semibold | Standard |
 | Body | 17 | Regular | Standard |
-| Better version | 19 | Regular | Serif |
+| Better version (and the coach's note) | 19, line height 27 | Regular | Serif |
+| Subheadline (group labels) | 15 | Regular | Standard, `textSecondary` |
 | Label | 13 | Medium | Standard, `textSecondary` |
+| Caption (times, small notes) | 12 | Regular | Standard, `textSecondary` |
+
+Rules:
+- Big number is for digits only. A word ("Too slow", "Good") uses Headline.
+- A sub-label is never bigger than the heading above it. Items under a group label use the same size or smaller, and set themselves apart by color or weight.
+- Every number that changes or sits in a column uses tabular figures (`fontVariant: ['tabular-nums']`): counts, times like 0:40, percentages, numbers that count into place.
+- Long serif reading text gets about 1.4x leading. Everything else uses the font's natural leading (about 1.2x).
+- Text on screen uses typographic quotes and apostrophes (’ “ ”), including coach text and the speaker's quoted words. One shared formatter at display time, not a prompt change.
 
 ## Spacing and shape
 
@@ -78,7 +99,7 @@ Rules:
 ## Movement
 
 - Normal transitions: smooth and short, about 0.2 to 0.3 seconds, gentle ease.
-- Everything important uses spring-style motion (settles naturally, no bounce-bounce-bounce).
+- Everything important uses spring-style motion (settles naturally, no bounce-bounce-bounce). There are two springs, defined once in `app/src/design/motion.ts`: **gentle** (reveals, things settling; no overshoot) and **firm** (a response to a tap). Every spring uses one of them, never its own numbers. Tune both on a real phone.
 - If the user has turned on Reduce Motion in iPhone settings, replace movement with simple fades.
 - All animation runs on the UI thread with Reanimated, so it never stutters.
 
@@ -102,6 +123,8 @@ Only in these moments. Nowhere else.
 - A thin ring around the circle fills up as the time runs out (2 minutes, or 90 seconds on a retry). No big countdown numbers.
 - On a retry, the one instruction from the tip sits under the question, in the standard font, quieter than the question.
 - One button: tap the circle to stop.
+- Until you start, a small text "Cancel" sits at the top to leave. It goes away once recording starts, so it never throws away a take and nothing else is on screen while you speak.
+- Wherever the circle is a button outside this screen (Home), it carries a short word or a microphone symbol, so it's clear what it does.
 - Background stays calm. Nothing else on screen.
 
 ### 2. Feedback reveal

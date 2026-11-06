@@ -10,12 +10,13 @@ export type ColorToken =
   | 'accentText'
   | 'accentSoft'
   | 'positive'
-  | 'divider';
+  | 'divider'
+  | 'fill';
 
 export type Palette = Record<ColorToken, string>;
 
 export const light: Palette = {
-  background: '#FBF8F4',
+  background: '#F5F1EB',
   surface: '#FFFFFF',
   textPrimary: '#1F1B16',
   textSecondary: '#6B645C',
@@ -25,6 +26,8 @@ export const light: Palette = {
   accentSoft: 'rgba(232, 100, 60, 0.15)',
   positive: '#2F7549',
   divider: '#ECE6DE',
+  // Warm fill for controls (segmented track, quiet fills), so they never sit cool grey on the warm background.
+  fill: '#ECE6DE',
 };
 
 export const dark: Palette = {
@@ -35,7 +38,9 @@ export const dark: Palette = {
   accent: '#F07A52',
   onAccent: '#16130F',
   accentText: '#F59A78',
-  accentSoft: 'rgba(240, 122, 82, 0.2)',
+  // Lower than light: at 20% the glow read as a muddy brown ring on the dark background.
+  accentSoft: 'rgba(240, 122, 82, 0.12)',
   positive: '#6BBF8A',
   divider: '#2E2923',
+  fill: '#2E2923',
 };

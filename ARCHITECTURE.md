@@ -90,6 +90,7 @@ Supabase
 │        ├─ prompts/         prompt files, each with a version number
 │        └─ schemas/         shapes of every stage's output
 ├─ content/questions.json    the ~100 hand-written questions
+├─ design-system/tokens.json the design system artifact's tokens, checked against app/src/design by a test
 └─ evals/                    test recordings, labels, and the scoring script
 ```
 

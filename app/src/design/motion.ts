@@ -37,3 +37,12 @@ export const compareMotion = {
   // Rows appear top to bottom like the feedback reveal; the count starts once its row is in.
   countDelayMs: 300,
 } as const;
+
+// Source of truth: DESIGN.md "Movement". Every spring in the app is one of these, never its own numbers.
+// Pass to Reanimated's withSpring. Starting points: tune both on a real phone.
+export const springs = {
+  // Reveals and things settling into place. No overshoot.
+  gentle: { duration: 500, dampingRatio: 1 },
+  // A response to a tap. Quicker, with one barely visible settle.
+  firm: { duration: 300, dampingRatio: 0.85 },
+} as const;

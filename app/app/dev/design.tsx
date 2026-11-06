@@ -33,15 +33,20 @@ const colorTokens: ColorToken[] = [
   'accentSoft',
   'positive',
   'divider',
+  'fill',
 ];
 
 const typeSamples: { variant: TextVariant; sample: string }[] = [
+  { variant: 'largeTitle', sample: 'Progress' },
   { variant: 'question', sample: 'Tell me about a time you changed your mind.' },
   { variant: 'bigNumber', sample: '12' },
   { variant: 'title', sample: 'Your answer' },
+  { variant: 'headline', sample: 'Next time, tell the listener where you are going in your first sentence.' },
   { variant: 'body', sample: 'You said "basically" 6 times. Try a short pause instead.' },
   { variant: 'betterVersion', sample: 'I changed my mind about remote work after our second quarter.' },
+  { variant: 'subheadline', sample: 'How it sounded' },
   { variant: 'label', sample: 'Filler words' },
+  { variant: 'caption', sample: 'At 0:40' },
 ];
 
 const spaceSteps = Object.keys(space) as Space[];
