@@ -13,7 +13,7 @@ appId: com.visheshanand.prompt
     visible: "This week"
     timeout: 20000
     label: "The Progress tab opens (if this fails the tab bar or the screen did not load)"
-- assertVisible: "(Your streak starts with today's answer\\.|.*in a row)"
+- assertVisible: "(No streak yet|Your streak starts with today's answer\\.|Streak: .* in a row)"
 - assertVisible: "(Your chart for this week starts with today's answer\\.|.*Filler words.*)"
 - assertVisible: "Weekly note"
 - assertVisible: "Since your first answer"
