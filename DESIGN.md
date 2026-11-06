@@ -8,7 +8,7 @@ How the app looks, moves, and talks. Read this before building or changing any s
 
 What the app helps with: a listener gets your point, and it costs them little effort (see PRODUCT.md). Every screen should make that one idea easy to see.
 
-The visual look of the feedback, before-and-after and Progress screens will be revisited in Claude Design before build step D (see ARCHITECTURE.md). Until then, this file sets what is on each screen and in what order, and the current visual style stays.
+The feedback screen's look was decided in Claude Design on 2026-11-07 (see "Feedback reveal" below; mockups in `design-system/feedback-d2/`). The before-and-after and Progress screens will be revisited the same way before steps E and F. Until then, this file sets what is on those screens and in what order, and the current visual style stays.
 
 The app is plain almost everywhere, and beautiful in three places:
 
@@ -74,8 +74,8 @@ Rules:
 | Large title (the name of a top-level screen) | 34 | Bold | Standard |
 | Question | 28 | Regular | Serif |
 | Big number (streak, filler count) | 34 | Semibold | Standard, tabular figures |
-| Title (a heading inside a screen) | 22 | Semibold | Standard |
-| Headline (a long, important line: the tip) | 17 | Semibold | Standard |
+| Title (a heading inside a screen or sheet, and the tip) | 22 | Semibold | Standard |
+| Headline (a long, important line: the feedback headline) | 17 | Semibold | Standard |
 | Body | 17 | Regular | Standard |
 | Better version (and the coach's note) | 19, line height 27 | Regular | Serif |
 | Subheadline (group labels) | 15 | Regular | Standard, `textSecondary` |
@@ -128,13 +128,34 @@ Only in these moments. Nowhere else.
 - Background stays calm. Nothing else on screen.
 
 ### 2. Feedback reveal
+Decided in Claude Design on 2026-11-07 after four rounds. The mockups are in `design-system/feedback-d2/` (live canvas: https://claude.ai/artifact/KtuV1eFKmnUKCbgEY5c4nT). They are web markup with colours written out: build from this section and the tokens, and use the mockups for layout, spacing and copy.
+
 - A short, calm "listening" state while feedback is prepared. Not a spinner. The circle slowly settles and fades.
-- Results appear one at a time, top to bottom, with a small delay between each (about 0.12 seconds), in the order from PRODUCT.md: headline, what a listener understood, one tip, better version, how it sounded. Each part appears as soon as its pipeline stage has saved it, so a later part may arrive a few seconds after an earlier one.
-- The one tip is the most prominent item on the screen.
-- **What a listener understood:** the restatement in the standard font. "That's what I meant" and "Not quite" are small and quiet, clearly secondary to Try again. Tapping one gives no haptic.
-- **The map** sits behind a "See how they're built" tap, right under the better version. It opens your answer's map next to the better version's map: a few steps each, with times and labels (Direction, Point, Support, Off track, Ending). Compact, plain text, no boxes or colors per label; the label word carries the meaning.
-- **How it sounded** shows only the lines a listener would notice. A clean answer shows nothing here, not an empty heading.
-- The "Try again" button is the single accent-colored button.
+- Results appear one at a time, top to bottom, with a small delay between each (about 0.12 seconds), in the order below. Each part appears as soon as its pipeline stage has saved it, so a later part may arrive a few seconds after an earlier one. While the tip is still being written, its card shows a faint outline (`fill` bars on `surface`) and one `label` line: "Writing your tip. This usually takes a few seconds."
+- The screen scrolls on `background`, with side margins of 24 and 16 between parts. "Try again with this tip" is pinned at the bottom, outside the scroll.
+
+Top to bottom:
+1. **Top bar:** "Work · first try" (or "Everyday", "second try") in `label`, and "Done" in `accentText` headline weight on the right.
+2. **The question,** in full, in the `betterVersion` style (serif). Never cut off.
+3. **Headline** in `headline` (17 semibold): "You found your point while talking, after two off-track steps."
+4. **The answer line** (custom drawing): one bar 10 tall, a segment per step, widths by time, 3 apart, rounded. Off track is a solid `textSecondary` segment, Point a solid `textPrimary` segment, and Direction, Support and Ending are outlined in `textSecondary` (1.5 wide). The colours mean the same in light and dark. Under it, the steps in order in `label` with `textPrimary`: "Off track → Support → Off track → **Point at 1:10** → Ending" (the point semibold, its time tabular). The line wraps; the segments carry no text, so they survive large text and short steps. Then "Step by step ›" in `accentText` semibold, 44 tall. The whole block is one button; VoiceOver reads it as one sentence ("Off track, support, off track, then your point at 1:10, then an ending. Opens step by step.").
+5. **The tip** on a `surface` card (radius 16, padding 20): "Your one thing for next time" in `label` with `accentText`, then the tip in `title` (22 semibold), the largest text on the screen; then one `body` line with the reason; then the moment it is about, quoted, in `label`. Nothing else in the card.
+6. **What an AI listener understood** on a `surface` card: that heading in `label`, the restatement in `body`, then "That's what I meant" and "Not quite" as quiet capsule buttons (`fill`, `body`, 44 tall). Once one is tapped, only that one stays, with a check in `accentText`, and it can be tapped again to undo. When the listener lost the thread, a last row: a time button ("▶ 0:40": `fill` capsule, 44 tall, `textPrimary` semibold tabular label, `accentText` play symbol) that plays from that moment, then "It lost the thread here, when you moved to the timer." in `body`.
+7. **A grouped list** on `surface` (radius 16, inset `divider` lines between rows): "Shorter and clearer" with "Your answer, with the point moved to the front" under it in `label`; "How it sounded" with "3 moments a listener would notice"; "Play your answer" with its length and a play symbol in `accentText`. The first two open sheets. A clean answer has no "How it sounded" row.
+8. **"This feedback is wrong"** as a quiet text button in `label`, centred, 44 tall.
+9. **"Try again with this tip"**, the only filled button: `accent` with an `onAccent` label, radius 12, 52 tall.
+
+The sheets (each with a grabber, its name in `title` and "Done" at the top right):
+- **Step by step:** one `label` line saying what differs, then two columns, "Yours · 1:52" and "Shorter and clearer". Each step: its time in `label` (your own steps only; the shorter version has no real times), the label word in `body` semibold, and a short quote in `label` with `textPrimary`. Plain text, no boxes or colours per label: the word carries the meaning.
+- **Shorter and clearer:** one line saying what changed and that nothing was added, then the better version in `betterVersion`.
+- **How it sounded:** one line saying the moments are counted from the recording and the AI listener picked the ones a person would notice. Then one row per moment: its time button (as above) and the line in `body`, ending with what to do next.
+
+Rules:
+- Every tap target is at least 44 tall.
+- The step labels are PRODUCT.md's five: Direction, Point, Support, Off track, Ending. "Point" everywhere, never "answer" for the speaker's point.
+- No numbers or scores on this screen; they belong to Progress and the before-and-after.
+- Tapping a time plays the recording from that moment. Tapping "That's what I meant" or "Not quite" gives no haptic.
+- The "Try again with this tip" button is the single accent-colored button.
 
 ### 3. Before and after
 - The retry instruction is checked first, in one plain line: "You told the listener where you were going in your first sentence. Last time, your point came at 1:10."

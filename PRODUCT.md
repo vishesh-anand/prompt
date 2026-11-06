@@ -51,18 +51,18 @@ The point does not have to come first. What matters is that the listener knows e
 - Answers under 10 seconds are not scored. Show a friendly "say a bit more" message.
 
 ### 5. Feedback (after each answer)
-Shows, in this order:
-1. **Headline:** one line about how your answer was built. For example: "You found your point while talking. It came at 1:10, after two passes around it." Or: "You set up a story, then landed your point. Easy to follow."
-2. **What a listener understood:** one sentence saying your point back, as a first-time listener heard it. Two small buttons: **That's what I meant** or **Not quite**. When the listener lost the thread, one more line says where, quoting the moment: "I lost the thread at 0:40, when you moved to the timer."
-3. **One tip:** the single most important thing to fix next. Only one. It names a real moment from your answer and becomes the instruction for your retry. It says "say your point first" only when the question asked for a direct answer, or when circling came before the point.
-4. **Better version:** your own answer, rewritten to be clearer and tighter. It may reorder, tighten and cut, and never adds facts, examples or opinions. Above it, one line says what changed: "Your point moved to the front, and the timer aside is gone."
-   - **See how they're built** (a tap): your answer's map next to the better version's map. A map is the answer as a few steps, each with its time and one of five labels:
-     - **Direction:** tells the listener where you're going (a frame or the point)
-     - **Point**
-     - **Support:** a reason or an example
-     - **Off track:** an aside, or repeating yourself without adding anything
-     - **Ending**
-5. **How it sounded:** only what a listener would likely notice. Each line names the moment:
+The question you answered stays at the top, in full. Then, in this order:
+1. **Headline:** one line about how your answer was built. For example: "You found your point while talking, after two off-track steps." Or: "You set up a story, then made your point at 0:58."
+2. **Your answer's shape:** a thin line of your answer's steps, with the point marked and the steps named underneath ("Off track → Support → Off track → Point at 1:10 → Ending"). Tapping it opens **Step by step**: your answer's map next to the better version's map. A map is the answer as a few steps, each with one of five labels (your own steps also show their time):
+   - **Direction:** tells the listener where you're going (a frame or the point)
+   - **Point**
+   - **Support:** a reason or an example
+   - **Off track:** an aside, or repeating yourself without adding anything
+   - **Ending**
+3. **One tip:** the single most important thing to fix next. Only one. It names a real moment from your answer and becomes the instruction for your retry. It says "say your point first" only when the question asked for a direct answer, or when circling came before the point. It comes before what the listener understood because it is what you act on (decided in Claude Design, 2026-11-07).
+4. **What an AI listener understood:** one sentence saying your point back, as a first-time listener heard it. The heading says it is an AI. Two small buttons: **That's what I meant** or **Not quite**. When the listener lost the thread, one more line says where, with the moment's time as a button that plays it: "0:40 · It lost the thread here, when you moved to the timer."
+5. **Shorter and clearer** (a row that opens a sheet): your own answer, rewritten to be clearer and tighter. It may reorder, tighten and cut, and never adds facts, examples or opinions. Above it, one line says what changed: "Your point moved to the front, and the part about the timer is gone."
+6. **How it sounded** (a row that opens a sheet, showing how many moments there are): only what a listener would likely notice. Each line starts with its time, as a button that plays it, and ends with what to do next:
    - pauses in the middle of a sentence (pauses between sentences sound like thinking and are not flagged)
    - restarts, where you dropped a sentence and began again
    - filler words (um, uh, like, basically, actually, you know, and "so" at the start of sentences), when there are enough to notice or one word becomes a habit. A few fillers are fine; zero is not the goal.
@@ -70,10 +70,10 @@ Shows, in this order:
    - speed, only when too fast or too slow
    - other patterns a listener would notice, like five sentences in a row starting with "So"
 
-   A clean answer shows nothing here.
-6. **Replay button:** hear your recording. Optional, never required.
-7. **"This feedback is wrong" button:** so testers can flag bad feedback.
-8. **Try again button:** answer the same question again, with the tip as your one instruction.
+   A clean answer has no row here.
+7. **Play your answer** (a row): hear your recording. Optional, never required.
+8. **"This feedback is wrong" button:** so testers can flag bad feedback.
+9. **Try again with this tip button,** pinned at the bottom: answer the same question again, with the tip as your one instruction.
 
 ### 6. Before and after (after trying again)
 - **The instruction, checked first:** "You told the listener where you were going in your first sentence. Last time, your point came at 1:10." If it didn't work, say so plainly and give one next step.

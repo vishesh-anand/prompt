@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Feedback arriving</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#B8461F}a:hover{color:#8F3516}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; background: #F5F1EB; color: #1F1B16; font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; font-size: 17px; line-height: 22px;">
+
+  <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 24px 0 24px; height: 44px;">
+    <span style="font-size: 13px; line-height: 18px; font-weight: 500; color: #6B645C;">Work · first try</span>
+    <button type="button" style="border: 0; background: transparent; padding: 0 0 0 16px; height: 44px; font-size: 17px; font-weight: 600; color: #B8461F;">Done</button>
+  </div>
+
+  <main style="display: flex; flex-direction: column; gap: 16px; padding: 8px 24px 0 24px;">
+
+    <section style="display: flex; flex-direction: column; gap: 12px; padding-bottom: 8px;">
+      <p style="margin: 0; font-family: 'New York', ui-serif, Georgia, serif; font-size: 19px; line-height: 27px;">“Should your team move the weekly meeting to written updates?”</p>
+      <h1 style="margin: 0; font-size: 17px; line-height: 22px; font-weight: 600;">You found your point while talking, after two off-track steps.</h1>
+      <a href="Built.dc.html" style="display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: #1F1B16; padding-top: 4px;" aria-label="Off track, support, off track, then your point at 1:10, then an ending. Opens step by step.">
+        <div style="display: flex; gap: 3px; height: 10px;" aria-hidden="true">
+          <div style="width: 16%; border-radius: 5px; background: #6B645C;"></div>
+          <div style="width: 19.7%; box-sizing: border-box; border-radius: 5px; border: 1.5px solid #6B645C;"></div>
+          <div style="width: 26.8%; border-radius: 5px; background: #6B645C;"></div>
+          <div style="width: 22.3%; border-radius: 5px; background: #1F1B16;"></div>
+          <div style="flex-grow: 1; box-sizing: border-box; border-radius: 5px; border: 1.5px solid #6B645C;"></div>
+        </div>
+        <p style="margin: 0; font-size: 13px; line-height: 18px;" aria-hidden="true">Off track → Support → Off track → <span style="font-weight: 600; font-variant-numeric: tabular-nums;">Point at 1:10</span> → Ending</p>
+        <span style="display: inline-flex; align-items: center; gap: 6px; height: 44px; font-weight: 600; color: #B8461F;">Step by step
+          <svg width="8" height="14" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 1.5 6.5 7l-5 5.5"></path></svg>
+        </span>
+      </a>
+    </section>
+
+    <section style="background: #FFFFFF; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px;" aria-live="polite">
+      <h2 style="margin: 0; font-size: 13px; line-height: 18px; font-weight: 500; color: #B8461F;">Your one thing for next time</h2>
+      <div style="width: 85%; height: 20px; border-radius: 10px; background: #ECE6DE;" aria-hidden="true"></div>
+      <div style="width: 60%; height: 14px; border-radius: 7px; background: #ECE6DE;" aria-hidden="true"></div>
+      <p style="margin: 4px 0 0 0; font-size: 13px; line-height: 18px; color: #6B645C;">Writing your tip. This usually takes a few seconds.</p>
+    </section>
+
+    <section style="background: #FFFFFF; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+      <h2 style="margin: 0; font-size: 13px; line-height: 18px; font-weight: 500; color: #6B645C;">What an AI listener understood</h2>
+      <p style="margin: 0;">You think the weekly meeting should become a written update, with a short call only when something is blocked.</p>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button type="button" style="border: 0; border-radius: 999px; background: #ECE6DE; color: #1F1B16; height: 44px; padding: 0 16px; font-size: 17px;">That’s what I meant</button>
+        <button type="button" style="border: 0; border-radius: 999px; background: #ECE6DE; color: #1F1B16; height: 44px; padding: 0 16px; font-size: 17px;">Not quite</button>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
