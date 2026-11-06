@@ -53,7 +53,7 @@ Colors are defined once as named tokens and used everywhere by name. Never write
 
 Rules:
 - `background` and `surface` differ enough that a card shows by tone alone (light 1.13:1, about Apple's grouped background). It was `#FBF8F4` (1.06:1), where cards nearly vanished.
-- The dark glow is 12%, not 20%: at 20% it read as a muddy brown ring. Check it on a real phone.
+- The dark glow is 12%, not 20%: at 20% it read as a muddy brown ring. Checked on a real iPhone on 2026-11-06, with the warmer background and the new type styles.
 - The accent is precious. Use it only for the one thing you most want tapped, plus the streak.
 - Never show red. Mistakes are not failures in this app. A problem is shown with plain text, not an alarm color.
 - Button labels on `accent` use `onAccent` (dark), not white. White on the coral is only 3.3:1 in light and 2.8:1 in dark. `onAccent` is 5.2:1 and 6.7:1. A deeper coral with white labels was considered and turned down: it only works in light mode (dark has no coral that passes with white), so the two modes would differ, and the coral would lose its brightness.
