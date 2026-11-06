@@ -285,7 +285,7 @@ Built:
 Next, the feedback redesign:
 - **A. Listener check:** record clips, build the rating page, friends rate. Part 1 (the page and setup) is built; part 2 (new clips and the ratings) is next. Runs alongside D.
 - **D. Coach and the new feedback screen,** in two parts:
-  - **D1 (built, 2026-11-04):** the Map runs in `process-answer`, the tip focus is read from the map, coach prompt version 6 writes the tip, the better version with its steps and "what changed", and notebook prompt version 2 reads the map. Questions say whether they want a direct answer. Nothing on the phone's screens changed. See FOLLOWUPS.md for its release.
+  - **D1 (built, 2026-11-04):** the Map runs in `process-answer`, the tip focus is read from the map, coach prompt version 6 writes the tip, the better version with its steps and "what changed", and notebook prompt version 2 reads the map. Questions say whether they want a direct answer. Nothing on the phone's screens changed. Live and checked on a real iPhone on 2026-11-07.
   - **D2 (next):** the new feedback screen: listener restatement and the tap, "See how they're built", the noticed lines. The visual design is done in Claude Design first.
 - **E. Retry:** the instruction carried over, the 90-second retry, the new before and after.
 - **F. Progress:** rolling 14 days, the new lines (decided by A's results), the coach's note every 3 practice days.

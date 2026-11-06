@@ -4,7 +4,6 @@ Things we chose not to do yet, or could not check, so they don't get forgotten. 
 
 ## Not checked yet
 
-- **Step D1 on a real iPhone.** D1 is live (2026-11-07): the app build with `mapped` is on the iPhone and the E2E simulator, `process-answer` is deployed, `map:old` had nothing left to map, and `e2e/run.sh` passed 5 of 5; its 3 answers finished `coached` with a map, the marks, coach v6's steps and "what changed". Not seen yet: one real answer recorded on the iPhone (the tip reads right; the marks, better version and before-and-after still work). *When:* now, before D2.
 - **Tips about mid-sentence pauses may come too often.** On the coach eval (2026-11-04) 4 of 9 clips got a "noticed" tip, and all 4 were about long silences inside a sentence. Pause location trusts the transcript's punctuation (see "Pause location" below). *When:* in the first week of D1 on the phone: if most tips are about pauses, check a few by ear, and decide whether pauses stay a tip before the listener check.
 - **"What changed" sometimes runs long.** 4 of 18 on the coach eval were 26 to 28 words; the prompt asks for "one short sentence" and no limit is enforced. One also ended with a stray "}". *When:* D2, when it is first shown on screen; a word limit like the tip's is one schema line and a coach prompt bump.
 
