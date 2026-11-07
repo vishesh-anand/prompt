@@ -17,14 +17,18 @@ export const mapOutputSchema = z.object({
     .array(z.object({ sentence: z.number().int(), label: z.enum(stepLabels) }))
     .min(1)
     .describe('Every numbered sentence of the transcript, each once and in order, with its label'),
-  didntFollow: z.array(z.object({ quote, why: z.string().describe('One short sentence') })).describe('Moments where a listener lost the thread; empty if none'),
+  didntFollow: z
+    .array(z.object({ quote, why: z.string().describe('A short clause to the speaker, starting "when you", saying what happened at that moment') }))
+    .describe('Moments where a listener lost the thread; empty if none'),
   restarts: z.array(z.object({ quote })).describe('Sentences dropped and begun again; empty if none'),
   noticed: z
     .array(
       z.object({
         kind: z.enum(['fillers', 'pause', 'repeat', 'hedge', 'pattern']),
         quote,
-        why: z.string().describe('One short sentence on why a listener would notice it'),
+        why: z.string().describe('One short sentence to "you" saying what happened, without what to do about it'),
+        // Only a pattern has one: the other kinds get a fixed next step from plain code on the phone (map prompt v9).
+        nextStep: z.string().optional().describe('For a pattern only: one short sentence to "you" saying what to do instead next time'),
       }),
     )
     .describe('Only what a listener would notice; empty for a clean answer'),

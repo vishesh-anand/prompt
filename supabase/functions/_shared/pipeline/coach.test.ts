@@ -2,7 +2,7 @@ import { assertEquals, assertRejects } from 'jsr:@std/assert@1';
 import { zodOutputFormat } from 'npm:@anthropic-ai/sdk@0.131.0/helpers/zod';
 
 import type { Model, PromptFile } from '../providers/model.ts';
-import { type CoachingOutput, coachingOutputSchema, coachingSchema, maxTipWords } from '../schemas/coaching.ts';
+import { type CoachingOutput, coachingOutputSchema, coachingSchema, maxReasonWords, maxTipWords, maxWhatChangedWords } from '../schemas/coaching.ts';
 import type { SavedMap } from '../schemas/map.ts';
 import type { Metrics, Transcript } from '../schemas/metrics.ts';
 import { testMetrics } from '../testMetrics.ts';
@@ -39,7 +39,8 @@ const input = {
 };
 
 const good: CoachingOutput = {
-  tip: 'Open with the point. Next time, say it first.',
+  tip: 'Say your point in your first sentence.',
+  reason: 'Your point came first, and the reason after it was thin.',
   betterSentences: [
     { text: 'I like cats.', label: 'point' },
     { text: 'They are calm.', label: 'support' },
@@ -78,9 +79,10 @@ Deno.test('coach passes the question, the numbered answer, the map, the focus an
 });
 
 Deno.test('what is saved: the sentences joined, the steps labelled like a map, and what changed', async () => {
-  const { model } = modelThatSays(withOutput({ tip: '  Open with it.  ', whatChanged: ' The second sentence is tighter. ' }));
+  const { model } = modelThatSays(withOutput({ tip: '  Open with it.  ', reason: ' It came late. ', whatChanged: ' The second sentence is tighter. ' }));
   assertEquals(await coach(input, model), {
     tip: 'Open with it.',
+    reason: 'It came late.',
     betterVersion: 'I like cats. They are calm. And quiet.',
     betterSteps: [
       { label: 'point', text: 'I like cats.' },
@@ -103,6 +105,9 @@ Deno.test('problems: an empty tip, shouting, a rewrite that grew, pause marks an
   assertEquals(coachProblems(withOutput({ tip: '  ' }), transcript, map).length, 1);
   assertEquals(coachProblems(withOutput({ tip: 'Pause! Then go! Again!' }), transcript, map).length, 1);
   assertEquals(coachProblems(withOutput({ tip: 'Stop!' }), transcript, map), []);
+  // The tip and the reason share one card: one exclamation mark between them at most, and the reason can't be empty.
+  assertEquals(coachProblems(withOutput({ tip: 'Stop!', reason: 'It ran on!' }), transcript, map).length, 1);
+  assertEquals(coachProblems(withOutput({ reason: ' ' }), transcript, map), ['the reason is empty']);
   assertEquals(coachProblems(withOutput({ betterSentences: nineWords }), transcript, map).length, 1);
   assertEquals(coachProblems(withOutput({ betterSentences: [{ text: 'I like [2.0 s pause] cats.', label: 'point' }] }), transcript, map).length, 1);
   assertEquals(coachProblems(withOutput({ betterSentences: [{ text: '1. I like cats.', label: 'point' }] }), transcript, map).length, 1);
@@ -182,7 +187,7 @@ Deno.test(`the output schema refuses a tip over ${maxTipWords} words, using the 
   // zodOutputFormat is what the Anthropic SDK uses to check each reply, so this is the real enforcement point.
   const format = zodOutputFormat(coachingOutputSchema);
   const reply = (tip: string) => JSON.stringify({ ...good, tip });
-  assertEquals(format.parse(reply(tipOf(25))).tip.split(' ').length, 25);
+  assertEquals(format.parse(reply(tipOf(12))).tip.split(' ').length, 12);
   assertEquals(format.parse(reply(tipOf(maxTipWords))).tip.split(' ').length, maxTipWords);
   let error = '';
   try {
@@ -203,7 +208,14 @@ Deno.test('the coach stage hands the model the limited schema, so a long tip is 
   const { model, seen } = modelThatSays(good);
   await coach(input, model);
   assertEquals(seen[0].schema.safeParse(withOutput({ tip: tipOf(maxTipWords + 1) })).success, false);
-  assertEquals(seen[0].schema.safeParse(withOutput({ tip: tipOf(25) })).success, true);
+  assertEquals(seen[0].schema.safeParse(withOutput({ tip: tipOf(12) })).success, true);
+});
+
+Deno.test('the reason and what changed have their own limits, a little above what the coach is told', () => {
+  assertEquals(coachingOutputSchema.safeParse(withOutput({ reason: tipOf(maxReasonWords) })).success, true);
+  assertEquals(coachingOutputSchema.safeParse(withOutput({ reason: tipOf(maxReasonWords + 1) })).success, false);
+  assertEquals(coachingOutputSchema.safeParse(withOutput({ whatChanged: tipOf(maxWhatChangedWords) })).success, true);
+  assertEquals(coachingOutputSchema.safeParse(withOutput({ whatChanged: tipOf(maxWhatChangedWords + 1) })).success, false);
 });
 
 Deno.test('the second try is told why the first reply was refused', async () => {

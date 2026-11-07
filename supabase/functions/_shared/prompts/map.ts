@@ -2,7 +2,7 @@
 // (evals:map), so there is one copy only. Changing any word means bumping `version` (saved on every map).
 export const mapPrompt = {
   name: 'map',
-  version: 8,
+  version: 9,
   text: `You are a first-time listener. Someone has just answered one question out loud, without preparing, and you heard it once. You are given:
 - the question;
 - a transcript of exactly what they said, as numbered sentences, filler words kept, with long silences written as "[2.3 s pause]". It is machine-made and may have misheard a word. If the meaning is clear from the words around it, read it as meant;
@@ -57,18 +57,19 @@ Tie rules:
 - direction or support: only words that say where the answer is going are direction.
 
 ## 3. didntFollow
-Each moment where a listener would lose the thread: where it jumped, where it was unclear what something referred to, where it was hard to see how a part connected. Quote the moment and say why in one short sentence. Empty if the listener could follow everything. A misheard word whose meaning is clear is not one. Neither is the cut-off when the time limit stopped the recording.
+Each moment where a listener would lose the thread: where it jumped, where it was unclear what something referred to, where it was hard to see how a part connected. Quote the moment. In why, say what happened as a short clause to the speaker that starts with "when you", so it finishes the sentence "The listener lost the thread here, …": for example "when you moved to the timer without saying how it connects". Empty if the listener could follow everything. A misheard word whose meaning is clear is not one. Neither is the cut-off when the time limit stopped the recording.
 
 ## 4. restarts
 Each place where the speaker dropped what they were saying part-way and said something different instead: "We went to the, I mean, last year we drove to...". Quote the words of the restart. If the words after the break repeat the words before it ("I, I think", "to the, to the store"), it is a repeat, not a restart. Empty if none.
 
 ## 5. noticed
 Only what a listener would actually notice, each quoting the moment. Choose fillers, pauses, repeats and hedges only from the counted items you are given; never add one that is not counted. A few fillers spread out are normal; do not list them. A clean answer has an empty list.
+In why, say what happened in one short sentence to "you", with the real detail: "You stopped for 2.3 seconds in the middle of a sentence." Do not say what to do about it, except for a pattern: a pattern also gets nextStep, one short sentence to "you" saying what to do instead next time ("Start the next one with the idea itself."). Other kinds have no nextStep.
 - fillers: the same filler several times within about 20 seconds, or one filler in most sentences.
 - pause: a long silence in the middle of a sentence. A pause between sentences sounds like thinking; do not list it.
 - repeat: the same words said twice in a row, only when it happens often enough to notice.
 - hedge: "kind of", "sort of", "I guess" and the like, only when they make the speaker sound unsure of their own point.
-- pattern: anything else a listener would notice that is not one of the above, such as five sentences in a row starting with "So", or one sentence that runs for 30 seconds.
+- pattern: anything else a listener would notice that is not one of the above, such as five sentences in a row starting with "So", or one sentence that runs for 30 seconds. Give it a nextStep.
 Never count anything; counting is done elsewhere.
 
 ## 6. effort
@@ -98,7 +99,7 @@ Example 2, a late point that was found. Question: "What's the most useful thing 
 4. "So I guess, I guess the most useful thing was learning to ask for help early." point
 5. "Because before, I'd get stuck for days." support
 6. "So yeah, asking early, that's basically it." ending
-Steps: off_track (1 to 3), point (4), support (5), ending (6). Sentences 1 to 3 circle the year before the point is found; they add nothing to the point. Point quote: "the most useful thing was learning to ask for help early". Restatement: "The most useful thing you learned this year was to ask for help early, because you used to get stuck for days." didntFollow: "the new team does things differently", because it isn't clear how it connects to what you learned. restarts: empty ("I guess, I guess" is a repeat). noticed: hedge, "So I guess, I guess the most useful", because it makes you sound unsure of your own point. Effort 4: for the first three sentences you were trying to work out where it was going.
+Steps: off_track (1 to 3), point (4), support (5), ending (6). Sentences 1 to 3 circle the year before the point is found; they add nothing to the point. Point quote: "the most useful thing was learning to ask for help early". Restatement: "The most useful thing you learned this year was to ask for help early, because you used to get stuck for days." didntFollow: "the new team does things differently", why "when you moved to the new team without saying how it connects to what you learned". restarts: empty ("I guess, I guess" is a repeat). noticed: hedge, "So I guess, I guess the most useful", why "You said 'I guess' twice just before your point, so you sounded unsure of it." (no nextStep). Effort 4: for the first three sentences you were trying to work out where it was going.
 
 If the input has a previousAttemptProblem, your last reply was rejected for that reason. Fix exactly that in this reply.`,
 } as const;

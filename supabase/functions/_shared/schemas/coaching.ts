@@ -15,18 +15,30 @@ export const coachingSchema = z.object({
   betterVersion: z.string(),
   betterSteps: z.array(betterStepSchema).optional(),
   whatChanged: z.string().optional(),
+  // From coach prompt version 7: the tip is only the next step, and this is the one sentence saying what happened.
+  reason: z.string().optional(),
   moment: z.object({ quote: z.string(), atSeconds: z.number() }).optional(),
 });
 
 export type Coaching = z.infer<typeof coachingSchema>;
 
-// A tip is about 25 words. The coach is told at most 25 (the prompt and the schema hint), but the model can't count
-// words exactly, so the schema only refuses a tip over 35. That keeps an answer from failing over a few extra words, and
-// still stops a paragraph. The model API can't enforce a word limit itself, so the limit is checked when the reply is
-// parsed against this schema, and a reply over it is asked for again. (At a hard 30 and a prompt saying "never more than
-// 30", half of the eval's runs failed, because the model aimed right at the limit.)
-export const tipWordsTarget = 25;
-export const maxTipWords = 35;
+// From coach prompt version 7 the tip is only the next step, shown large on the feedback screen (about 12 words), and
+// the reason is the sentence saying what happened (about 25). Each is told a target, and the schema only refuses a reply
+// well over it. That keeps an answer from failing over a few extra words, and still stops a paragraph. The model API
+// can't enforce a word limit itself, so the limit is checked when the reply is parsed against this schema, and a reply
+// over it is asked for again. (At a hard 30 and a prompt saying "never more than 30", half of the eval's runs failed,
+// because the model aimed right at the limit.) "What changed" sits on one line above the shorter version.
+export const tipWordsTarget = 12;
+export const maxTipWords = 18;
+export const reasonWordsTarget = 25;
+export const maxReasonWords = 35;
+export const whatChangedWordsTarget = 15;
+export const maxWhatChangedWords = 22;
+
+// The message names the real count, because the retry hands it back to the model.
+const atMost = (max: number) => (text: string) => wordCount(text) <= max;
+const overBy = (what: string, max: number) => (issue: { input: unknown }) =>
+  `The ${what} is ${wordCount(String(issue.input))} words. It must be at most ${max} words, so make it shorter.`;
 
 export const wordCount = (text: string) => text.split(/\s+/).filter((w) => w !== '').length;
 
@@ -35,14 +47,20 @@ export const wordCount = (text: string) => text.split(/\s+/).filter((w) => w !==
 export const coachingOutputSchema = z.object({
   tip: z
     .string()
-    .describe(`One tip about the chosen focus, in the coach voice. At most ${tipWordsTarget} words.`)
-    // The message names the real count, because the retry hands it back to the model.
-    .refine((tip) => wordCount(tip) <= maxTipWords, { error: (issue) => `The tip is ${wordCount(String(issue.input))} words. It must be at most ${maxTipWords} words, so make it shorter.` }),
+    .describe(`The one thing to do on the next try, as one short instruction to "you". At most ${tipWordsTarget} words.`)
+    .refine(atMost(maxTipWords), { error: overBy('tip', maxTipWords) }),
+  reason: z
+    .string()
+    .describe(`One sentence to "you" saying what happened in this answer, with the real time or moment. At most ${reasonWordsTarget} words.`)
+    .refine(atMost(maxReasonWords), { error: overBy('reason', maxReasonWords) }),
   betterSentences: z
     .array(z.object({ text: z.string(), label: z.enum(stepLabels) }))
     .min(1)
     .describe("The person's own answer, clearer and tighter, with nothing added: one sentence at a time, each with its label"),
-  whatChanged: z.string().describe('One short sentence saying what the better version changed, to "you"'),
+  whatChanged: z
+    .string()
+    .describe(`One short sentence saying what the better version changed, to "you". At most ${whatChangedWordsTarget} words.`)
+    .refine(atMost(maxWhatChangedWords), { error: overBy('whatChanged', maxWhatChangedWords) }),
 });
 
 export type CoachingOutput = z.infer<typeof coachingOutputSchema>;

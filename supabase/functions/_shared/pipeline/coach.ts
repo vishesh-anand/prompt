@@ -42,7 +42,10 @@ export function coachProblems(output: CoachingOutput, transcript: Transcript, ma
   const problems: string[] = [];
   const tip = output.tip.trim();
   if (tip === '') problems.push('the tip is empty');
-  if (tip.split('!').length - 1 > 1) problems.push('the tip has more than one exclamation mark');
+  const reason = output.reason.trim();
+  if (reason === '') problems.push('the reason is empty');
+  // One exclamation mark per screen at most (DESIGN.md), and the tip and the reason share a card.
+  if ((tip + reason).split('!').length - 1 > 1) problems.push('the tip and the reason have more than one exclamation mark');
 
   const better = output.betterSentences.map((s) => s.text.trim());
   if (better.some((s) => s === '')) problems.push('a better version sentence is empty');
@@ -93,6 +96,7 @@ export function coach(input: Input, model: Model, { onAttemptFailed }: Options =
     if (problems.length > 0) throw new Error(`coach reply rejected: ${problems.join('; ')}`);
     return {
       tip: output.tip.trim(),
+      reason: output.reason.trim(),
       betterVersion: output.betterSentences.map((s) => s.text.trim()).join(' '),
       betterSteps: stepsOf(output.betterSentences),
       whatChanged: output.whatChanged.trim(),

@@ -1,7 +1,7 @@
 import { assertEquals } from 'jsr:@std/assert@1';
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2';
 
-import { placeLabels } from '../_shared/pipeline/map.ts';
+import { mapVersion, placeLabels } from '../_shared/pipeline/map.ts';
 import { measure } from '../_shared/pipeline/measure.ts';
 import type { Model, PromptFile } from '../_shared/providers/model.ts';
 import type { Transcript } from '../_shared/schemas/metrics.ts';
@@ -29,7 +29,8 @@ const mapReply = {
   effort: 1,
 };
 const coachReply = {
-  tip: 'Back your point up. Next time, name one real cat.',
+  tip: 'Name one real cat.',
+  reason: 'You said you like cats, with no example.',
   betterSentences: [
     { text: 'I like cats.', label: 'point' },
     { text: 'They are calm and quiet.', label: 'support' },
@@ -159,9 +160,10 @@ Deno.test('what is saved: the map with its times, and the coaching with its step
   const openings = ['So I like cats.', 'Cats are calm and quiet.', 'I think they are great pets, honestly.'];
   assertEquals((saved.map as { steps: unknown }).steps, savedMap.steps.map((s, i) => ({ ...s, opening: openings[i] })));
   assertEquals((saved.map as { firstWordAtSeconds: number }).firstWordAtSeconds, transcript.words[0].start);
-  assertEquals((saved.map as { version: number }).version, 8);
+  assertEquals((saved.map as { version: number }).version, mapVersion);
   assertEquals(saved.coaching, {
     tip: coachReply.tip,
+    reason: coachReply.reason,
     betterVersion: 'I like cats. They are calm and quiet.',
     betterSteps: [
       { label: 'point', text: 'I like cats.' },
@@ -169,7 +171,7 @@ Deno.test('what is saved: the map with its times, and the coaching with its step
     ],
     whatChanged: 'The opening "So" is gone.',
   });
-  assertEquals((saved.pipeline_version as { map: number }).map, 8);
+  assertEquals((saved.pipeline_version as { map: number }).map, mapVersion);
   // The question is read once, with its direct-answer flag.
   assertEquals(questionReads, ['text, wants_direct_answer']);
 });
