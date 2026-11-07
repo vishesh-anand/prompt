@@ -18,7 +18,7 @@ export default function FeedbackPreview() {
   const [heard, setHeard] = useState<string | null>(null);
   const [flagged, setFlagged] = useState(false);
 
-  if (!__DEV__ || !chosen) return <Redirect href="/" />;
+  if ((!__DEV__ && process.env.EXPO_PUBLIC_E2E !== '1') || !chosen) return <Redirect href="/" />;
 
   const data = { ...chosen.data, listenerConfirmed: confirmed === undefined ? chosen.data.listenerConfirmed : confirmed };
 

@@ -88,6 +88,7 @@ export default function Home() {
       {showTestTools ? (
         <View style={styles.dev}>
           <Button variant="secondary" label="Reminders" onPress={() => router.push('/dev/reminders')} />
+          <Button variant="secondary" label="Feedback samples" onPress={() => router.push({ pathname: '/dev/feedback', params: { sample: '0' } })} />
           {__DEV__ ? (
             <>
               <Button variant="secondary" label="Design preview" onPress={() => router.push('/dev/design')} />
