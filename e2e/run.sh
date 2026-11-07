@@ -59,7 +59,7 @@ flows=()
 [ "$onboarding" = 1 ] && flows+=(flows/00-onboarding.yaml)
 flows+=(flows/01-launch.yaml)
 [ "$free" = 0 ] && flows+=(flows/02-retry-and-compare.yaml)
-flows+=(flows/03-category.yaml flows/04-reminders.yaml flows/05-progress.yaml)
+flows+=(flows/03-category.yaml flows/04-reminders.yaml flows/05-progress.yaml flows/06-feedback-samples.yaml)
 
 # The reminders flow checks that today's reminder is gone, which is only certain right after the answering flow ran.
 practiced=0; [ "$free" = 0 ] && practiced=1

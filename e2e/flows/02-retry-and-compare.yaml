@@ -1,4 +1,4 @@
-# The feedback screen scrolls and its buttons sit below the fold, so the flow scrolls to them.
+# The feedback screen (step D2) pins its one filled button below the scroll, so the flow waits for it instead of scrolling.
 # Three real answers (real transcription and Claude, counted in the 10 a day): a first try, a retry, and a third try.
 # This is the flow that would have caught the step 6 crash: the feedback screen stays mounted under the compare screen.
 appId: com.visheshanand.prompt
@@ -18,17 +18,20 @@ appId: com.visheshanand.prompt
 
 # First try.
 - runFlow: answer.yaml
+# The new feedback screen (step D2): the tip card, then the one filled button pinned below the scroll.
 - extendedWaitUntil:
-    visible: "Your one tip"
+    visible: "Your one thing for next time"
     timeout: 120000
-- scrollUntilVisible:
-    element: "Try again"
+- extendedWaitUntil:
+    visible: "Try again with this tip"
     timeout: 120000
-- assertNotVisible: "That didn't process. Your recording is saved. Tap to try again."
+    label: "The pinned button appears once the answer is fully processed"
+- assertVisible: "What an AI listener understood"
+- assertNotVisible: "That didn’t process. Your recording is saved. Tap to try again."
 - assertNotVisible: "See before and after"
 
 # Retry, then look at the before and after.
-- tapOn: "Try again"
+- tapOn: "Try again with this tip"
 - runFlow: answer.yaml
 - scrollUntilVisible:
     element: "See before and after"

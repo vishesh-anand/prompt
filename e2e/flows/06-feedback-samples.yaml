@@ -1,0 +1,76 @@
+# Free: no answer is recorded. Test builds have a "Feedback samples" button on Home that opens the feedback screen on a
+# made-up answer (the Work mockup from design-system/feedback-d2/). Checks the screen's parts, the two quiet buttons
+# (and the undo), and the three sheets with a time button in one of them, so the sheets are covered without recording anything.
+appId: com.visheshanand.prompt
+---
+- launchApp
+- runFlow: onboard.yaml
+- extendedWaitUntil:
+    visible: "Answer today's question"
+    timeout: 30000
+- scrollUntilVisible:
+    element: "Feedback samples"
+    timeout: 20000
+- tapOn: "Feedback samples"
+- extendedWaitUntil:
+    visible: "Your one thing for next time"
+    timeout: 20000
+    label: "The feedback sample opens (if this fails the test build has no sample route)"
+- assertVisible: "You found your point while talking, after two off-track steps."
+- assertVisible: "Say your point in your first sentence."
+- assertVisible: "What an AI listener understood"
+- assertVisible: "Try again with this tip"
+
+# The two quiet buttons: choosing one leaves only that one, and tapping it again brings both back.
+- scrollUntilVisible:
+    element: "That’s what I meant"
+    timeout: 20000
+- tapOn: "That’s what I meant"
+- assertNotVisible: "Not quite"
+# Once chosen, the button reads "✓ That’s what I meant", so the text is matched with anything in front of it.
+- scrollUntilVisible:
+    element: ".*That’s what I meant"
+    visibilityPercentage: 100
+    timeout: 20000
+    label: "Fully in view, so the tap can't land on the pinned button below it"
+- tapOn: ".*That’s what I meant"
+- scrollUntilVisible:
+    element: "Not quite"
+    timeout: 20000
+- assertVisible: "Not quite"
+
+# The sheets. Each is dismissed by swiping it down.
+- scrollUntilVisible:
+    element: "How it sounded.*"
+    visibilityPercentage: 100
+    timeout: 20000
+- tapOn: "How it sounded.*"
+- assertVisible: ".*Tap a time to hear it.*"
+- assertVisible: ".*Start the next one with the idea itself.*"
+# A time button plays from that moment (the sample says what it would play, under the rows once the sheet is closed).
+- tapOn: "Play from 0:22"
+- swipe:
+    start: 50%, 12%
+    end: 50%, 90%
+- scrollUntilVisible:
+    element: "Would play from 0:22."
+    timeout: 20000
+- scrollUntilVisible:
+    element: "Shorter and clearer.*"
+    visibilityPercentage: 100
+    timeout: 20000
+- tapOn: "Shorter and clearer.*"
+- assertVisible: ".*Nothing new was added.*"
+- swipe:
+    start: 50%, 12%
+    end: 50%, 90%
+- scrollUntilVisible:
+    element: ".*Opens step by step.*"
+    direction: UP
+    timeout: 20000
+- tapOn: ".*Opens step by step.*"
+- assertVisible: "Yours.*"
+- assertVisible: "Yours had two off-track steps before the point. The shorter version starts with it."
+- swipe:
+    start: 50%, 12%
+    end: 50%, 90%
