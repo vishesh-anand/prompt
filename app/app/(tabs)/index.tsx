@@ -92,6 +92,7 @@ export default function Home() {
           {__DEV__ ? (
             <>
               <Button variant="secondary" label="Design preview" onPress={() => router.push('/dev/design')} />
+              <Button variant="secondary" label="Past answers" onPress={() => router.push('/dev/answers')} />
               <Button variant="secondary" label="Sign out" onPress={() => void supabase.auth.signOut()} />
             </>
           ) : null}
