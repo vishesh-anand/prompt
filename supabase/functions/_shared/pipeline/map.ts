@@ -4,7 +4,7 @@ import { plainWord } from '../providers/transcriber.ts';
 import { type MapOutput, mapOutputSchema, type SavedMap, type StepLabel } from '../schemas/map.ts';
 import type { Metrics, Transcript } from '../schemas/metrics.ts';
 import { longPauseMs } from './measure.ts';
-import { findQuote, secondsIntoAnswer, splitSentences } from './transcriptText.ts';
+import { findQuote, momentAt, secondsIntoAnswer, sentenceOpening, splitSentences } from './transcriptText.ts';
 import { problemOf, twice } from './twice.ts';
 
 // Stage 3 (from step D; step C runs it from the evals only): Map. Claude reads the answer once as a first-time listener
@@ -155,6 +155,29 @@ export function placeLabels(labels: StepLabel[], transcript: Transcript): Pick<S
   };
 }
 
+// What plain code adds so the screen can show and play each moment (from step D2): where the first word starts in the
+// recording, the opening words of each step, and when each quoted moment starts. Safe to run again on a saved map, and
+// it changes nothing else. `npm run map:moments` runs it on maps saved before this existed.
+export function placeMoments(map: SavedMap, transcript: Transcript): SavedMap {
+  if (transcript.words.length === 0) return map;
+  const sentences = splitSentences(transcript);
+  const at = <T extends { quote: string }>(item: T) => {
+    const atSeconds = momentAt(transcript, item.quote);
+    return atSeconds === null ? item : { ...item, atSeconds };
+  };
+  return {
+    ...map,
+    firstWordAtSeconds: round1(transcript.words[0].start),
+    steps: map.steps.map((step) => {
+      const sentence = sentences[step.sentence - 1];
+      return sentence ? { ...step, opening: sentenceOpening(transcript, sentence) } : step;
+    }),
+    didntFollow: map.didntFollow.map(at),
+    restarts: map.restarts.map(at),
+    noticed: map.noticed.map(at),
+  };
+}
+
 // One try, plus one more if the model errors or fails a check above. The second try is told why.
 export function mapAnswer(input: Input, model: Model, { onAttemptFailed }: Options = {}): Promise<SavedMap> {
   if (input.transcript.words.length === 0) return Promise.reject(new Error('there are no words to map'));
@@ -173,6 +196,6 @@ export function mapAnswer(input: Input, model: Model, { onAttemptFailed }: Optio
     const problems = mapProblems(output, input.transcript, input.metrics);
     if (problems.length > 0) throw new Error(`map reply rejected: ${problems.join('; ')}`);
     const labels = output.sentences.map((s) => s.label);
-    return { ...output, ...placeLabels(labels, input.transcript), version: mapVersion };
+    return placeMoments({ ...output, ...placeLabels(labels, input.transcript), version: mapVersion }, input.transcript);
   }, onAttemptFailed);
 }

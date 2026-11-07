@@ -60,3 +60,19 @@ export function findQuoteStart(transcript: Transcript, quote: string): number | 
 export function secondsIntoAnswer(transcript: Transcript, quoteStart: number): number {
   return quoteStart - (transcript.words[0]?.start ?? 0);
 }
+
+const round1 = (x: number) => Math.round(x * 10) / 10;
+
+// When a quoted moment starts, in seconds from the first spoken word (to one decimal), or null if those words aren't in
+// the transcript. A "[2.3 s pause]" mark the model copied by mistake is ignored: the words around it are still real.
+export function momentAt(transcript: Transcript, quote: string): number | null {
+  const found = findQuote(transcript, quote.replace(/\[[\d.]+ s pause\]/g, ' '));
+  return found === null ? null : round1(secondsIntoAnswer(transcript, transcript.words[found.first].start));
+}
+
+// The first few words of a sentence (as positions from splitSentences), as said, so a moment can be named or shown.
+export const openingWords = 8;
+
+export function sentenceOpening(transcript: Transcript, { first, last }: { first: number; last: number }): string {
+  return transcript.words.slice(first, Math.min(last, first + openingWords - 1) + 1).map((w) => w.punctuated).join(' ');
+}

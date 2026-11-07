@@ -2,10 +2,10 @@ import { assertEquals, assertRejects, assertStringIncludes, assertThrows } from 
 import { zodOutputFormat } from 'npm:@anthropic-ai/sdk@0.131.0/helpers/zod';
 
 import type { Model, PromptFile } from '../providers/model.ts';
-import { type MapOutput, mapOutputSchema, type StepLabel } from '../schemas/map.ts';
+import { type MapOutput, mapOutputSchema, savedMapSchema, type StepLabel } from '../schemas/map.ts';
 import type { Transcript } from '../schemas/metrics.ts';
 import { testMetrics } from '../testMetrics.ts';
-import { mapAnswer, mapProblems, mapVersion, numberedSentences, placeLabels, withoutPauseMarks } from './map.ts';
+import { mapAnswer, mapProblems, mapVersion, numberedSentences, placeLabels, placeMoments, withoutPauseMarks } from './map.ts';
 import { measure } from './measure.ts';
 
 // "Um, so yesterday I had a meeting. My point is [2.0 s pause] ship early. Users told us. So ship early."
@@ -79,6 +79,31 @@ Deno.test('plain code adds each step time, when the point came and the off-track
   assertEquals(map.effort, 2);
 });
 
+Deno.test('plain code adds where the first word starts, each step\'s opening words and when each quoted moment starts', async () => {
+  const { model } = modelThatSays({ ...good, restarts: [{ quote: 'Users told us' }] });
+  const map = await mapAnswer(input, model);
+  // The recording's first word starts at 2 s; moment times count from there, like the step times.
+  assertEquals(map.firstWordAtSeconds, 2);
+  assertEquals(map.steps.map((s) => s.opening), ['Um, so yesterday I had a meeting.', 'My point is ship early.', 'Users told us.', 'So ship early.']);
+  assertEquals(map.didntFollow, [{ ...good.didntFollow[0], atSeconds: 2 }]);
+  assertEquals(map.noticed, [{ ...good.noticed[0], atSeconds: 8 }]);
+  assertEquals(map.restarts, [{ quote: 'Users told us', atSeconds: 13.5 }]);
+});
+
+Deno.test('placing moments again changes nothing, and a step opening stops after eight words', async () => {
+  const { model } = modelThatSays(good);
+  const map = await mapAnswer(input, model);
+  assertEquals(placeMoments(map, transcript), map);
+  const long: Transcript = { words: 'one two three four five six seven eight nine ten.'.split(' ').map((punctuated, i) => ({ text: punctuated, punctuated, start: i, end: i + 0.5 })) };
+  const placed = placeMoments({ ...map, ...placeLabels(['point'], long), didntFollow: [], restarts: [], noticed: [] }, long);
+  assertEquals(placed.steps[0].opening, 'one two three four five six seven eight');
+});
+
+Deno.test('a map saved before moments were placed still loads, so process-answer never pays to map it again', () => {
+  const old = { ...good, version: 8, ...placeLabels(['off_track', 'point', 'support', 'ending'], transcript) };
+  assertEquals(savedMapSchema.safeParse(old).success, true);
+});
+
 Deno.test('a frame before the point is when the listener knew where it was going', async () => {
   const { model } = modelThatSays(
     labelled('direction', 'point', 'support', 'support'),
@@ -102,7 +127,7 @@ Deno.test('an answer with no point has no point step, no point quote and no poin
 Deno.test('neighbouring sentences with the same label are one step, and a timer-stopped answer needs no ending', async () => {
   const { model } = modelThatSays({ ...labelled('point', 'point', 'support', 'support'), point: { ...good.point, quote: 'I had a meeting. My point' } });
   const map = await mapAnswer({ ...input, stoppedByTimeLimit: true }, model);
-  assertEquals(map.steps, [{ label: 'point', sentence: 1, atSeconds: 0 }, { label: 'support', sentence: 3, atSeconds: 13.5 }]);
+  assertEquals(map.steps.map(({ label, sentence, atSeconds }) => ({ label, sentence, atSeconds })), [{ label: 'point', sentence: 1, atSeconds: 0 }, { label: 'support', sentence: 3, atSeconds: 13.5 }]);
 });
 
 Deno.test('a good reply has no problems, and a quote across a pause mark still matches', () => {

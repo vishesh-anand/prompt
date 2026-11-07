@@ -7,12 +7,15 @@ export const betterStepSchema = z.object({ label: z.enum(stepLabels), text: z.st
 
 // What is saved on the answer row, and what the app reads. It has no length limit, so tips saved before the limit
 // existed still load. betterSteps and whatChanged come from coach prompt version 6; older answers don't have them.
+// `moment` is the person's own words the tip is about, picked by plain code (tipFocus.ts, version 6), shown quoted under
+// the tip; seconds from the first spoken word. Answers coached before step D2 don't have it.
 // The app has a copy in app/src/lib/schemas/coaching.ts.
 export const coachingSchema = z.object({
   tip: z.string(),
   betterVersion: z.string(),
   betterSteps: z.array(betterStepSchema).optional(),
   whatChanged: z.string().optional(),
+  moment: z.object({ quote: z.string(), atSeconds: z.number() }).optional(),
 });
 
 export type Coaching = z.infer<typeof coachingSchema>;

@@ -6,6 +6,7 @@ import { stoppedByTimeLimit } from '../supabase/functions/_shared/pipeline/trans
 import { anthropicModel, type Usage } from '../supabase/functions/_shared/providers/anthropic.ts';
 import { transcriptSchema } from '../supabase/functions/_shared/schemas/metrics.ts';
 import { answersToMap, saveMapSql } from './mapOld.ts';
+import { query } from './supabaseQuery.ts';
 import type { Clip } from './score.ts';
 
 // Run from this folder with `npm run map:old` (add `-- --limit 1` to map only the next answer, the starting point
@@ -24,23 +25,6 @@ const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
 if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not set. Add it to evals/.env (git-ignored), then run again.');
 const limitFlag = Deno.args.indexOf('--limit');
 const limit = limitFlag >= 0 ? Number(Deno.args[limitFlag + 1]) : Infinity;
-
-async function query(sql: string, write = false): Promise<unknown[]> {
-  const file = await Deno.makeTempFile({ suffix: '.sql' });
-  try {
-    await Deno.writeTextFile(file, sql);
-    const { success, stdout, stderr } = await new Deno.Command('npx', {
-      args: ['supabase', 'db', 'query', '--linked', write ? '--yes' : '--read-only', '-f', file, '-o', 'json'],
-      stdout: 'piped',
-      stderr: 'piped',
-    }).output();
-    const text = new TextDecoder().decode(stdout);
-    if (!success || !text.includes('{')) throw new Error(`The query failed: ${new TextDecoder().decode(stderr) || text}`);
-    return z.object({ rows: z.array(z.unknown()) }).parse(JSON.parse(text.slice(text.indexOf('{')))).rows;
-  } finally {
-    await Deno.remove(file);
-  }
-}
 
 const rows = z
   .array(

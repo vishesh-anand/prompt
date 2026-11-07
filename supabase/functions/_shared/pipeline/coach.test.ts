@@ -90,6 +90,14 @@ Deno.test('what is saved: the sentences joined, the steps labelled like a map, a
   });
 });
 
+Deno.test('the moment plain code picked for the tip is saved with it, and never sent to the model', async () => {
+  const { model, seen } = modelThatSays(good);
+  const moment = { quote: 'Cats are calm and quiet.', atSeconds: 3 };
+  const saved = await coach({ ...input, focus: { kind: 'support', facts: { pointQuote: 'I like cats' }, moment } }, model);
+  assertEquals(saved.moment, moment);
+  assertEquals((seen[0].input as Record<string, unknown>).focus, { kind: 'support', facts: { pointQuote: 'I like cats' } });
+});
+
 Deno.test('problems: an empty tip, shouting, a rewrite that grew, pause marks and empty sentences', () => {
   assertEquals(coachProblems(good, transcript, map), []);
   assertEquals(coachProblems(withOutput({ tip: '  ' }), transcript, map).length, 1);

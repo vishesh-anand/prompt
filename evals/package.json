@@ -8,6 +8,7 @@
     "evals:map-sheet": "deno run --allow-read --allow-write --allow-run map-sheet.ts",
     "evals:map": "deno run --allow-net --allow-read --allow-write --allow-env --allow-run --env-file=.env map.ts",
     "map:old": "deno run --allow-net --allow-read --allow-write --allow-env --allow-run --env-file=.env map-old.ts",
+    "map:moments": "deno run --allow-read --allow-write --allow-run map-moments.ts",
     "evals:coach": "deno run --allow-net --allow-read --allow-write --allow-env --allow-run --env-file=.env coach.ts",
     "evals:weekly": "deno run --allow-net --allow-read --allow-write --allow-env --allow-run --env-file=.env weekly.ts",
     "evals:listener": "deno run --allow-read --allow-write --allow-run listener.ts",

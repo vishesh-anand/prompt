@@ -15,10 +15,13 @@ export function answersToMap<T extends SavedAnswer>(answers: T[], version: numbe
 // The statement that saves one map. It writes only the map column, and only while the answer is still finished
 // (coached), so it never races a pipeline that is running on it. The map goes in as a dollar-quoted string, with a tag
 // that can't appear in the map's own text.
-export function saveMapSql(answerId: string, map: SavedMap): string {
+// With `onlyIfVersion`, it also waits for the saved map to still be that prompt version, so a map made again meanwhile
+// (by map:old or a retry) is never overwritten with an older one.
+export function saveMapSql(answerId: string, map: SavedMap, { onlyIfVersion }: { onlyIfVersion?: number } = {}): string {
   if (!/^[0-9a-f-]{36}$/.test(answerId)) throw new Error(`not an answer id: ${answerId}`);
   const json = JSON.stringify(map);
   let tag = 'map';
   while (json.includes(`$${tag}$`)) tag += 'x';
-  return `update public.answers set map = $${tag}$${json}$${tag}$::jsonb where id = '${answerId}' and status = 'coached' returning id;`;
+  const version = onlyIfVersion === undefined ? '' : ` and (map->>'version')::int = ${Math.trunc(onlyIfVersion)}`;
+  return `update public.answers set map = $${tag}$${json}$${tag}$::jsonb where id = '${answerId}' and status = 'coached'${version} returning id;`;
 }

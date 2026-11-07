@@ -81,7 +81,8 @@ export function coach(input: Input, model: Model, { onAttemptFailed }: Options =
           didntFollow: map.didntFollow,
           noticed: map.noticed,
         },
-        focus: input.focus,
+        // The tip's moment is for the screen, not the coach: the facts already hold those words.
+        focus: { kind: input.focus.kind, facts: input.focus.facts },
         notebook: input.notebook,
         ...(previousError ? { previousAttemptProblem: problemOf(previousError) } : {}),
       },
@@ -95,6 +96,7 @@ export function coach(input: Input, model: Model, { onAttemptFailed }: Options =
       betterVersion: output.betterSentences.map((s) => s.text.trim()).join(' '),
       betterSteps: stepsOf(output.betterSentences),
       whatChanged: output.whatChanged.trim(),
+      ...(input.focus.moment ? { moment: input.focus.moment } : {}),
     };
   }, onAttemptFailed);
 }

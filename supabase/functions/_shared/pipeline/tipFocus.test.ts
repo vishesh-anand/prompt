@@ -61,6 +61,7 @@ Deno.test('a late point found after circling: when the listener knew, how many p
   assertEquals(chooseFocus(input(map)), {
     kind: 'found_late',
     facts: { listenerKnewWhereAtSeconds: 20, passesAroundItFirst: 1, firstWords: 'So my week was busy.', pointQuote: 'we should ship early' },
+    moment: { quote: 'So my week was busy.', atSeconds: 0 },
   });
 });
 
@@ -75,6 +76,7 @@ Deno.test('a late point that was chosen is no tip, unless the question wanted a 
   assertEquals(chooseFocus(input(chosen, { wantsDirectAnswer: true })), {
     kind: 'direct_late',
     facts: { pointAtSeconds: 20, pointQuote: 'we should ship early', firstWords: 'So my week was busy.', questionWantedADirectAnswer: true },
+    moment: { quote: 'So my week was busy.', atSeconds: 0 },
   });
 });
 
@@ -96,12 +98,17 @@ Deno.test('a quarter of the time off track is a tip, with where each part starte
         { atSeconds: 40, firstWords: 'Um the timer thing was odd.' },
       ],
     },
+    moment: { quote: 'We had the reorg and I moved teams.', atSeconds: 10 },
   });
 });
 
 Deno.test('no ending is a tip, unless the timer stopped the answer', () => {
   const map = mapOf(['point', 'support', 'support', 'support', 'support', 'support']);
-  assertEquals(chooseFocus(input(map)), { kind: 'ending', facts: { lastWords: 'the timer thing was odd. So ship early.', pointQuote: 'we should ship early' } });
+  assertEquals(chooseFocus(input(map)), {
+    kind: 'ending',
+    facts: { lastWords: 'the timer thing was odd. So ship early.', pointQuote: 'we should ship early' },
+    moment: { quote: 'the timer thing was odd. So ship early.', atSeconds: 40.5 },
+  });
   assertEquals(chooseFocus(input(map, { stoppedByTimeLimit: true })).kind, 'polish');
 });
 
@@ -124,6 +131,7 @@ Deno.test('what a listener noticed: the kind with the most moments, each with it
       ],
       fillerCounts: { so: 2, um: 1 },
     },
+    moment: { quote: 'Um the timer thing was', atSeconds: 40 },
   });
 });
 
@@ -159,7 +167,11 @@ Deno.test('speed only counts when clearly off', () => {
 });
 
 Deno.test('no reason or example is the last thing worth a tip', () => {
-  assertEquals(chooseFocus(input(mapOf(['point', 'point', 'point', 'point', 'point', 'ending']))), { kind: 'support', facts: { pointQuote: 'we should ship early' } });
+  assertEquals(chooseFocus(input(mapOf(['point', 'point', 'point', 'point', 'point', 'ending']))), {
+    kind: 'support',
+    facts: { pointQuote: 'we should ship early' },
+    moment: { quote: 'we should ship early', atSeconds: 21.5 },
+  });
 });
 
 Deno.test('counted fillers, hedges, repeats, vague words and "and" are never the tip on their own: only what the map noticed', () => {

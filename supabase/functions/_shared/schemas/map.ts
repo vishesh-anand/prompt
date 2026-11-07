@@ -35,16 +35,27 @@ export const mapOutputSchema = z.object({
 
 export type MapOutput = z.infer<typeof mapOutputSchema>;
 
+// Where a quoted moment starts, in seconds from the first spoken word, like every other time on the map. Plain code adds
+// it after the reply is checked (pipeline/map.ts, placeMoments). Optional, because maps saved before step D2 don't have it:
+// a required field would make process-answer treat every older map as missing and pay to map it again.
+const at = { atSeconds: z.number().optional() };
+
 // What is saved on the answer row: the model's map, plus what plain code worked out from it. Times are seconds from the
 // first spoken word. `version` is the map prompt's version (not in pipeline_version, which the live pipeline rewrites).
 export const savedMapSchema = mapOutputSchema.extend({
   version: z.number(),
   // Neighbouring sentences with the same label, as one step: its label, its first sentence (from 1) and when it starts.
-  steps: z.array(z.object({ label: z.enum(stepLabels), sentence: z.number(), atSeconds: z.number() })).min(1),
+  // `opening` is the first few words of that sentence, as said (from step D2).
+  steps: z.array(z.object({ label: z.enum(stepLabels), sentence: z.number(), atSeconds: z.number(), opening: z.string().optional() })).min(1),
   // When the listener first knew where the answer was going: the first Direction or Point step. Null when there is none.
   pointAtSeconds: z.number().nullable(),
   // The share of the time spoken (0 to 1) that is in Off track steps.
   offTrackShare: z.number(),
+  // Where the first word starts in the recording, in seconds. Add it to a map time to play from that moment (from step D2).
+  firstWordAtSeconds: z.number().optional(),
+  didntFollow: z.array(mapOutputSchema.shape.didntFollow.element.extend(at)),
+  restarts: z.array(mapOutputSchema.shape.restarts.element.extend(at)),
+  noticed: z.array(mapOutputSchema.shape.noticed.element.extend(at)),
 });
 
 export type SavedMap = z.infer<typeof savedMapSchema>;

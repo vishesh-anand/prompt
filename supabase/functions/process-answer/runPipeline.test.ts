@@ -155,7 +155,10 @@ Deno.test('what is saved: the map with its times, and the coaching with its step
   const { admin, answerChanges, questionReads } = fakeAdmin();
   await runPipeline(admin, row(), fakeProviders().providers);
   const saved = Object.assign({}, ...answerChanges) as Record<string, unknown>;
-  assertEquals((saved.map as { steps: unknown }).steps, savedMap.steps);
+  // Each step also carries its opening words, so the screen can quote it (placeMoments).
+  const openings = ['So I like cats.', 'Cats are calm and quiet.', 'I think they are great pets, honestly.'];
+  assertEquals((saved.map as { steps: unknown }).steps, savedMap.steps.map((s, i) => ({ ...s, opening: openings[i] })));
+  assertEquals((saved.map as { firstWordAtSeconds: number }).firstWordAtSeconds, transcript.words[0].start);
   assertEquals((saved.map as { version: number }).version, 8);
   assertEquals(saved.coaching, {
     tip: coachReply.tip,

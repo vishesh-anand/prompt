@@ -1,15 +1,19 @@
 import type { SavedMap } from '../schemas/map.ts';
 import type { Metrics, Transcript } from '../schemas/metrics.ts';
-import { findQuote, latePointSeconds, secondsIntoAnswer, splitSentences } from './transcriptText.ts';
+import { latePointSeconds, momentAt, sentenceOpening, splitSentences } from './transcriptText.ts';
 
 // Plain code, no AI: which single thing the tip is about, read from the map. Claude only writes the tip about this focus.
 // Bump this when any rule below changes, and save it in pipeline_version.
-export const tipFocusVersion = 5;
+export const tipFocusVersion = 6;
 
 export type FocusKind = 'no_point' | 'found_late' | 'direct_late' | 'off_track' | 'ending' | 'noticed' | 'speed' | 'support' | 'polish';
 
-// `facts` are the real times and the person's own words the coach may cite.
-export type Focus = { kind: FocusKind; facts: Record<string, unknown> };
+// The moment the tip is about, shown quoted under it: the person's own words and when they start (seconds from the first
+// spoken word). Plain code picks it from the facts, so it is always real. Version 6 added it.
+export type TipMoment = { quote: string; atSeconds: number };
+
+// `facts` are the real times and the person's own words the coach may cite. `moment` is not sent to the coach.
+export type Focus = { kind: FocusKind; facts: Record<string, unknown>; moment?: TipMoment };
 
 type Input = { metrics: Metrics; map: SavedMap; transcript: Transcript; wantsDirectAnswer: boolean; stoppedByTimeLimit: boolean };
 
@@ -21,8 +25,6 @@ const restartsForTip = 2;
 
 // When the noticed kinds tie on how many moments they have, the earlier one here wins.
 const noticedOrder = ['fillers', 'pause', 'hedge', 'repeat', 'pattern', 'restart'] as const;
-
-const round1 = (x: number) => Math.round(x * 10) / 10;
 
 // How the point arrived: no point step, early (the listener knew where it was going within 15 seconds), late and found
 // while talking (off track before it), or late and chosen (a frame or a build-up first). The notebook records this too.
@@ -42,13 +44,11 @@ export function pointArrival({ steps, pointAtSeconds }: Pick<SavedMap, 'steps' |
 export function chooseFocus({ metrics, map, transcript, wantsDirectAnswer, stoppedByTimeLimit }: Input): Focus {
   const sentences = splitSentences(transcript);
   // The first few words of a sentence (numbered from 1), so the coach can name the moment.
-  const opening = (sentence: number) => {
-    const { first, last } = sentences[sentence - 1];
-    return transcript.words.slice(first, Math.min(last, first + 7) + 1).map((w) => w.punctuated).join(' ');
-  };
-  const momentOf = (quote: string) => {
-    const found = findQuote(transcript, quote.replace(/\[[\d.]+ s pause\]/g, ' '));
-    return found === null ? null : round1(secondsIntoAnswer(transcript, transcript.words[found.first].start));
+  const opening = (sentence: number) => sentenceOpening(transcript, sentences[sentence - 1]);
+  const momentOf = (quote: string) => momentAt(transcript, quote);
+  const moment = (quote: string): { moment?: TipMoment } => {
+    const atSeconds = quote.trim() === '' ? null : momentOf(quote);
+    return atSeconds === null ? {} : { moment: { quote, atSeconds } };
   };
 
   const { steps, pointAtSeconds } = map;
@@ -68,6 +68,7 @@ export function chooseFocus({ metrics, map, transcript, wantsDirectAnswer, stopp
         firstWords: opening(1),
         pointQuote,
       },
+      ...moment(opening(1)),
     };
   }
 
@@ -75,6 +76,7 @@ export function chooseFocus({ metrics, map, transcript, wantsDirectAnswer, stopp
     return {
       kind: 'direct_late',
       facts: { pointAtSeconds: pointStep.atSeconds, pointQuote, firstWords: opening(1), questionWantedADirectAnswer: true },
+      ...moment(opening(1)),
     };
   }
 
@@ -86,12 +88,13 @@ export function chooseFocus({ metrics, map, transcript, wantsDirectAnswer, stopp
         offTrackPercent: Math.round(map.offTrackShare * 100),
         offTrackParts: offTrack.map((s) => ({ atSeconds: s.atSeconds, firstWords: opening(s.sentence) })),
       },
+      ...moment(opening(offTrack[0].sentence)),
     };
   }
 
   if (!stoppedByTimeLimit && !steps.some((s) => s.label === 'ending')) {
-    const words = transcript.words;
-    return { kind: 'ending', facts: { lastWords: words.slice(-8).map((w) => w.punctuated).join(' '), pointQuote } };
+    const lastWords = transcript.words.slice(-8).map((w) => w.punctuated).join(' ');
+    return { kind: 'ending', facts: { lastWords, pointQuote }, ...moment(lastWords) };
   }
 
   const moments = [
@@ -101,20 +104,22 @@ export function chooseFocus({ metrics, map, transcript, wantsDirectAnswer, stopp
   if (moments.length > 0) {
     const count = (kind: string) => moments.filter((m) => m.kind === kind).length;
     const kind = [...noticedOrder].sort((a, b) => count(b) - count(a))[0];
+    const chosen = moments.filter((m) => m.kind === kind);
     return {
       kind: 'noticed',
       facts: {
         what: kind,
-        moments: moments.filter((m) => m.kind === kind).map((m) => ({ quote: m.quote, atSeconds: momentOf(m.quote), why: m.why })),
+        moments: chosen.map((m) => ({ quote: m.quote, atSeconds: momentOf(m.quote), why: m.why })),
         ...(kind === 'fillers' ? { fillerCounts: metrics.fillers.byWord } : {}),
       },
+      ...moment(chosen[0].quote),
     };
   }
 
   const { band, wordsPerMinute } = metrics.pace;
   if (band === 'too_fast' || band === 'too_slow') return { kind: 'speed', facts: { band, wordsPerMinute } };
 
-  if (!steps.some((s) => s.label === 'support')) return { kind: 'support', facts: { pointQuote } };
+  if (!steps.some((s) => s.label === 'support')) return { kind: 'support', facts: { pointQuote }, ...moment(pointQuote) };
 
   return { kind: 'polish', facts: {} };
 }
