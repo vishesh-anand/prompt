@@ -78,7 +78,7 @@ export async function runPipeline(admin: SupabaseClient, answer: AnswerRow, prov
     if (error) throw error;
   }
 
-  let freshCoaching: { tip: string } | null = null;
+  let freshCoaching: { tip: string; reason?: string } | null = null;
   let metrics: Metrics;
   let map: SavedMap;
   let transcript: Transcript;
@@ -160,7 +160,8 @@ export async function runPipeline(admin: SupabaseClient, answer: AnswerRow, prov
   // The notebook is best effort: the feedback is already saved, and a missed update is harmless. It is updated in
   // the order answers were given, and an answer older than the notebook never changes it (see notebookStore.ts).
   if (freshCoaching) {
-    const { tip } = freshCoaching;
+    // The tip is only the next step from coach v7; the reason carries the specifics the notebook should keep.
+    const tip = [freshCoaching.tip, freshCoaching.reason].filter(Boolean).join(' ');
     try {
       const outcome = await updateNotebookInOrder(admin, { userId: answer.user_id, answerAt: answer.created_at }, (previousNotes) =>
         updateNotebook({ previousNotes, map, metrics, tip }, modelFor('notebook')),

@@ -76,6 +76,9 @@ const checkSchema = z.object({
   tipReason: z.string().describe('One sentence saying why the tip is or is not about the focus'),
 });
 const checker = modelFor('checker', checkerModel, 'high');
+// The tip and its reason together, as the card shows them and as the notebook is given them.
+const tipCardOf = (c: { tip: string; reason?: string }) => [c.tip, c.reason ?? ''].join(' ').trim();
+
 async function check(transcriptText: string, rewrite: string, tip: string, focus: unknown) {
   return await checker.generate({ prompt: coachCheckPrompt, input: { transcript: transcriptText, rewrite, tip, focus }, schema: checkSchema });
 }
@@ -139,10 +142,10 @@ for (const clip of clips) {
         coachModel,
         { onAttemptFailed: () => coachSecondTries++ },
       );
-      if (run === 1) await updateNotebook({ previousNotes: '', map, metrics, tip: coaching.tip }, notebookModel);
+      if (run === 1) await updateNotebook({ previousNotes: '', map, metrics, tip: tipCardOf(coaching) }, notebookModel);
       const seconds = (performance.now() - started) / 1000;
       // The checker judges the tip and its reason together, as the card shows them (coach prompt v7 split them).
-      const tipCard = [coaching.tip, coaching.reason ?? ''].join(' ').trim();
+      const tipCard = tipCardOf(coaching);
       const checked = await check(text, coaching.betterVersion, tipCard, focus);
       const novelty = newWords(transcript, coaching.betterVersion);
       const sentenceCount = (t: string) => (t.match(/[.!?](\s|$)/g) ?? []).length;

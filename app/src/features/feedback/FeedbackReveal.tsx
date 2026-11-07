@@ -62,7 +62,9 @@ export function FeedbackReveal({ data, actions }: { data: FeedbackData; actions:
   const fromCoach = (n: number) => enter(atStart.coaching ? 4 + n : n);
 
   const lines = map && metrics ? soundedLines(map, metrics) : [];
-  const lost = map && map.version >= 9 && map.didntFollow[0] ? { atSeconds: map.didntFollow[0].atSeconds ?? null, why: map.didntFollow[0].why } : null;
+  // The first moment the listener lost the thread, by time (the model's list is not in time order).
+  const firstLost = map?.didntFollow.slice().sort((a, b) => (a.atSeconds ?? Infinity) - (b.atSeconds ?? Infinity))[0];
+  const lost = map && map.version >= 9 && firstLost ? { atSeconds: firstLost.atSeconds ?? null, why: firstLost.why } : null;
   const where = [data.category === 'work' ? 'Work' : data.category === 'everyday' ? 'Everyday' : null, data.isRetry ? 'second try' : 'first try'].filter(Boolean).join(' · ');
 
   const rows: Row[] = [
@@ -72,6 +74,7 @@ export function FeedbackReveal({ data, actions }: { data: FeedbackData; actions:
   ];
 
   return (
+    <>
     <View style={styles.list}>
       <View style={styles.topBar}>
         <View style={styles.flex}>
@@ -84,15 +87,17 @@ export function FeedbackReveal({ data, actions }: { data: FeedbackData; actions:
         </Pressable>
       </View>
 
-      <Animated.View entering={enter(0)} style={styles.top}>
-        {data.question ? <Text variant="betterVersion">{curly(`"${data.question}"`)}</Text> : null}
-        {map ? (
-          <Animated.View entering={fromMap(0)} style={styles.top}>
-            <Text variant="headline">{headline(map)}</Text>
-            <AnswerLine steps={map.steps} speakingSeconds={metrics?.speakingSeconds ?? 0} timeRanOut={data.timeRanOut} onOpen={() => setSheet('steps')} />
-          </Animated.View>
-        ) : null}
-      </Animated.View>
+      {data.question ? (
+        <Animated.View entering={enter(0)}>
+          <Text variant="betterVersion">{curly(`"${data.question}"`)}</Text>
+        </Animated.View>
+      ) : null}
+      {map ? (
+        <Animated.View entering={fromMap(0)} style={styles.top}>
+          <Text variant="headline">{headline(map)}</Text>
+          <AnswerLine steps={map.steps} speakingSeconds={metrics?.speakingSeconds ?? 0} timeRanOut={data.timeRanOut} onOpen={() => setSheet('steps')} />
+        </Animated.View>
+      ) : null}
 
       {map || coaching ? (
         <Animated.View entering={fromMap(1)}>
@@ -129,7 +134,9 @@ export function FeedbackReveal({ data, actions }: { data: FeedbackData; actions:
           />
         </Animated.View>
       ) : null}
+    </View>
 
+    {/* The sheets' 1-point anchors sit outside the column, so they add no gap below the last row. */}
       {map ? (
         <FeedbackSheet open={sheet === 'steps'} onClose={() => setSheet(null)} title="Step by step">
           <StepByStep map={map} better={coaching?.betterSteps} durationSeconds={data.durationMs / 1000} />
@@ -145,7 +152,7 @@ export function FeedbackReveal({ data, actions }: { data: FeedbackData; actions:
           <Sounded lines={lines} onPlay={actions.audio.playMoment} />
         </FeedbackSheet>
       ) : null}
-    </View>
+    </>
   );
 }
 

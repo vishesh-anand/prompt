@@ -104,12 +104,16 @@ export function chooseFocus({ metrics, map, transcript, wantsDirectAnswer, stopp
   if (moments.length > 0) {
     const count = (kind: string) => moments.filter((m) => m.kind === kind).length;
     const kind = [...noticedOrder].sort((a, b) => count(b) - count(a))[0];
-    const chosen = moments.filter((m) => m.kind === kind);
+    // In the order they happened, so the moment quoted under the tip is the first one (moments with no found time go last).
+    const chosen = moments
+      .filter((m) => m.kind === kind)
+      .map((m) => ({ ...m, atSeconds: momentOf(m.quote) }))
+      .sort((a, b) => (a.atSeconds ?? Infinity) - (b.atSeconds ?? Infinity));
     return {
       kind: 'noticed',
       facts: {
         what: kind,
-        moments: chosen.map((m) => ({ quote: m.quote, atSeconds: momentOf(m.quote), why: m.why })),
+        moments: chosen.map((m) => ({ quote: m.quote, atSeconds: m.atSeconds, why: m.why })),
         ...(kind === 'fillers' ? { fillerCounts: metrics.fillers.byWord } : {}),
       },
       ...moment(chosen[0].quote),

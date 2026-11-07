@@ -6,11 +6,12 @@ import {
   controlSize,
   foregroundStyle,
   frame,
+  lineLimit,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { StyleSheet, useWindowDimensions } from 'react-native';
 
-import { radius } from '../spacing';
+import { radius, screenMargin } from '../spacing';
 import { useTheme } from '../theme';
 
 // Stretches the label, and with it the button. SwiftUI clamps this to the width it is offered.
@@ -23,6 +24,18 @@ const fillWidth = 10000;
 const buttonPadding = 30;
 const buttonLineHeight = 20.34;
 
+// A long label wraps at large text sizes instead of being cut off ("Try again w…"). The Host has a fixed height, so the
+// number of lines is estimated up front from the label's length, the text scale and the width, always on the high side:
+// a spare line only adds padding, a missing one cuts the words. About 9 points a character at the default size, 40 points
+// of the button's own padding, at most 3 lines (the largest accessibility size).
+const charWidth = 9;
+const buttonSidePadding = 40;
+const maxLines = 3;
+export function labelLines(label: string, fontScale: number, windowWidth: number): number {
+  const room = Math.max(windowWidth - screenMargin * 2 - buttonSidePadding, 1);
+  return Math.min(maxLines, Math.max(1, Math.ceil((label.length * charWidth * fontScale) / room)));
+}
+
 type Props = {
   label: string;
   onPress: () => void;
@@ -34,10 +47,11 @@ type Props = {
 // A native SwiftUI button. Full width, 12pt corners.
 export function Button({ label, onPress, variant = 'primary', accessibilityLabel }: Props) {
   const { colors } = useTheme();
-  const { fontScale } = useWindowDimensions();
+  const { fontScale, width } = useWindowDimensions();
   const isPrimary = variant === 'primary';
   const isQuiet = variant === 'quiet';
-  const height = Math.ceil(buttonPadding + buttonLineHeight * fontScale);
+  const lines = labelLines(label, fontScale, width);
+  const height = Math.ceil(buttonPadding + buttonLineHeight * fontScale * lines);
 
   return (
     // ignoreSafeArea: a Host that starts below the screen edge (e.g. lower in a scroll view) picks up the
@@ -53,7 +67,7 @@ export function Button({ label, onPress, variant = 'primary', accessibilityLabel
           accessibilityLabelModifier(accessibilityLabel ?? label),
         ]}>
         {/* Dark label on coral: white fails contrast (see DESIGN.md, onAccent). */}
-        <NativeText modifiers={[frame({ maxWidth: fillWidth }), ...(isPrimary ? [foregroundStyle(colors.onAccent)] : [])]}>
+        <NativeText modifiers={[frame({ maxWidth: fillWidth }), lineLimit(lines), ...(isPrimary ? [foregroundStyle(colors.onAccent)] : [])]}>
           {label}
         </NativeText>
       </NativeButton>

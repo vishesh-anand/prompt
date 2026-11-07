@@ -29,7 +29,7 @@ const good: MapOutput = {
     { sentence: 3, label: 'support' },
     { sentence: 4, label: 'ending' },
   ],
-  didntFollow: [{ quote: 'yesterday I had a meeting', why: 'The meeting never comes back.' }],
+  didntFollow: [{ quote: 'yesterday I had a meeting', why: 'when you never came back to the meeting' }],
   restarts: [],
   noticed: [{ kind: 'pause', quote: 'point is ship early', why: 'A long silence in the middle of the sentence.' }],
   effort: 2,
@@ -163,7 +163,7 @@ Deno.test('point: exactly one point step, and the point quote is inside it', () 
 Deno.test('quotes: only the point quote may be empty', () => {
   const empty = 'a quote is empty; every didntFollow, restarts and noticed item quotes the words';
   assertEquals(mapProblems(noticing({ kind: 'hedge', quote: '', why: 'w' }), transcript, metrics), [empty]);
-  assertEquals(mapProblems({ ...good, didntFollow: [{ quote: ' ', why: 'w' }] }, transcript, metrics), [empty]);
+  assertEquals(mapProblems({ ...good, didntFollow: [{ quote: ' ', why: 'when you w' }] }, transcript, metrics), [empty]);
   assertEquals(mapProblems({ ...good, restarts: [{ quote: '' }] }, transcript, metrics), [empty]);
 });
 
@@ -178,7 +178,7 @@ Deno.test('quotes: words repeated in a row are said once when the second match o
 
 Deno.test('quotes: each is in the transcript and said only once', () => {
   assertEquals(mapProblems({ ...good, restarts: [{ quote: 'We went to the' }] }, transcript, metrics), ['"We went to the" is not in the transcript']);
-  assertEquals(mapProblems({ ...good, didntFollow: [{ quote: 'ship early', why: 'w' }] }, transcript, metrics), ['"ship early" appears more than once; quote words that appear only once']);
+  assertEquals(mapProblems({ ...good, didntFollow: [{ quote: 'ship early', why: 'when you w' }] }, transcript, metrics), ['"ship early" appears more than once; quote words that appear only once']);
 });
 
 Deno.test('answers measured before filler positions were saved: any counted filler word in the quote will do', () => {
@@ -203,6 +203,13 @@ Deno.test('noticed fillers and pauses must be ones Measure counted', () => {
   assertEquals(mapProblems(noticing({ kind: 'pause', quote: 'My point', why: 'w' }), transcript, metrics).length, 1);
   assertEquals(mapProblems(noticing({ kind: 'pause', quote: 'Users told us. So', why: 'w' }), transcript, metrics).length, 1);
   assertEquals(mapProblems(noticing({ kind: 'pattern', quote: 'Users told us. So', why: 'w', nextStep: 'n' }), transcript, metrics), []);
+});
+
+Deno.test('the lost-thread reason has to read on from "It lost the thread here,": it starts with "when you"', () => {
+  const lost = (why: string): MapOutput => ({ ...good, didntFollow: [{ quote: 'yesterday I had a meeting', why }] });
+  assertEquals(mapProblems(lost('when you moved to the timer'), transcript, metrics), []);
+  assertEquals(mapProblems(lost('When you left the meeting'), transcript, metrics), []);
+  assertEquals(mapProblems(lost('The meeting never comes back.'), transcript, metrics).length, 1);
 });
 
 Deno.test('a pattern needs its own next step, because no fixed line fits it; other kinds need none', () => {
