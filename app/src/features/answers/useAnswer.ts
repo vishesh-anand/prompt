@@ -33,7 +33,7 @@ export function useAnswer(answerId: string | null) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('answers')
-        .select('id, user_id, question_id, retry_of, audio_path, duration_ms, time_limit_ms, status, metrics, judgement, coaching, feedback_flagged')
+        .select('id, user_id, question_id, retry_of, audio_path, duration_ms, time_limit_ms, status, metrics, map, judgement, coaching, feedback_flagged, listener_confirmed')
         .eq('id', answerId)
         .single();
       if (error) throw error;

@@ -49,8 +49,10 @@ const row = {
   status: 'uploaded',
   metrics: null,
   judgement: null,
+  map: null,
   coaching: null,
   feedback_flagged: false,
+  listener_confirmed: null,
 };
 
 const originalFetch = globalThis.fetch;
