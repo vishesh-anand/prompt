@@ -118,8 +118,8 @@ All tables use Row Level Security: a person can only ever read or change their o
 - `status`: `uploaded` → `transcribed` → `measured` → `mapped` → `coached`, or `failed`
 - `transcript` (words with start and end times)
 - `metrics` (counted by code: fillers and which ones, fillers a minute, pace, pauses and whether each fell mid-sentence or between sentences, repeats, hedges, vague words, "and" chaining)
-- `map` (the answer's steps with labels and times, the point, the listener's restatement, "what I didn't follow", restarts, and the moments a listener would notice; every item quotes real words)
-- `coaching` (one tip, better version, the better version's steps, the "what changed" line)
+- `map` (the answer's steps with labels and times, the point, the listener's restatement, "what I didn't follow", restarts, and the moments a listener would notice; every item quotes real words). Step D2 adds, all optional so older maps still load and are never mapped again: `firstWordAtSeconds` (where the first word starts in the recording: add it to a map time to play from that moment), `opening` on each step, `atSeconds` on each quoted moment, and `nextStep` on a noticed pattern. Plain code places the times (`placeMoments`); `npm run map:moments` adds them to maps saved before.
+- `coaching` (one tip, better version, the better version's steps, the "what changed" line). From coach prompt v7: `tip` is only the next step, `reason` is the sentence saying what happened, and `moment` (the person's own words and when they start) is picked by plain code from the tip focus, not by the model. Older answers lack `reason` and `moment`.
 - `pipeline_version` (which prompts and models produced this, for comparisons)
 - `feedback_flagged` ("This feedback is wrong" was pressed)
 - `listener_confirmed` ("That's what I meant" = yes, "Not quite" = no, not tapped = empty). Like `feedback_flagged`, the phone may write only this column on its own answers.
@@ -286,7 +286,7 @@ Next, the feedback redesign:
 - **A. Listener check:** record clips, build the rating page, friends rate. Part 1 (the page and setup) is built; part 2 (new clips and the ratings) is next. Runs alongside D.
 - **D. Coach and the new feedback screen,** in two parts:
   - **D1 (built, 2026-11-04):** the Map runs in `process-answer`, the tip focus is read from the map, coach prompt version 6 writes the tip, the better version with its steps and "what changed", and notebook prompt version 2 reads the map. Questions say whether they want a direct answer. Nothing on the phone's screens changed. Live and checked on a real iPhone on 2026-11-07.
-  - **D2 (next):** the new feedback screen: listener restatement and the tap, "See how they're built", the noticed lines. The visual design is done in Claude Design first.
+  - **D2 (built, 2026-11-07; not live yet):** the new feedback screen, as DESIGN.md "Feedback reveal" sets it. The phone and the database column (`listener_confirmed`) are done; map prompt v9 and coach prompt v7 are written but not deployed, because they ship only after the evals show they are no worse (`evals:map`, `evals:coach`, against the baseline of 2026-11-07). Not yet checked on a real iPhone.
 - **E. Retry:** the instruction carried over, the 90-second retry, the new before and after.
 - **F. Progress:** rolling 14 days, the new lines (decided by A's results), the coach's note every 3 practice days.
 
@@ -295,7 +295,7 @@ Then:
 
 Evals are built alongside step 4 and grow with steps 5 and 6, then with A to F.
 
-**Where the code is:** this file describes the app after A to F. Until those steps land, the code still has the judge stage and its three marks (`judgement`, `evals:judge`), and the calendar-week note and chart. Since step D1 the Map and the new coach run on every answer, but the feedback screen still shows the judge's marks until D2. Each step's plan says what it changes.
+**Where the code is:** this file describes the app after A to F. Until those steps land, the code still has the judge stage and its three marks (`judgement`, `evals:judge`), and the calendar-week note and chart. Since step D1 the Map and the new coach run on every answer, and since D2 the feedback screen reads the map and the coach's reply (compare and Progress still read the judge's marks). Each step's plan says what it changes.
 
 ## Open decisions
 
