@@ -2,6 +2,7 @@ import * as Haptics from 'expo-haptics';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAnswer } from '@/features/answers/useAnswer';
+import { useQuestion } from '@/features/questions/useQuestion';
 import { stoppedByTimeLimit } from '@/features/recording/limits';
 
 import { nextAction } from './nextAction';
@@ -32,8 +33,10 @@ export function useFeedback(answerId: string) {
   }, [status, startProcessing]);
 
   const metrics = answer.data?.metrics ?? null;
-  const judgement = answer.data?.judgement ?? null;
+  const map = answer.data?.map ?? null;
   const coaching = answer.data?.coaching ?? null;
+  // The question's text and category, for the top of the screen. Same query (and cache) as the record screen.
+  const question = useQuestion(answer.data?.question_id);
 
   // An answer with no words stops after the measuring stage, and that is as far as it goes.
   const noWords = metrics?.wordCount === 0;
@@ -57,10 +60,12 @@ export function useFeedback(answerId: string) {
 
   const problem = status === 'failed' || process.isError || (waiting && stuckKey === waitingKey);
 
-  // Results show as soon as the counted numbers are saved, even if a later stage then stalls.
+  // Results show as soon as the map is saved (the screen shows no counted numbers of its own), even if a later stage
+  // then stalls. An answer coached before the map existed has coaching and no map, and shows that.
   let view: FeedbackView = 'listening';
   if (process.error instanceof DailyLimitError) view = 'limit';
-  else if (metrics) view = noWords ? 'noWords' : 'ready';
+  else if (noWords) view = 'noWords';
+  else if (map || coaching) view = 'ready';
   else if (problem) view = 'problem';
 
   // Some results are on screen but the rest didn't finish.
@@ -77,5 +82,5 @@ export function useFeedback(answerId: string) {
   // The one accent button once everything is in: try again after a first attempt, see before and after after a retry.
   const next = isFinished && answer.data ? nextAction(answer.data) : null;
 
-  return { answer, view, metrics, judgement, coaching, timeRanOut, finished: isFinished, next, stalled, retry };
+  return { answer, question: question.data ?? null, view, metrics, map, coaching, timeRanOut, finished: isFinished, next, stalled, retry };
 }
