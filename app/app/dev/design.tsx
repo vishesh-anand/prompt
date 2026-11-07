@@ -1,4 +1,4 @@
-import { Redirect } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import {
@@ -16,6 +16,7 @@ import {
 } from '@/design';
 import { CompareView } from '@/features/compare/CompareView';
 import { compareSamples } from '@/features/compare/samples';
+import { feedbackSamples } from '@/features/feedback/samples';
 import { ProgressChart } from '@/features/progress/ProgressChart';
 import { progressSamples } from '@/features/progress/samples';
 
@@ -53,6 +54,7 @@ const spaceSteps = Object.keys(space) as Space[];
 
 export default function DesignPreview() {
   const { colors, scheme } = useTheme();
+  const router = useRouter();
 
   if (!__DEV__) return <Redirect href="/" />;
 
@@ -105,6 +107,12 @@ export default function DesignPreview() {
           <Card>
             <Stat value="12 days" label="Streak" />
           </Card>
+        </Section>
+
+        <Section title="Feedback screen">
+          {feedbackSamples.map((sample, i) => (
+            <Button key={sample.name} variant="secondary" label={sample.name} onPress={() => router.push({ pathname: '/dev/feedback', params: { sample: String(i) } })} />
+          ))}
         </Section>
 
         <Section title="Before and after">
