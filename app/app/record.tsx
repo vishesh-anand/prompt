@@ -1,18 +1,20 @@
 import { Redirect, Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, Screen, Text, space } from '@/design';
 import { useAnswerFlow } from '@/features/answers/useAnswerFlow';
+import { limitHint } from '@/features/recording/limits';
 import { RecordingCircle } from '@/features/recording/RecordingCircle';
 import { tooShortLength } from '@/features/recording/tooShortLength';
 import { useMicPermission } from '@/features/recording/useMicPermission';
+import { tapTarget } from '@/features/feedback/sizes';
 
 export default function Record() {
   const router = useRouter();
   const mic = useMicPermission();
-  const params = useLocalSearchParams<{ questionId?: string; retryOf?: string }>();
-  const { missingQuestion, question, recording, limitMs, saveStatus, answerId, retry } = useAnswerFlow(params);
+  const params = useLocalSearchParams<{ questionId?: string; retryOf?: string; tipFrom?: string }>();
+  const { missingQuestion, question, recording, limitMs, isRetry, instruction, saveStatus, answerId, retry } = useAnswerFlow(params);
   const { phase, level, take, failed, toggle, reset } = recording;
   const isRecording = phase === 'recording';
   const saving = take && !take.tooShort;
@@ -27,7 +29,27 @@ export default function Record() {
     <Screen>
       {/* A stray back-swipe shouldn't cut an answer short. */}
       <Stack.Screen options={{ gestureEnabled: phase === 'idle' && !saving }} />
+      {/* Cancel is only there until you start: while you speak nothing else is on screen, and it never throws away a take. */}
+      <View style={styles.topBar}>
+        {phase === 'idle' && !take ? (
+          <Pressable accessibilityRole="button" onPress={() => router.dismissTo('/')} style={styles.cancel} hitSlop={space.sm}>
+            <Text variant="headline" color="accentText">
+              Cancel
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
       {question.data ? <Text variant="question">{question.data.text}</Text> : null}
+      {isRetry && !saving ? (
+        <View style={styles.instruction}>
+          {instruction ? (
+            <Text variant="body" color="textSecondary">
+              {instruction}
+            </Text>
+          ) : null}
+          <Text variant="label">{limitHint(limitMs)}</Text>
+        </View>
+      ) : null}
       <View style={styles.center}>
         {mic.status === 'denied' ? (
           <View style={styles.message}>
@@ -73,6 +95,9 @@ export default function Record() {
 }
 
 const styles = StyleSheet.create({
+  topBar: { minHeight: tapTarget, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' },
+  cancel: { minHeight: tapTarget, justifyContent: 'center' },
+  instruction: { gap: space.xs, marginTop: space.md },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   message: { alignSelf: 'stretch', gap: space.xl },
   hint: { marginTop: space.xl, minHeight: space.xxxl },
