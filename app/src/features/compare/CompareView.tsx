@@ -5,15 +5,12 @@ import Animated, { Easing, FadeIn, FadeInDown, ReduceMotion } from 'react-native
 import { Card, revealMotion, space, Text, useTheme } from '@/design';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 
-import { CountNumber } from './CountNumber';
-import type { CompareRow, InstructionCheck, Summary } from './compareAttempts';
+import type { CompareResult } from './compareAttempts';
 
-type Props = { instruction: InstructionCheck; rows: CompareRow[]; summary: Summary };
-
-// The before-and-after: the instruction checked first, then the first try and the latest try side by side. Rows appear
-// one at a time, top to bottom, like the feedback reveal; improvements get a green arrow and a short line, and the
-// numbers count into place. A first version, until the screen gets its own design pass (step E3).
-export function CompareView({ instruction, rows, summary }: Props) {
+// A first version of the before-and-after, until step E3 builds the signed-off design (design-system/compare-e/):
+// the tip, whether it worked, the check, the three rows as sentences, and the next tip.
+export function CompareView({ result }: { result: CompareResult }) {
+  const { colors } = useTheme();
   const reduceMotion = useReduceMotion();
   const enter = (step: number) => {
     const delay = step * revealMotion.staggerMs;
@@ -21,74 +18,47 @@ export function CompareView({ instruction, rows, summary }: Props) {
       ? FadeIn.delay(delay).duration(revealMotion.itemMs).reduceMotion(ReduceMotion.Never)
       : FadeInDown.delay(delay).duration(revealMotion.itemMs).easing(Easing.out(Easing.quad)).reduceMotion(ReduceMotion.Never);
   };
+  const status = { worked: 'The tip worked', closer: 'Closer, not there yet', notYet: 'Not yet', notMeasured: 'Not measured here' }[result.status];
 
   return (
     <View style={styles.list}>
-      {instruction.line ? (
-        <Animated.View entering={enter(0)}>
-          <Text variant="headline">{instruction.line}</Text>
-        </Animated.View>
-      ) : null}
+      <Animated.View entering={enter(0)} style={styles.group}>
+        {result.tip ? <Text variant="subheadline">{`Your tip: ${result.tip}`}</Text> : null}
+        <Text variant="headline" color={result.status === 'worked' ? 'positive' : 'textPrimary'}>
+          {status}
+        </Text>
+        <Text variant="title">{result.check}</Text>
+      </Animated.View>
 
-      <View style={styles.columns}>
-        <Text variant="label">First try</Text>
-        <Text variant="label">Now</Text>
-      </View>
-
-      {rows.map((row, i) => (
-        <Animated.View key={row.id} entering={enter(i + 1)}>
-          <Row row={row} />
+      {result.rows.map((row, i) => (
+        <Animated.View key={row.id} entering={enter(i + 1)} style={styles.row} accessible accessibilityLabel={`${row.word}. ${row.fact}`}>
+          <View style={styles.word}>
+            {row.trend === 'better' ? <SymbolView name="arrow.up" size={13} tintColor={row.credited ? colors.positive : colors.textPrimary} /> : null}
+            <Text variant="label" strong color={row.credited ? 'positive' : row.trend === 'same' ? 'textSecondary' : 'textPrimary'}>
+              {row.word}
+            </Text>
+          </View>
+          <Text variant="body">{row.fact}</Text>
         </Animated.View>
       ))}
 
-      <Animated.View entering={enter(rows.length + 1)} style={styles.group}>
-        {summary.improved ? null : (
-          <>
-            <Text variant="body">{summary.message}</Text>
-            {summary.nextStep ? (
-              <Card>
-                <Text variant="label">One thing to try</Text>
-                <Text variant="title">{summary.nextStep}</Text>
-              </Card>
-            ) : null}
-          </>
-        )}
-      </Animated.View>
-    </View>
-  );
-}
-
-function Row({ row }: { row: CompareRow }) {
-  const { colors } = useTheme();
-  const variant = row.count ? 'bigNumber' : 'title';
-
-  return (
-    <View style={styles.row} accessible accessibilityLabel={`${row.label}. First try: ${row.before}. Now: ${row.after}. ${row.line}`}>
-      <Text variant="label">{row.label}</Text>
-      <View style={styles.columns}>
-        <Text variant={variant} tabular>
-          {row.before}
-        </Text>
-        {row.count ? <CountNumber from={row.count.before} to={row.count.after} unit={row.count.unit} /> : <Text variant={variant} tabular>{row.after}</Text>}
-      </View>
-      {row.improved ? (
-        <View style={styles.change}>
-          <SymbolView name={row.arrow === 'up' ? 'arrow.up' : 'arrow.down'} size={14} tintColor={colors.positive} />
-          <Text variant="label" color="positive">
-            {row.line}
-          </Text>
-        </View>
-      ) : (
-        <Text variant="label">{row.line}</Text>
-      )}
+      {result.nextTip ? (
+        <Animated.View entering={enter(result.rows.length + 1)}>
+          <Card>
+            <Text variant="label" color="accentText">
+              {result.nextTip.heading}
+            </Text>
+            <Text variant="title">{result.nextTip.tip}</Text>
+          </Card>
+        </Animated.View>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   list: { gap: space.xxl },
-  group: { gap: space.lg },
+  group: { gap: space.sm },
   row: { gap: space.xs },
-  columns: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  change: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
+  word: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
 });

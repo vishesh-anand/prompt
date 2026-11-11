@@ -40,8 +40,8 @@ export function useCompare(answerId: string) {
     }
   }
 
-  // DESIGN.md: the success pattern when you improved on retry. Once per time the screen shows.
-  const improved = result?.summary.improved === true;
+  // DESIGN.md: the success pattern only when the tip worked. Once per time the screen shows.
+  const improved = result?.status === 'worked';
   useEffect(() => {
     if (improved) void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }, [improved]);

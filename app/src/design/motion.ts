@@ -31,13 +31,6 @@ export const revealMotion = {
   listeningRestOpacity: 0.45,
 } as const;
 
-// Source of truth: DESIGN.md "Before and after". Numbers count up or down into place, after their row has appeared.
-export const compareMotion = {
-  countMs: 700,
-  // Rows appear top to bottom like the feedback reveal; the count starts once its row is in.
-  countDelayMs: 300,
-} as const;
-
 // Source of truth: DESIGN.md "Movement". Every spring in the app is one of these, never its own numbers.
 // Pass to Reanimated's withSpring. Starting points: tune both on a real phone.
 export const springs = {

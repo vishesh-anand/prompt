@@ -119,7 +119,11 @@ export default function DesignPreview() {
           {compareSamples.map((sample) => (
             <View key={sample.name} style={styles.compareSample}>
               <Text variant="label">{sample.name}</Text>
-              <CompareView instruction={sample.instruction} rows={sample.rows} summary={sample.summary} />
+              {sample.result ? (
+                <CompareView result={sample.result} />
+              ) : (
+                <Text variant="body">{'Your first try was scored before this view existed, so there’s nothing to compare yet.'}</Text>
+              )}
             </View>
           ))}
         </Section>
