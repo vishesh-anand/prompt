@@ -31,6 +31,7 @@ Update this section as commands change.
 - Design preview (dev builds only): open the app, tap "Design preview". Flip Appearance in Control Center to check dark mode.
 - Design system artifact: https://claude.ai/artifact/SbvXejS8SQqAwMH1AMvns2. Its tokens are copied in `design-system/tokens.json`, and `app/src/design/tokens.test.ts` fails when that copy and `app/src/design/` differ. After changing a token, update the copy and republish it to the artifact.
 - Feedback screen design (step D2): canvas https://claude.ai/artifact/KtuV1eFKmnUKCbgEY5c4nT, signed-off copy in `design-system/feedback-d2/` (see its README). The rules are in DESIGN.md, "Feedback reveal"; the mockups are a picture, not code to port.
+- Before-and-after design (step E3): canvas https://claude.ai/artifact/DctvH8YGrgr7ffm9hCNXBf, signed-off copy and screenshots in `design-system/compare-e/` (see its README). The rules are in DESIGN.md, "Before and after".
 - Add a library: `cd app && npx expo install <package>` (never `npm i`, so versions match the SDK)
 - Type check: `cd app && npx tsc --noEmit`
 - Lint: `cd app && npx expo lint`

@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Before and after, refined</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#B8461F}a:hover{color:#8F3516}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 2676px; box-sizing: border-box; padding: 48px; display: flex; flex-direction: column; gap: 96px; background: #E6E0D8; font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif;">
+<sc-for list="{{themes}}" as="th" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 24px;">
+<p style="margin: 0; font-size: 22px; line-height: 28px; font-weight: 600; color: #4A443D;">{{th.name}}</p>
+<div style="display: flex; gap: 48px; align-items: flex-start;">
+<sc-for list="{{th.samples}}" as="s" hint-placeholder-count="6">
+<div style="display: flex; flex-direction: column; gap: 16px; width: 390px; flex-shrink: 0;">
+  <p style="margin: 0; font-size: 15px; line-height: 20px; font-weight: 600; color: #4A443D;">{{s.n}} · {{s.name}}</p>
+  <div style="width: 390px; min-height: 844px; display: flex; flex-direction: column; background: {{th.c.bg}}; color: {{th.c.text}}; font-size: 17px; line-height: 22px;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px 0 24px; height: 44px;">
+      <span style="font-size: 13px; line-height: 18px; font-weight: 500; color: {{th.c.text2}};">{{s.cat}} · {{s.tryWord}} try</span>
+      <button type="button" aria-label="Close" style="border: 0; background: transparent; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: {{th.c.text2}};">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 2l10 10M12 2 2 12"></path></svg>
+      </button>
+    </div>
+
+    <main style="display: flex; flex-direction: column; gap: 32px; padding: 8px 24px 32px 24px;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <h1 style="margin: 0; font-size: 34px; line-height: 41px; font-weight: 700;">Before and after</h1>
+        <sc-if value="{{s.thirdTry}}" hint-placeholder-val="{{ false }}">
+          <p style="margin: 0; font-size: 15px; line-height: 20px; color: {{th.c.text2}};">Compared with your first try</p>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{s.noMap}}" hint-placeholder-val="{{ false }}">
+        <p style="margin: 0;">Your first try was scored before this view existed, so there’s nothing to compare yet.</p>
+      </sc-if>
+
+      <sc-if value="{{s.hasMap}}" hint-placeholder-val="{{ true }}">
+      <section style="display: flex; flex-direction: column; gap: 8px;">
+        <p style="margin: 0 0 4px 0; font-size: 15px; line-height: 20px; color: {{th.c.text2}};">Your tip: {{s.tip}}</p>
+        <p style="margin: 0; display: flex; align-items: center; gap: 8px; font-size: 17px; line-height: 22px; font-weight: 600; color: {{s.statusColor}};">
+          <sc-if value="{{s.metYes}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 10.5 8 15 16.5 5"></path></svg></sc-if>
+          <sc-if value="{{s.closer}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 12 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 12.5v-11M1.5 6 6 1.5 10.5 6"></path></svg></sc-if>
+          <sc-if value="{{s.metNo}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 10h12"></path></svg></sc-if>
+          <span>{{s.status}}</span>
+        </p>
+        <p style="margin: 0; font-size: 22px; line-height: 28px; font-weight: 600;">{{s.instruction}}</p>
+        <sc-if value="{{s.listen}}" hint-placeholder-val="{{ false }}">
+          <button type="button" style="align-self: flex-start; border: 0; border-radius: 999px; background: {{th.c.fill}}; color: {{th.c.text}}; height: 44px; padding: 0 16px; margin-top: 4px; display: inline-flex; align-items: center; gap: 8px; font-size: 17px;">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="{{th.c.accentText}}" aria-hidden="true"><path d="M3.5 2.2v9.6c0 .5.5.8.9.5l7.4-4.8a.6.6 0 0 0 0-1L4.4 1.7c-.4-.3-.9 0-.9.5Z"></path></svg>
+            Play your second try</button>
+        </sc-if>
+      </section>
+
+      <a href="#" style="display: flex; flex-direction: column; gap: 12px; text-decoration: none; color: {{th.c.text}};" aria-label="{{s.mapsSpoken}}">
+        <sc-for list="{{s.tries}}" as="t" hint-placeholder-count="2">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-size: 13px; line-height: 18px; font-weight: 500; color: {{th.c.text2}};">{{t.name}}</span>
+            <div style="display: flex; gap: 3px; height: 12px;" aria-hidden="true">
+              <sc-for list="{{t.segs}}" as="g" hint-placeholder-count="4">
+                <div style="width: {{g.w}}; height: 12px; box-sizing: border-box; border-radius: 6px; background: {{g.bg}}; border: {{g.border}};"></div>
+              </sc-for>
+            </div>
+            <div style="padding-left: {{t.markAt}}; font-size: 13px; line-height: 18px; font-weight: 600; font-variant-numeric: tabular-nums;" aria-hidden="true">{{t.mark}}</div>
+          </div>
+        </sc-for>
+        <div style="display: flex; justify-content: space-between; font-size: 12px; line-height: 16px; color: {{th.c.text2}}; font-variant-numeric: tabular-nums;" aria-hidden="true"><span>0:00</span><span>1:00</span><span>2:00</span></div>
+        <div style="display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; line-height: 18px; color: {{th.c.text}};" aria-hidden="true">
+          <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 16px; height: 10px; border-radius: 5px; background: {{th.c.text}};"></span>Point</span>
+          <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 16px; height: 10px; border-radius: 5px; background: {{th.c.text2}};"></span>Off track</span>
+          <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 16px; height: 10px; box-sizing: border-box; border-radius: 5px; border: 1.5px solid {{th.c.text2}};"></span>Other steps</span>
+        </div>
+        <span style="display: inline-flex; align-items: center; gap: 4px; height: 44px; font-weight: 600; color: {{th.c.accentText}};">Both maps, step by step
+          <svg width="8" height="14" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 1.5 6.5 7l-5 5.5"></path></svg>
+        </span>
+      </a>
+
+      <section style="display: flex; flex-direction: column; gap: 12px;">
+        <sc-if value="{{s.otherChanges}}" hint-placeholder-val="{{ false }}">
+          <h2 style="margin: 0; font-size: 15px; line-height: 20px; font-weight: 400; color: {{th.c.text2}};">Other changes, not part of your tip</h2>
+        </sc-if>
+        <div style="background: {{th.c.surface}}; border-radius: 16px; display: flex; flex-direction: column;">
+          <sc-for list="{{s.rows}}" as="r" hint-placeholder-count="3">
+            <sc-if value="{{r.notFirst}}" hint-placeholder-val="{{ true }}">
+              <div style="height: 1px; margin-left: 16px; background: {{th.c.divider}};" aria-hidden="true"></div>
+            </sc-if>
+            <div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 16px;" aria-label="{{r.spoken}}">
+              <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 13px; line-height: 18px; font-weight: 600; color: {{r.color}};">
+                <sc-if value="{{r.up}}" hint-placeholder-val="{{ false }}"><svg width="12" height="14" viewBox="0 0 12 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 12.5v-11M1.5 6 6 1.5 10.5 6"></path></svg></sc-if>
+                {{r.word}}
+              </span>
+              <span style="font-variant-numeric: tabular-nums;">{{r.text}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <p style="margin: 0; font-size: 13px; line-height: 18px; color: {{th.c.text2}};">Off track is time on asides or repeats that add nothing. Stumbles are pauses in the middle of a sentence.</p>
+      </section>
+
+      <sc-if value="{{s.hasNext}}" hint-placeholder-val="{{ false }}">
+        <section style="background: {{th.c.surface}}; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+          <span style="font-size: 13px; line-height: 18px; font-weight: 500; color: {{th.c.accentText}};">{{s.nextHeading}}</span>
+          <p style="margin: 0; font-size: 22px; line-height: 28px; font-weight: 600;">{{s.nextStep}}</p>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{s.firstRetry}}" hint-placeholder-val="{{ false }}">
+        <p style="margin: 0; font-size: 13px; line-height: 18px; color: {{th.c.text2}};">A second try is easier, because you’ve said it once already. Real progress shows on new questions.</p>
+      </sc-if>
+      </sc-if>
+    </main>
+
+    <div style="margin-top: auto; padding: 12px 24px 32px 24px; background: {{th.c.bg}}; display: flex; flex-direction: column; gap: 4px;">
+      <button type="button" style="width: 100%; height: 52px; border: 0; border-radius: 12px; background: {{th.c.accent}}; color: {{th.c.onAccent}}; font-size: 17px; font-weight: 600;">Try again</button>
+      <button type="button" style="width: 100%; height: 44px; border: 0; background: transparent; color: {{th.c.accentText}}; font-size: 17px;">Done</button>
+    </div>
+  </div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2676,"height":2682}}'>
+class Component extends DCLogic {
+  palettes() {
+    return [
+      { name: 'Light', c: { bg: '#F5F1EB', surface: '#FFFFFF', text: '#1F1B16', text2: '#6B645C', accent: '#E8643C', onAccent: '#1F1B16', accentText: '#B8461F', positive: '#2F7549', divider: '#ECE6DE', fill: '#ECE6DE' } },
+      { name: 'Dark', c: { bg: '#16130F', surface: '#221E19', text: '#F3EEE8', text2: '#A39B91', accent: '#F07A52', onAccent: '#16130F', accentText: '#F59A78', positive: '#6BBF8A', divider: '#2E2923', fill: '#2E2923' } }
+    ];
+  }
+  samples() {
+    var foundLate = { steps: [['off_track', 0], ['support', 20], ['off_track', 40], ['point', 70], ['ending', 100]], end: 112 };
+    var tip = 'Say your point in your first sentence.';
+    // Row tones: better (green, up arrow), plain (moved the wrong way, or moved but the tip was not met), same (secondary).
+    return [
+      { name: 'Instruction met (first retry ever)', cat: 'Work', met: true, firstRetry: true,
+        instruction: 'You told the listener where you were going in your first sentence.',
+        rows: [['better', 'Better', 'Point: 1:10 to your first sentence.'], ['better', 'Better', 'Off track: 40% to 10%.'], ['better', 'Better', 'Stumbles: 4 to 1.']],
+        first: foundLate, second: { steps: [['point', 0], ['support', 20], ['off_track', 48], ['ending', 55]], end: 66 } },
+      { name: 'Numbers moved, instruction not met', cat: 'Work', met: false, closer: true,
+        instruction: 'Your point came 25 seconds sooner, at 0:45, but not in your first sentence.',
+        rows: [['gain', 'Sooner', 'Point: 1:10 to 0:45.'], ['better', 'Better', 'Off track: 40% to 15%.'], ['better', 'Better', 'Stumbles: 4 to 1.']],
+        nextHeading: 'Same tip, one more try', nextStep: tip,
+        first: foundLate, second: { steps: [['off_track', 0], ['support', 12], ['point', 45], ['ending', 70]], end: 82 } },
+      { name: 'Nothing improved (a third try)', cat: 'Work', met: false, thirdTry: true,
+        instruction: 'Your point came at 1:12, about when it came on your first try.',
+        rows: [['plain', 'A little later', 'Point: 1:10 to 1:12.'], ['plain', 'A little more', 'Off track: 40% to 42%.'], ['plain', 'A little more', 'Stumbles: 4 to 5.']],
+        nextHeading: 'Same tip, one more try', nextStep: tip,
+        first: foundLate, second: { steps: [['off_track', 0], ['support', 20], ['off_track', 40], ['point', 72], ['ending', 100]], end: 112 } },
+      { name: 'First try had no point', cat: 'Everyday', met: true, tip: 'Pick one main point and say it early.',
+        instruction: 'A listener found your point this time.',
+        rows: [['better', 'Better', 'Point: none last time, 0:08 now.'], ['better', 'Better', 'Off track: 50% to 0%.'], ['better', 'Better', 'Stumbles: 2 to 0.']],
+        first: { steps: [['off_track', 0], ['support', 30]], end: 60 }, second: { steps: [['direction', 0], ['point', 8], ['ending', 40]], end: 50 } },
+      { name: 'Tip about something not measured here', cat: 'Everyday', met: null,
+        tip: 'Pause instead of saying “um.”', listen: true,
+        instruction: 'This screen compares your point, off-track time and stumbles, not this tip. Listen back to hear how it went.', otherChanges: true,
+        rows: [['same', 'Same', 'Point: at the start both times.'], ['same', 'Same', 'Off track: 0% both times.'], ['gain', 'Better', 'Stumbles: 3 to 1.']],
+        first: { steps: [['point', 0], ['support', 20], ['ending', 60]], end: 72 }, second: { steps: [['point', 0], ['support', 20], ['ending', 55]], end: 65 } },
+      { name: 'First try has no map yet', cat: 'Work', noMap: true }
+    ];
+  }
+  clock(s) { s = Math.round(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+  segs(t, c) {
+    return t.steps.map(function (st, i) {
+      var next = i + 1 < t.steps.length ? t.steps[i + 1][1] : t.end;
+      var off = st[0] === 'off_track', pt = st[0] === 'point';
+      return { w: ((next - st[1]) / 120 * 100).toFixed(2) + '%', bg: off ? c.text2 : pt ? c.text : 'transparent', border: off || pt ? '0' : '1.5px solid ' + c.text2 };
+    });
+  }
+  mark(t) {
+    var p = t.steps.find(function (s) { return s[0] === 'point'; });
+    if (!p) return { mark: 'No clear point', markAt: '0%' };
+    return { mark: 'Point at ' + this.clock(p[1]), markAt: (p[1] / 120 * 100).toFixed(2) + '%' };
+  }
+  renderVals() {
+    var self = this;
+    var data = this.samples();
+    var tip = 'Say your point in your first sentence.';
+    var themes = this.palettes().map(function (th) {
+      var c = th.c;
+      return { name: th.name, c: c, samples: data.map(function (s, i) {
+        if (s.noMap) return { n: i + 1, name: s.name, cat: s.cat, tryWord: 'second', noMap: true, hasMap: false, rows: [], tries: [] };
+        var rows = s.rows.map(function (r, j) {
+          var color = r[0] === 'better' ? c.positive : r[0] === 'same' ? c.text2 : c.text;
+          return { word: r[1], text: r[2], color: color, up: r[0] === 'better' || r[0] === 'gain', notFirst: j > 0, spoken: r[1] + '. ' + r[2] };
+        });
+        var status = s.met === true ? 'The tip worked' : s.closer ? 'Closer, not there yet' : s.met === false ? 'Not yet' : 'Not measured here';
+        var tries = [{ name: 'First try', t: s.first }, { name: s.thirdTry ? 'Third try' : 'Second try', t: s.second }].map(function (x) {
+          var m = self.mark(x.t);
+          return { name: x.name, segs: self.segs(x.t, c), mark: m.mark, markAt: m.markAt };
+        });
+        return { n: i + 1, name: s.name, cat: s.cat, tryWord: s.thirdTry ? 'third' : 'second', thirdTry: !!s.thirdTry, noMap: false, hasMap: true, metYes: s.met === true, metNo: s.met === false && !s.closer, closer: !!s.closer, otherChanges: !!s.otherChanges,
+          status: status, statusColor: s.met === true ? c.positive : c.text, tip: s.tip || tip, listen: !!s.listen,
+          instruction: s.instruction, hasNext: !!s.nextStep, nextHeading: s.nextHeading || '', nextStep: s.nextStep || '',
+          firstRetry: !!s.firstRetry, rows: rows, tries: tries,
+          mapsSpoken: 'Both tries on one timeline, up to two minutes. Opens both maps, step by step.' };
+      }) };
+    });
+    return { themes: themes };
+  }
+}
+</script>
+</body>
+</html>

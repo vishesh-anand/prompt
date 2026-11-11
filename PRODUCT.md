@@ -76,10 +76,11 @@ The question you answered stays at the top, in full. Then, in this order:
 9. **Try again with this tip button,** pinned at the bottom: answer the same question again, with the tip as your one instruction.
 
 ### 6. Before and after (after trying again)
-- **The instruction, checked first:** "You told the listener where you were going in your first sentence. Last time, your point came at 1:10." If it didn't work, say so plainly and give one next step.
-- Your first and second tries' maps side by side, so you can see the shape change.
-- Off-track time and stumbles for both tries.
-- Framed as practice: a second try is easier because you've said it once already. Real progress is measured on new questions (see Progress).
+- **The instruction, checked first:** the tip you tried, whether it worked ("The tip worked", "Closer, not there yet", "Not yet"), and one sentence: "You told the listener where you were going in your first sentence." If it didn't work, say so plainly and give one next step. If the tip was about something this screen doesn't compare (how it sounded), say so and offer to play the try.
+- Your first and second tries' maps on one timeline, so you can see the shape change.
+- Point, off-track time and stumbles for both tries, each said once ("Off track: 40% to 15%.").
+- Framed as practice: a second try is easier because you've said it once already. Real progress is measured on new questions (see Progress). This line shows on your first retry only.
+- "Try again" (the same question, with the newest tip) and "Done".
 
 ### 7. Progress
 - Streak (days in a row practiced).

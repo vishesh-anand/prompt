@@ -8,7 +8,7 @@ How the app looks, moves, and talks. Read this before building or changing any s
 
 What the app helps with: a listener gets your point, and it costs them little effort (see PRODUCT.md). Every screen should make that one idea easy to see.
 
-The feedback screen's look was decided in Claude Design on 2026-11-07 (see "Feedback reveal" below; mockups in `design-system/feedback-d2/`). The before-and-after and Progress screens will be revisited the same way before steps E and F. Until then, this file sets what is on those screens and in what order, and the current visual style stays.
+The feedback screen's look was decided in Claude Design on 2026-11-07 (see "Feedback reveal" below; mockups in `design-system/feedback-d2/`). The before-and-after was decided the same way on 2026-11-12 (see "Before and after" below; mockups in `design-system/compare-e/`). The Progress screen will be revisited the same way before step F. Until then, this file sets what is on it and in what order, and the current visual style stays.
 
 The app is plain almost everywhere, and beautiful in three places:
 
@@ -170,12 +170,38 @@ Decided while building (step D2, 2026-11-07), where the mockups say nothing:
 - **Card padding** is `space.lg` (16) on every card, not the mockup's 20: 20 is not one of the spacing steps. Revisit with the tokens if the cards look tight on a phone.
 
 ### 3. Before and after
-- The retry instruction is checked first, in one plain line: "You told the listener where you were going in your first sentence. Last time, your point came at 1:10."
-- First and second tries' maps side by side. The clear version is not shown here; each try keeps its own on its feedback screen.
-- Off-track time and stumbles for both tries. Numbers count up or down into place.
-- Improvements are marked in `positive` green with an arrow and a short line like "Off track: 40% to 15%."
-- If there was no improvement, say so plainly and give one next step. No celebration, no guilt.
-- The screen presents the retry as practice, not as proof of progress.
+Decided in Claude Design on 2026-11-12, after three directions and three review rounds. The mockups are in `design-system/compare-e/` (live canvas: https://claude.ai/artifact/DctvH8YGrgr7ffm9hCNXBf). Like D2's, they are web markup with colours written out: build from this section and the tokens, and use the mockups for layout, spacing and copy.
+
+- The screen scrolls on `background`, side margins 24, 32 between parts. Rows appear one at a time, top to bottom, like the feedback reveal. "Try again" (filled, `accent` with `onAccent`) and "Done" (quiet, `accentText`) are pinned at the bottom, outside the scroll.
+- The success haptic plays only when the tip worked.
+
+Top to bottom:
+1. **Top bar:** "Work · second try" (or "Everyday", "third try") in `label`, and ✕ on the right (44 square, `textSecondary`) as the way out.
+2. **"Before and after"** in `largeTitle`. On a third or later try, "Compared with your first try" under it in `subheadline`.
+3. **The tip it was checking:** "Your tip: Say your point in your first sentence." in `subheadline`. The tip is the one the retry carried.
+4. **The status,** in `headline`, with an SF Symbol so colour never carries it alone:
+   - "✓ The tip worked" in `positive`;
+   - "↑ Closer, not there yet" in `textPrimary`, when the tip wasn't met but the thing it was about moved the right way by more than noise (the point came at least 5 seconds sooner, or off-track time fell at least 5 points);
+   - "— Not yet" in `textPrimary`;
+   - "Not measured here" in `textPrimary`, no symbol, when the tip was about something this screen doesn't compare (how it sounded, speed, the ending).
+5. **The instruction check** in `title`: one sentence, the largest text on the screen. It says what happened, never blames: "You told the listener where you were going in your first sentence." / "Your point came 25 seconds sooner, at 0:45, but not in your first sentence." / "Your point came at 1:12, about when it came on your first try." / "A listener found your point this time." When not measured: "This screen compares your point, off-track time and stumbles, not this tip. Listen back to hear how it went.", then a "▶ Play your second try" capsule (`fill`, 44 tall, `accentText` play symbol) that plays the latest try.
+6. **The two answer lines** (custom drawing), first try above, this try below, on one time scale from 0:00 to 2:00, so a shorter answer is visibly shorter. Each line is labelled above in `label` ("First try", "Second try" or "Third try"), drawn like the feedback screen's line but 12 tall, with "Point at 1:10" in `label` semibold under the line where the point starts ("No clear point" at the start when there is none). Under both: the scale (0:00, 1:00, 2:00 in `caption`, tabular), then a one-line key in `label` with `textPrimary` (Point, Off track, Other steps, each with its swatch), then "Both maps, step by step ›" in `accentText` semibold, 44 tall, which opens the two maps side by side (the feedback screen's Step by step sheet, with both columns being real tries).
+7. **Three rows** on one `surface` card (radius 16, inset `divider` lines): Point, Off track, Stumbles. Each row is a word in `label` semibold, then one fact in `body`, said once, always as "X to Y": "Point: 1:10 to 0:45.", "Off track: 40% to 15%.", "Stumbles: 4 to 1." The words:
+   - "↑ Better" in `positive`, when the row improved by more than noise;
+   - "↑ Sooner" in `textPrimary` on the row the tip was about, when it improved but the tip wasn't met (the status says "Closer"), and on rows under "Not measured here", so green never looks like credit for the tip;
+   - "Same" in `textSecondary`, when nothing moved;
+   - "A little later" / "A little more" in `textPrimary`, when it moved the wrong way by less than noise; "Later" / "More" when by more. Never "Same" for a rise.
+   Noise: 5 seconds for the point, 5 percentage points for off track, 1 for stumbles. Plain wording for edge cases: "Point: 1:10 to your first sentence.", "Point: none last time, 0:08 now.", "Point: at the start both times.", "Off track: 0% both times." Under "Not measured here" the card has the heading "Other changes, not part of your tip" in `subheadline`.
+8. **One line explaining the rows** in `label`: "Off track is time on asides or repeats that add nothing. Stumbles are pauses in the middle of a sentence."
+9. **When the tip wasn't met:** a `surface` card with "Same tip, one more try" in `label` with `accentText` (or "One thing to try next" when the retry's own tip is a different one), then the tip in `title`.
+10. **Only on someone's first retry ever:** "A second try is easier, because you’ve said it once already. Real progress shows on new questions." in `label`.
+
+Rules:
+- No scores and no bigNumber: the numbers sit inside sentences, so they don't count into place. (This replaces the earlier "numbers count up or down into place".)
+- Improvements use `positive` with an up arrow and a word. A down arrow is never used: people read it as worse.
+- When the first try has no map (scored before this view existed), the screen is the title, one `body` line, "Your first try was scored before this view existed, so there’s nothing to compare yet.", and the two buttons.
+- The clear version is not shown here; each try keeps its own on its feedback screen.
+- VoiceOver reads each row as one sentence ("Better. Off track: 40% to 15%.") and the answer lines as one summary that says it opens step by step.
 
 ## Progress chart
 - Your last 14 practice days, one dot a day. Nothing resets on Monday.
