@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 
 import { useAnswer } from '@/features/answers/useAnswer';
 import { tryAgainParams } from '@/features/feedback/nextAction';
+import { useQuestion } from '@/features/questions/useQuestion';
 
 import { compareAttempts, type Attempt } from './compareAttempts';
 
@@ -14,6 +15,8 @@ export function useCompare(answerId: string) {
   const latest = useAnswer(answerId);
   const firstId = latest.data?.retry_of ?? null;
   const first = useAnswer(firstId);
+  // Whether the question wanted a direct answer decides what the first try's tip was about (tipKind).
+  const question = useQuestion(latest.data?.question_id);
 
   const a = first.data;
   const b = latest.data;
@@ -22,11 +25,16 @@ export function useCompare(answerId: string) {
   let result: ReturnType<typeof compareAttempts> | null = null;
   if (latest.isError || first.isError || (b && b.retry_of === null)) view = 'unavailable';
   else if (a && b) {
-    if (a.metrics && a.judgement && b.metrics && b.judgement) {
-      const firstTry: Attempt = { metrics: a.metrics, judgement: a.judgement, durationMs: a.duration_ms, timeLimitMs: a.time_limit_ms, tip: a.coaching?.tip };
-      const latestTry: Attempt = { metrics: b.metrics, judgement: b.judgement, durationMs: b.duration_ms, timeLimitMs: b.time_limit_ms, tip: b.coaching?.tip };
-      result = compareAttempts(firstTry, latestTry);
-      view = 'ready';
+    if (a.metrics && a.map && b.metrics && b.map) {
+      // Wait for the question: without it the first try's tip could be read wrongly.
+      if (question.data) {
+        const firstTry: Attempt = { map: a.map, metrics: a.metrics, tip: a.coaching?.tip };
+        const latestTry: Attempt = { map: b.map, metrics: b.metrics, tip: b.coaching?.tip };
+        result = compareAttempts(firstTry, latestTry, question.data.wants_direct_answer);
+        view = 'ready';
+      } else if (question.isError) {
+        view = 'unavailable';
+      }
     } else {
       view = 'noScores';
     }

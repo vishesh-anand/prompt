@@ -6,13 +6,14 @@ import { Card, revealMotion, space, Text, useTheme } from '@/design';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 
 import { CountNumber } from './CountNumber';
-import type { CompareRow, Summary } from './compareAttempts';
+import type { CompareRow, InstructionCheck, Summary } from './compareAttempts';
 
-type Props = { rows: CompareRow[]; summary: Summary };
+type Props = { instruction: InstructionCheck; rows: CompareRow[]; summary: Summary };
 
-// The before-and-after: first try and latest try side by side. Rows appear one at a time, top to bottom, like the
-// feedback reveal; improvements get a green arrow and a short line, and the filler count counts into place.
-export function CompareView({ rows, summary }: Props) {
+// The before-and-after: the instruction checked first, then the first try and the latest try side by side. Rows appear
+// one at a time, top to bottom, like the feedback reveal; improvements get a green arrow and a short line, and the
+// numbers count into place. A first version, until the screen gets its own design pass (step E3).
+export function CompareView({ instruction, rows, summary }: Props) {
   const reduceMotion = useReduceMotion();
   const enter = (step: number) => {
     const delay = step * revealMotion.staggerMs;
@@ -21,28 +22,26 @@ export function CompareView({ rows, summary }: Props) {
       : FadeInDown.delay(delay).duration(revealMotion.itemMs).easing(Easing.out(Easing.quad)).reduceMotion(ReduceMotion.Never);
   };
 
-  const filler = rows.find((r) => r.id === 'fillers');
-  const speed = rows.find((r) => r.id === 'speed');
-  const marks = rows.filter((r) => r.id !== 'fillers' && r.id !== 'speed');
-
   return (
     <View style={styles.list}>
+      {instruction.line ? (
+        <Animated.View entering={enter(0)}>
+          <Text variant="headline">{instruction.line}</Text>
+        </Animated.View>
+      ) : null}
+
       <View style={styles.columns}>
         <Text variant="label">First try</Text>
         <Text variant="label">Now</Text>
       </View>
 
-      {filler ? <Animated.View entering={enter(0)}><Row row={filler} delayMs={0} /></Animated.View> : null}
-      {speed ? <Animated.View entering={enter(1)}><Row row={speed} /></Animated.View> : null}
+      {rows.map((row, i) => (
+        <Animated.View key={row.id} entering={enter(i + 1)}>
+          <Row row={row} />
+        </Animated.View>
+      ))}
 
-      <Animated.View entering={enter(2)} style={styles.group}>
-        <Text variant="label">Clear point</Text>
-        {marks.map((row) => (
-          <Row key={row.id} row={row} />
-        ))}
-      </Animated.View>
-
-      <Animated.View entering={enter(3)} style={styles.group}>
+      <Animated.View entering={enter(rows.length + 1)} style={styles.group}>
         {summary.improved ? null : (
           <>
             <Text variant="body">{summary.message}</Text>
@@ -59,34 +58,29 @@ export function CompareView({ rows, summary }: Props) {
   );
 }
 
-function Row({ row, delayMs }: { row: CompareRow; delayMs?: number }) {
+function Row({ row }: { row: CompareRow }) {
   const { colors } = useTheme();
-  const numeric = row.count !== undefined;
-  const variant = numeric ? 'bigNumber' : row.id === 'speed' ? 'title' : 'body';
-  // The columns already show a mark that stayed the same, so a line is only added when it says something more.
-  const showLine = row.improved || row.id === 'fillers' || row.id === 'speed' || [row.before, row.after].includes('Time ran out');
+  const variant = row.count ? 'bigNumber' : 'title';
 
   return (
-    <View style={styles.row} accessible accessibilityLabel={`${row.label}. First try: ${row.before}. Now: ${row.after}. ${row.line}.`}>
-      <Text variant={row.id === 'fillers' || row.id === 'speed' ? 'label' : 'body'} color={row.id === 'fillers' || row.id === 'speed' ? undefined : 'textSecondary'}>
-        {row.label}
-      </Text>
+    <View style={styles.row} accessible accessibilityLabel={`${row.label}. First try: ${row.before}. Now: ${row.after}. ${row.line}`}>
+      <Text variant="label">{row.label}</Text>
       <View style={styles.columns}>
-        <Text variant={variant}>{row.before}</Text>
-        {row.count ? <CountNumber from={row.count.before} to={row.count.after} delayMs={delayMs} /> : <Text variant={variant}>{row.after}</Text>}
+        <Text variant={variant} tabular>
+          {row.before}
+        </Text>
+        {row.count ? <CountNumber from={row.count.before} to={row.count.after} unit={row.count.unit} /> : <Text variant={variant} tabular>{row.after}</Text>}
       </View>
-      {showLine ? (
-        row.improved ? (
-          <View style={styles.change}>
-            <SymbolView name={row.arrow === 'up' ? 'arrow.up' : 'arrow.down'} size={14} tintColor={colors.positive} />
-            <Text variant="label" color="positive">
-              {row.line}
-            </Text>
-          </View>
-        ) : (
-          <Text variant="label">{row.line}</Text>
-        )
-      ) : null}
+      {row.improved ? (
+        <View style={styles.change}>
+          <SymbolView name={row.arrow === 'up' ? 'arrow.up' : 'arrow.down'} size={14} tintColor={colors.positive} />
+          <Text variant="label" color="positive">
+            {row.line}
+          </Text>
+        </View>
+      ) : (
+        <Text variant="label">{row.line}</Text>
+      )}
     </View>
   );
 }

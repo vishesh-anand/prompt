@@ -24,7 +24,7 @@ export default function Compare() {
           </Text>
         ) : null}
         {view === 'noScores' ? <Text variant="body">{"Your first try has no scores, so there's nothing to compare yet."}</Text> : null}
-        {view === 'ready' && result ? <CompareView rows={result.rows} summary={result.summary} /> : null}
+        {view === 'ready' && result ? <CompareView instruction={result.instruction} rows={result.rows} summary={result.summary} /> : null}
       </View>
 
       <View style={styles.actions}>

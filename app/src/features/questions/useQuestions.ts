@@ -9,7 +9,7 @@ export function useQuestions() {
   return useQuery({
     queryKey: ['questions'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('questions').select('id, category, text').eq('active', true).order('id');
+      const { data, error } = await supabase.from('questions').select('id, category, text, wants_direct_answer').eq('active', true).order('id');
       if (error) throw error;
       return z.array(questionSchema).parse(data);
     },

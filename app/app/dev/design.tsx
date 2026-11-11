@@ -119,7 +119,7 @@ export default function DesignPreview() {
           {compareSamples.map((sample) => (
             <View key={sample.name} style={styles.compareSample}>
               <Text variant="label">{sample.name}</Text>
-              <CompareView rows={sample.rows} summary={sample.summary} />
+              <CompareView instruction={sample.instruction} rows={sample.rows} summary={sample.summary} />
             </View>
           ))}
         </Section>
