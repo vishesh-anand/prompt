@@ -4,7 +4,6 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, Screen, Text, space } from '@/design';
 import { useAnswerFlow } from '@/features/answers/useAnswerFlow';
-import { limitHint } from '@/features/recording/limits';
 import { RecordingCircle } from '@/features/recording/RecordingCircle';
 import { tooShortLength } from '@/features/recording/tooShortLength';
 import { useMicPermission } from '@/features/recording/useMicPermission';
@@ -40,14 +39,11 @@ export default function Record() {
         ) : null}
       </View>
       {question.data ? <Text variant="question">{question.data.text}</Text> : null}
-      {isRetry && !saving ? (
+      {isRetry && instruction && !saving ? (
         <View style={styles.instruction}>
-          {instruction ? (
-            <Text variant="body" color="textSecondary">
-              {instruction}
-            </Text>
-          ) : null}
-          <Text variant="label">{limitHint(limitMs)}</Text>
+          <Text variant="body" color="textSecondary">
+            {instruction}
+          </Text>
         </View>
       ) : null}
       <View style={styles.center}>
@@ -97,7 +93,7 @@ export default function Record() {
 const styles = StyleSheet.create({
   topBar: { minHeight: tapTarget, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' },
   cancel: { minHeight: tapTarget, justifyContent: 'center' },
-  instruction: { gap: space.xs, marginTop: space.md },
+  instruction: { marginTop: space.md },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   message: { alignSelf: 'stretch', gap: space.xl },
   hint: { marginTop: space.xl, minHeight: space.xxxl },
