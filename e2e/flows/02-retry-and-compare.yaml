@@ -37,9 +37,12 @@ appId: com.visheshanand.prompt
     element: "See before and after"
     timeout: 180000
 - tapOn: "See before and after"
+- extendedWaitUntil:
+    visible: "Your tip:.*"
+    timeout: 30000
+    label: "The before-and-after shows the tip it checked"
 - assertVisible: "Before and after"
-- assertVisible: "First try"
-- assertVisible: "Now"
+- assertVisible: "Work · second try"
 
 # Third try, from the compare screen: it compares with the first try again.
 - tapOn: "Try again"
@@ -48,9 +51,10 @@ appId: com.visheshanand.prompt
     element: "See before and after"
     timeout: 180000
 - tapOn: "See before and after"
-- assertVisible: "Before and after"
-- assertVisible: "First try"
-- assertVisible: "Now"
+- extendedWaitUntil:
+    visible: "Compared with your first try"
+    timeout: 30000
+- assertVisible: "Work · third try"
 
 # Done goes back to Home, which now asks a different question and shows the streak.
 - scrollUntilVisible:

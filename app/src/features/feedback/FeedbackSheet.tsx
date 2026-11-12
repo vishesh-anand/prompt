@@ -4,8 +4,7 @@ import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Text, screenMargin, space, useTheme , tapTarget } from '@/design';
-
+import { Text, screenMargin, space, useTheme, tapTarget } from '@/design';
 
 type Props = { open: boolean; onClose: () => void; title: string; children: ReactNode };
 

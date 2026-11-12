@@ -89,6 +89,7 @@ export default function Home() {
         <View style={styles.dev}>
           <Button variant="secondary" label="Reminders" onPress={() => router.push('/dev/reminders')} />
           <Button variant="secondary" label="Feedback samples" onPress={() => router.push({ pathname: '/dev/feedback', params: { sample: '0' } })} />
+          <Button variant="secondary" label="Compare samples" onPress={() => router.push({ pathname: '/dev/compare', params: { sample: '1' } })} />
           {__DEV__ ? (
             <>
               <Button variant="secondary" label="Design preview" onPress={() => router.push('/dev/design')} />

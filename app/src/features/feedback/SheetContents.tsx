@@ -22,6 +22,7 @@ function shortQuote(text: string): string {
 
 // ---- Step by step: your answer's steps next to the shorter version's.
 
+
 export function StepByStep({ map, better, durationSeconds }: { map: AnswerMap; better: Coaching['betterSteps']; durationSeconds: number }) {
   const stacked = useStacked();
   return (
@@ -30,29 +31,7 @@ export function StepByStep({ map, better, durationSeconds }: { map: AnswerMap; b
         {stepByStepIntro(map, better)}
       </Text>
       <View style={[styles.columns, stacked && styles.stacked]}>
-        <View style={[styles.column, !stacked && styles.flex]}>
-          <Text variant="label">
-            {'Yours · '}
-            <Text variant="label" tabular>
-              {clock(durationSeconds)}
-            </Text>
-          </Text>
-          {map.steps.map((step) => (
-            <View key={step.sentence} style={styles.step}>
-              <Text variant="label" tabular>
-                {clock(step.atSeconds)}
-              </Text>
-              <Text variant="body" strong>
-                {labelName[step.label]}
-              </Text>
-              {step.opening ? (
-                <Text variant="label" color="textPrimary">
-                  {curly(`"${shortQuote(step.opening)}"`)}
-                </Text>
-              ) : null}
-            </View>
-          ))}
-        </View>
+        <MapColumn title="Yours" durationSeconds={durationSeconds} steps={map.steps} stacked={stacked} />
         {better && better.length > 0 ? (
           <View style={[styles.column, !stacked && styles.flex]}>
             <Text variant="label">Shorter and clearer</Text>
@@ -71,6 +50,49 @@ export function StepByStep({ map, better, durationSeconds }: { map: AnswerMap; b
         ) : null}
       </View>
     </>
+  );
+}
+
+// ---- Both maps (the before-and-after): two real tries side by side, both with their times.
+
+type Try = { title: string; map: AnswerMap; durationSeconds: number };
+
+export function BothMaps({ first, latest }: { first: Try; latest: Try }) {
+  const stacked = useStacked();
+  return (
+    <View style={[styles.columns, stacked && styles.stacked]}>
+      <MapColumn title={first.title} durationSeconds={first.durationSeconds} steps={first.map.steps} stacked={stacked} />
+      <MapColumn title={latest.title} durationSeconds={latest.durationSeconds} steps={latest.map.steps} stacked={stacked} />
+    </View>
+  );
+}
+
+// One real try's steps: each with its time, its label and its opening words (when the map has them).
+function MapColumn({ title, durationSeconds, steps, stacked }: { title: string; durationSeconds: number; steps: AnswerMap['steps']; stacked: boolean }) {
+  return (
+    <View style={[styles.column, !stacked && styles.flex]}>
+      <Text variant="label">
+        {`${title} · `}
+        <Text variant="label" tabular>
+          {clock(durationSeconds)}
+        </Text>
+      </Text>
+      {steps.map((step) => (
+        <View key={step.sentence} style={styles.step}>
+          <Text variant="label" tabular>
+            {clock(step.atSeconds)}
+          </Text>
+          <Text variant="body" strong>
+            {labelName[step.label]}
+          </Text>
+          {step.opening ? (
+            <Text variant="label" color="textPrimary">
+              {curly(`"${shortQuote(step.opening)}"`)}
+            </Text>
+          ) : null}
+        </View>
+      ))}
+    </View>
   );
 }
 

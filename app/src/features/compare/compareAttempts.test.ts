@@ -136,3 +136,19 @@ describe('the rows', () => {
     expect(row(compareAttempts(foundLate, early, true), 'stumbles').fact).toBe('Stumbles: 4 to 1.');
   });
 });
+
+describe('which tip is checked', () => {
+  it('on a third try, the tip it carried (the second try’s), while the rows still compare with the first try', () => {
+    const second = attempt([['point', 0], ['off_track', 10], ['ending', 60]], { off: 0.35, tip: 'Cut the aside about the timer.' });
+    const third = attempt([['point', 0], ['support', 10], ['ending', 50]], { off: 0.05, stumbles: 1, tip: 'Finish on your point.' });
+    const r = compareAttempts(foundLate, third, false, second);
+    expect(r).toMatchObject({ tip: 'Cut the aside about the timer.', status: 'worked', check: 'You cut the off-track time from 40% to 5%.' });
+    expect(row(r, 'point').fact).toBe('Point: 1:10 to your first sentence.');
+  });
+  it('a tip written before the tip focus existed is not measured here', () => {
+    const old = { ...foundLate, tip: 'You said um nine times. Try a short pause instead.', focusKnown: false };
+    const r = compareAttempts(old, early, true);
+    expect(r).toMatchObject({ status: 'notMeasured', tip: 'You said um nine times. Try a short pause instead.' });
+    expect(r.rows.every((x) => !x.credited)).toBe(true);
+  });
+});

@@ -21,6 +21,17 @@ export function isFirstRetry(history: HistoryRow[] | undefined, answer: AnswerRe
   return earliest?.id === answer.id;
 }
 
+// The try just before this one on its question, whose tip this retry carried: the first attempt for a second try, the
+// previous retry after that. Without history it is the first attempt.
+export function previousTry(history: HistoryRow[] | undefined, answer: AnswerRef): string | null {
+  if (answer.retry_of === null) return null;
+  const self = history?.find((row) => row.id === answer.id);
+  if (!history || !self) return answer.retry_of;
+  const before = history.filter((row) => row.retry_of === answer.retry_of && row.created_at < self.created_at);
+  const latest = before.reduce<HistoryRow | null>((a, row) => (a === null || row.created_at > a.created_at ? row : a), null);
+  return latest?.id ?? answer.retry_of;
+}
+
 const ordinals = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth'];
 
 // "first try", "second try", "third try" for the top bars.

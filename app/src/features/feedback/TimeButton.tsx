@@ -1,8 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Text, space, useTheme , capsuleRadius, tapTarget } from '@/design';
+import { Text, space, useTheme, capsuleRadius, tapTarget } from '@/design';
 import { clock } from '@/lib/clock';
-
 
 // "▶ 0:40": plays the recording from that moment (DESIGN.md, Feedback reveal). A quiet capsule, at least 44 tall.
 // `atSeconds` is shown as on the map (from the first spoken word); `onPlay` gets the same number.

@@ -19,7 +19,7 @@ function mapOf(changes: Partial<AnswerMap> & Pick<AnswerMap, 'steps' | 'point'>)
   return { version: 9, pointAtSeconds: first?.atSeconds ?? null, offTrackShare: 0, didntFollow: [], restarts: [], noticed: [], firstWordAtSeconds: 0.4, ...changes };
 }
 
-const base = { category: 'work' as const, isRetry: false, metrics: sampleMetrics({ speakingSeconds: 108 }), durationMs: 112_000, timeRanOut: false, listenerConfirmed: null };
+const base = { category: 'work' as const, tryNumber: 1, metrics: sampleMetrics({ speakingSeconds: 108 }), durationMs: 112_000, timeRanOut: false, listenerConfirmed: null };
 
 const foundLateCoaching: Coaching = {
   tip: 'Say your point in your first sentence.',

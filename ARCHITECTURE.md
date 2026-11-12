@@ -144,7 +144,7 @@ Streaks, charts, and "which questions have I seen" are all calculated from `answ
 
 `process-answer` runs these stages in order. **Each stage saves its result to the answer row before the next one starts.** The app is subscribed to that row, so each result appears on screen as soon as it's saved.
 
-Until step F, the old judge also runs, between Map and Coach (status `judged`), because Progress, the weekly note and the before-and-after screen still read its three marks. So today the status goes `uploaded` → `transcribed` → `measured` → `mapped` → `judged` → `coached`. Each model call has one 20-second deadline, retries included, so a stage (two tries) ends before the app calls it stuck at 45 seconds.
+Until step F, the old judge also runs, between Map and Coach (status `judged`), because Progress and the weekly note still read its three marks (the before-and-after stopped reading them in step E). So today the status goes `uploaded` → `transcribed` → `measured` → `mapped` → `judged` → `coached`. Each model call has one 20-second deadline, retries included, so a stage (two tries) ends before the app calls it stuck at 45 seconds.
 
 1. **Transcribe.** Send audio to the voice-to-text provider. Must keep filler words and return timings for every word.
 2. **Measure.** Plain code, no AI. From the word timings: filler count, which ones and where each fell, fillers a minute, words per minute, long pauses and whether each falls mid-sentence or between sentences (from the transcript's punctuation), repeats (the same 1 to 3 words said twice in a row), hedges ("kind of", "sort of", "I guess"), vague words ("thing", "a lot", "some") and "and" chaining. Fast, free, and always the same answer for the same input. Vague words and "and" chaining are stored but not shown until the listener check shows they matter.
@@ -287,7 +287,7 @@ Next, the feedback redesign:
 - **D. Coach and the new feedback screen,** in two parts:
   - **D1 (built, 2026-11-04):** the Map runs in `process-answer`, the tip focus is read from the map, coach prompt version 6 writes the tip, the better version with its steps and "what changed", and notebook prompt version 2 reads the map. Questions say whether they want a direct answer. Nothing on the phone's screens changed. Live and checked on a real iPhone on 2026-11-07.
   - **D2 (built, 2026-11-07; not live yet):** the new feedback screen, as DESIGN.md "Feedback reveal" sets it. The phone and the database column (`listener_confirmed`) are done; map prompt v9 and coach prompt v7 are written but not deployed, because they ship only after the evals show they are no worse (`evals:map`, `evals:coach`, against the baseline of 2026-11-07). Checked on a real iPhone on 2026-11-11 (light and dark, large text, VoiceOver, Reduce Motion, playing a moment).
-- **E. Retry:** the instruction carried over, the 90-second retry, the new before and after.
+- **E. Retry (built, 2026-11-13; not checked on a real iPhone yet):** the retry carries the tip it was started from ("This time: …" under the question, from a `tipFrom` route param, falling back to the first attempt's tip), the record screen has Cancel until recording starts, and the 90-second retry (since step B) is unchanged. The before-and-after is rebuilt as DESIGN.md "Before and after" sets it: it reads the two maps and the counted pauses, not the judge. Which focus the first tip was about is worked out again on the phone from the first try's map and the question's `wants_direct_answer` (the same order as `tipFocus.ts`), so no server change was needed. It plays the latest try ("Play your second try") with its own player; the feedback screen's player underneath pauses when it is covered.
 - **F. Progress:** rolling 14 days, the new lines (decided by A's results), the coach's note every 3 practice days.
 
 Then:
@@ -295,7 +295,7 @@ Then:
 
 Evals are built alongside step 4 and grow with steps 5 and 6, then with A to F.
 
-**Where the code is:** this file describes the app after A to F. Until those steps land, the code still has the judge stage and its three marks (`judgement`, `evals:judge`), and the calendar-week note and chart. Since step D1 the Map and the new coach run on every answer, and since D2 the feedback screen reads the map and the coach's reply (compare and Progress still read the judge's marks). Each step's plan says what it changes.
+**Where the code is:** this file describes the app after A to F. Until those steps land, the code still has the judge stage and its three marks (`judgement`, `evals:judge`), and the calendar-week note and chart. Since step D1 the Map and the new coach run on every answer, since D2 the feedback screen reads the map and the coach's reply, and since E the before-and-after reads the maps too (Progress and the weekly note still read the judge's marks). Each step's plan says what it changes.
 
 ## Open decisions
 

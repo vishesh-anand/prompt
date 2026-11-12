@@ -1,41 +1,62 @@
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { Button, Screen, Text, space } from '@/design';
 import { CompareView } from '@/features/compare/CompareView';
 import { useCompare } from '@/features/compare/useCompare';
 
-// Your first try and your latest try side by side.
+// Your first try and your latest try. The two actions sit below the scroll, within thumb reach: "Try again" (the same
+// question, with the newest tip) is the one filled button.
 export default function Compare() {
   const { answerId } = useLocalSearchParams<{ answerId: string }>();
   const router = useRouter();
-  const { view, result, tryAgain } = useCompare(answerId);
+  const { view, data, audio, retryQuestion, tryAgain } = useCompare(answerId);
 
   // Nothing to compare (not a retry, or not yours): go home.
   if (view === 'unavailable') return <Redirect href="/" />;
 
+  const done = () => {
+    audio.pause();
+    router.dismissTo('/');
+  };
+
   return (
-    <Screen scroll>
-      <View style={styles.content}>
-        <Text variant="title">Before and after</Text>
-        {view === 'loading' ? (
+    <Screen>
+      <ScrollView style={styles.fill} contentContainerStyle={styles.content}>
+        {view === 'questionError' ? (
+          <View style={styles.message}>
+            <Text variant="body">{'Your two tries didn’t load. Check your connection and try again.'}</Text>
+            <Button variant="secondary" label="Load again" onPress={retryQuestion} />
+          </View>
+        ) : view === 'loading' || !data ? (
           <Text variant="body" color="textSecondary">
             Getting your two tries.
           </Text>
-        ) : null}
-        {view === 'noScores' ? <Text variant="body">{"Your first try has no scores, so there's nothing to compare yet."}</Text> : null}
-        {view === 'ready' && result ? <CompareView result={result} /> : null}
-      </View>
+        ) : (
+          <CompareView data={data} actions={{ onClose: done, audio }} />
+        )}
+      </ScrollView>
 
-      <View style={styles.actions}>
-        {tryAgain ? <Button label="Try again" onPress={() => router.replace({ pathname: '/record', params: tryAgain })} /> : null}
-        <Button variant="quiet" label="Done" onPress={() => router.dismissTo('/')} />
+      <View style={styles.pinned}>
+        {tryAgain ? (
+          <Button
+            label="Try again"
+            onPress={() => {
+              // The recorder takes over the audio session.
+              audio.pause();
+              router.replace({ pathname: '/record', params: tryAgain });
+            }}
+          />
+        ) : null}
+        <Button variant="quiet" label="Done" onPress={done} />
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { gap: space.xxl, paddingBottom: space.xxl },
-  actions: { gap: space.md },
+  fill: { flex: 1 },
+  content: { paddingBottom: space.xl },
+  pinned: { gap: space.sm, paddingTop: space.md },
+  message: { gap: space.xl },
 });

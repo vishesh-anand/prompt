@@ -8,7 +8,7 @@ type Steps = AnswerMap['steps'];
 
 // A point that starts later than this (from the first spoken word) came late.
 // Same rule as latePointSeconds in supabase/functions/_shared/pipeline/transcriptText.ts.
-const latePointSeconds = 15;
+export const latePointSeconds = 15;
 
 export type PointArrival = 'none' | 'early' | 'found_late' | 'chosen_late';
 

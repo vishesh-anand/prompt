@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, { Easing, FadeIn, FadeInDown, ReduceMotion } from 'react-native-reanimated';
 
-import { Button, Text, revealMotion, space , tapTarget } from '@/design';
+import { Button, Text, revealMotion, space, tapTarget } from '@/design';
+import { tryLabel } from '@/features/compare/tries';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 import type { Coaching } from '@/lib/schemas/coaching';
 import type { AnswerMap } from '@/lib/schemas/map';
@@ -18,7 +19,8 @@ import { Shorter, Sounded, StepByStep } from './SheetContents';
 
 export type FeedbackData = {
   category: 'work' | 'everyday' | null;
-  isRetry: boolean;
+  // 1 for a first try, 2 for the first retry, 3 for the next.
+  tryNumber: number;
   question: string | null;
   map: AnswerMap | null;
   metrics: Metrics | null;
@@ -64,7 +66,7 @@ export function FeedbackReveal({ data, actions }: { data: FeedbackData; actions:
   // The first moment the listener lost the thread, by time (the model's list is not in time order).
   const firstLost = map?.didntFollow.slice().sort((a, b) => (a.atSeconds ?? Infinity) - (b.atSeconds ?? Infinity))[0];
   const lost = map && map.version >= 9 && firstLost ? { atSeconds: firstLost.atSeconds ?? null, why: firstLost.why } : null;
-  const where = [data.category === 'work' ? 'Work' : data.category === 'everyday' ? 'Everyday' : null, data.isRetry ? 'second try' : 'first try'].filter(Boolean).join(' · ');
+  const where = [data.category === 'work' ? 'Work' : data.category === 'everyday' ? 'Everyday' : null, tryLabel(data.tryNumber)].filter(Boolean).join(' · ');
 
   const rows: Row[] = [
     ...(coaching ? [{ title: 'Shorter and clearer', subtitle: shorterSubtitle(map, coaching.betterSteps), kind: 'opens' as const, onPress: () => setSheet('shorter') }] : []),

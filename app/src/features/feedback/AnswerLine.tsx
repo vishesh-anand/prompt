@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Text, space, useTheme , answerLine, tapTarget } from '@/design';
+import { Text, space, useTheme, answerLine, tapTarget } from '@/design';
 import type { AnswerMap } from '@/lib/schemas/map';
 
 import { segments, spokenShape, stepWords } from './answerShape';

@@ -14,7 +14,6 @@ import {
   type Space,
   type TextVariant,
 } from '@/design';
-import { CompareView } from '@/features/compare/CompareView';
 import { compareSamples } from '@/features/compare/samples';
 import { feedbackSamples } from '@/features/feedback/samples';
 import { ProgressChart } from '@/features/progress/ProgressChart';
@@ -116,15 +115,8 @@ export default function DesignPreview() {
         </Section>
 
         <Section title="Before and after">
-          {compareSamples.map((sample) => (
-            <View key={sample.name} style={styles.compareSample}>
-              <Text variant="label">{sample.name}</Text>
-              {sample.result ? (
-                <CompareView result={sample.result} />
-              ) : (
-                <Text variant="body">{'Your first try was scored before this view existed, so there’s nothing to compare yet.'}</Text>
-              )}
-            </View>
+          {compareSamples.map((sample, i) => (
+            <Button key={sample.name} variant="secondary" label={sample.name} onPress={() => router.push({ pathname: '/dev/compare', params: { sample: String(i) } })} />
           ))}
         </Section>
 

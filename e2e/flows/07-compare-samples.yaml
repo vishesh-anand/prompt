@@ -1,0 +1,51 @@
+# Free: no answer is recorded. Test builds have a "Compare samples" button on Home that opens the before-and-after on
+# made-up tries (the "Closer, not there yet" state from design-system/compare-e/). Checks the status, the rows as
+# sentences, the both-maps sheet and the two pinned buttons.
+appId: com.visheshanand.prompt
+---
+- launchApp
+- runFlow: onboard.yaml
+- extendedWaitUntil:
+    visible: "Answer today's question"
+    timeout: 30000
+- scrollUntilVisible:
+    element: "Compare samples"
+    timeout: 20000
+- tapOn: "Compare samples"
+- extendedWaitUntil:
+    visible: "Before and after"
+    timeout: 20000
+    label: "The compare sample opens (if this fails the test build has no sample route)"
+- assertVisible: "Work · second try"
+- assertVisible: "Your tip: Say your point in your first sentence."
+- assertVisible: "Closer, not there yet"
+- assertVisible: "Your point came 25 seconds sooner, at 0:45, but not in your first sentence."
+- assertVisible: "Try again"
+
+# The rows: each is read as one sentence, the word then the fact.
+- scrollUntilVisible:
+    element: "Sooner. Point: 1:10 to 0:45."
+    timeout: 20000
+- assertVisible: "Better. Off track: 40% to 15%."
+- assertVisible: "Better. Stumbles: 4 to 1."
+
+# Both maps, side by side in a sheet, dismissed by swiping down.
+- scrollUntilVisible:
+    element: ".*Opens both maps, step by step.*"
+    direction: UP
+    timeout: 20000
+- tapOn: ".*Opens both maps, step by step.*"
+- assertVisible: "First try.*"
+- assertVisible: "Second try.*"
+- swipe:
+    start: 50%, 12%
+    end: 50%, 90%
+
+# The same tip again, then Done goes back.
+- scrollUntilVisible:
+    element: "Same tip, one more try"
+    timeout: 20000
+- tapOn: "Done"
+- extendedWaitUntil:
+    visible: "Answer today's question"
+    timeout: 20000

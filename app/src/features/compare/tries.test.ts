@@ -1,4 +1,4 @@
-import { isFirstRetry, tryLabel, tryNumber } from './tries';
+import { isFirstRetry, previousTry, tryLabel, tryNumber } from './tries';
 
 const row = (id: string, retry_of: string | null, minute: number) => ({ id, question_id: 1, retry_of, created_at: `2026-11-12T10:${String(minute).padStart(2, '0')}:00Z` });
 // Newest first, as useHistory returns it.
@@ -30,4 +30,15 @@ describe('the first retry ever', () => {
     expect(isFirstRetry(history, { id: 'a', retry_of: null })).toBe(false);
     expect(isFirstRetry(undefined, { id: 'b', retry_of: 'a' })).toBe(false);
   });
+});
+
+describe('the try whose tip a retry carried', () => {
+  it('is the first attempt for a second try, and the previous retry after that', () => {
+    expect(previousTry(history, { id: 'b', retry_of: 'a' })).toBe('a');
+    expect(previousTry(history, { id: 'c', retry_of: 'a' })).toBe('b');
+  });
+  it('is the first attempt when history doesn’t know the answer yet', () => {
+    expect(previousTry(undefined, { id: 'c', retry_of: 'a' })).toBe('a');
+  });
+  it('is nothing for a first attempt', () => expect(previousTry(history, { id: 'a', retry_of: null })).toBeNull());
 });

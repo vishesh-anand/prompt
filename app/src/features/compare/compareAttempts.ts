@@ -1,4 +1,4 @@
-import { pointArrival } from '@/features/feedback/answerShape';
+import { latePointSeconds, pointArrival } from '@/features/feedback/answerShape';
 import { clock } from '@/lib/clock';
 import type { AnswerMap } from '@/lib/schemas/map';
 import type { Metrics } from '@/lib/schemas/metrics';
@@ -6,9 +6,11 @@ import type { Metrics } from '@/lib/schemas/metrics';
 // The before-and-after, in words (DESIGN.md, "Before and after"). Plain code, no AI: every word comes from the two saved
 // maps, the counted pauses and the tips.
 
-// One try. `tip` is the tip that try's feedback gave: the first try's is the one being checked, the latest try's is the
-// next step when it didn't work.
-export type Attempt = { map: AnswerMap; metrics: Metrics; tip?: string };
+// One try. `tip` is the tip that try's feedback gave: the carried one is checked, the latest try's is the next step when
+// it didn't work. `focusKnown` is false for tips written before the tip focus existed (coach prompts before version 6,
+// which have no betterSteps): those tips weren't chosen by tipFocus.ts, so reading the focus again from the map would
+// guess, and the screen says "Not measured here" instead.
+export type Attempt = { map: AnswerMap; metrics: Metrics; tip?: string; focusKnown?: boolean };
 
 // Did the retry do what the first try's tip asked? `notMeasured`: the tip was about something this screen doesn't
 // compare (how it sounded, speed, the ending).
@@ -30,7 +32,7 @@ export type CompareRow = {
 };
 
 export type CompareResult = {
-  // "Your tip: …": the first try's tip, the one being checked.
+  // "Your tip: …": the tip the retry carried, the one being checked.
   tip: string | null;
   status: Status;
   // The instruction check, one sentence.
@@ -40,9 +42,6 @@ export type CompareResult = {
   nextTip: { heading: string; tip: string } | null;
 };
 
-// A point that starts later than this (from the first spoken word) came late.
-// Same rule as latePointSeconds in supabase/functions/_shared/pipeline/transcriptText.ts.
-const latePointSeconds = 15;
 // An answer with at least this share of its time off track gets a tip about it. Same rule as offTrackShareForTip in tipFocus.ts.
 const offTrackShareForTip = 0.25;
 // A change smaller than this is noise, not progress (DESIGN.md): 5 seconds for the point, 5 percentage points for off
@@ -168,8 +167,10 @@ const tipRow: Record<TipKind, CompareRow['id'] | null> = {
   other: null,
 };
 
-export function compareAttempts(first: Attempt, latest: Attempt, wantsDirectAnswer: boolean): CompareResult {
-  const kind = tipKind(first.map, wantsDirectAnswer);
+// `carried` is the try whose tip this retry carried: the first try for a second try, the previous try after that. The
+// tip and what it was about come from it; the rows always compare the first try with the latest (DESIGN.md).
+export function compareAttempts(first: Attempt, latest: Attempt, wantsDirectAnswer: boolean, carried: Attempt = first): CompareResult {
+  const kind = carried.focusKnown === false ? 'other' : tipKind(carried.map, wantsDirectAnswer);
   const { status, check: sentence } = check(kind, first, latest);
   const credited = (id: CompareRow['id']) => status !== 'notMeasured' && !(tipRow[kind] === id && status !== 'worked');
 
@@ -192,8 +193,8 @@ export function compareAttempts(first: Attempt, latest: Attempt, wantsDirectAnsw
   ];
 
   const showNext = (status === 'closer' || status === 'notYet') && latest.tip !== undefined && latest.tip.trim() !== '';
-  const same = latest.tip?.trim() === first.tip?.trim();
+  const same = latest.tip?.trim() === carried.tip?.trim();
   const nextTip = showNext && latest.tip ? { heading: same ? 'Same tip, one more try' : 'One thing to try next', tip: latest.tip } : null;
 
-  return { tip: first.tip ?? null, status, check: sentence, rows, nextTip };
+  return { tip: carried.tip ?? null, status, check: sentence, rows, nextTip };
 }

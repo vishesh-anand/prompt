@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Card, Text, radius, space, useTheme , capsuleRadius, tapTarget } from '@/design';
+import { Card, Text, radius, space, useTheme, capsuleRadius, tapTarget } from '@/design';
 import { clock } from '@/lib/clock';
 import type { Coaching } from '@/lib/schemas/coaching';
 import { curly } from '@/lib/typography';

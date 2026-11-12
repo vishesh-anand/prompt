@@ -160,7 +160,7 @@ Rules:
 Decided while building (step D2, 2026-11-07), where the mockups say nothing:
 - **No clear point:** the headline is "A listener couldn’t find one main point here." and the answer line shows the steps as they are, with no point marked.
 - **Time ran out:** when the timer stopped an answer that has no Ending step, the steps line ends "→ Time ran out". It is never a fault, and the tip is never about the ending.
-- **A third try** says "second try" in the top bar (counting tries would need another query). Step E may change this.
+- **The top bar counts tries:** "first try", "second try", "third try", from the answer history the phone already loads (changed in step E).
 - **The tip card** reads `tip` in `title` and `reason` in `body` only when the answer has a `reason` (coach prompt v7 on). Older answers have one long tip, shown in `body`, so it doesn't fill the card.
 - **The quoted moment under the tip** is picked by plain code from the tip's focus, never written by the model. It shows `You started with “…”` for the opening and `At 1:04 you said “…”` for a later moment.
 - **The lost-thread line** shows only for maps from prompt v9 on, because older maps wrote it in the listener's "I" voice. Without a saved time the moment has no time button.
