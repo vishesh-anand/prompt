@@ -48,7 +48,7 @@ export default function Compare() {
             }}
           />
         ) : null}
-        <Button variant="quiet" label="Done" onPress={done} />
+        <Button variant="link" label="Done" onPress={done} />
       </View>
     </Screen>
   );

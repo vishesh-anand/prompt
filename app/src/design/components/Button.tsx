@@ -39,8 +39,9 @@ export function labelLines(label: string, fontScale: number, windowWidth: number
 type Props = {
   label: string;
   onPress: () => void;
-  // primary is the one coral button per screen; secondary is outlined; quiet is plain text for the least important actions.
-  variant?: 'primary' | 'secondary' | 'quiet';
+  // primary is the one coral button per screen; secondary is outlined; quiet is plain grey text for the least important
+  // actions; link is plain accentText, for the second of two pinned actions ("Done" under "Try again").
+  variant?: 'primary' | 'secondary' | 'quiet' | 'link';
   accessibilityLabel?: string;
 };
 
@@ -50,6 +51,7 @@ export function Button({ label, onPress, variant = 'primary', accessibilityLabel
   const { fontScale, width } = useWindowDimensions();
   const isPrimary = variant === 'primary';
   const isQuiet = variant === 'quiet';
+  const isLink = variant === 'link';
   const lines = labelLines(label, fontScale, width);
   const height = Math.ceil(buttonPadding + buttonLineHeight * fontScale * lines);
 
@@ -60,10 +62,10 @@ export function Button({ label, onPress, variant = 'primary', accessibilityLabel
       <NativeButton
         onPress={onPress}
         modifiers={[
-          buttonStyle(isPrimary ? 'borderedProminent' : isQuiet ? 'borderless' : 'bordered'),
+          buttonStyle(isPrimary ? 'borderedProminent' : isQuiet || isLink ? 'borderless' : 'bordered'),
           buttonBorderShape('roundedRectangle', radius.button),
           controlSize('large'),
-          tint(isPrimary ? colors.accent : isQuiet ? colors.textSecondary : colors.textPrimary),
+          tint(isPrimary ? colors.accent : isQuiet ? colors.textSecondary : isLink ? colors.accentText : colors.textPrimary),
           accessibilityLabelModifier(accessibilityLabel ?? label),
         ]}>
         {/* Dark label on coral: white fails contrast (see DESIGN.md, onAccent). */}

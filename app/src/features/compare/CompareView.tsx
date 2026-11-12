@@ -122,7 +122,7 @@ function Comparison({
     <>
       <Animated.View entering={enter(0)} style={styles.check}>
         {result.tip ? <Text variant="subheadline">{curly(`Your tip: ${result.tip}`)}</Text> : null}
-        <View style={styles.status} accessible accessibilityRole="header">
+        <View style={styles.status} accessible accessibilityRole="header" accessibilityLabel={shown.text}>
           {shown.symbol ? <SymbolView name={shown.symbol} size={17} weight="semibold" tintColor={colors[shown.color]} /> : null}
           <Text variant="headline" color={shown.color}>
             {shown.text}

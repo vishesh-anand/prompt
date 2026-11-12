@@ -43,7 +43,7 @@ export default function ComparePreview() {
       </ScrollView>
       <View style={styles.pinned}>
         <Button label="Try again" onPress={() => setHeard('Would open the record screen.')} />
-        <Button variant="quiet" label="Done" onPress={() => router.back()} />
+        <Button variant="link" label="Done" onPress={() => router.back()} />
       </View>
     </Screen>
   );
