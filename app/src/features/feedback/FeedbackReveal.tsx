@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, { Easing, FadeIn, FadeInDown, ReduceMotion } from 'react-native-reanimated';
 
-import { Button, Text, revealMotion, space } from '@/design';
+import { Button, Text, revealMotion, space , tapTarget } from '@/design';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 import type { Coaching } from '@/lib/schemas/coaching';
 import type { AnswerMap } from '@/lib/schemas/map';
@@ -15,7 +15,6 @@ import { FeedbackRows, ListenerCard, lengthOf, type Row, TipCard } from './Feedb
 import { FeedbackSheet } from './FeedbackSheet';
 import { shorterSubtitle, soundedLines, soundedSummary } from './feedbackText';
 import { Shorter, Sounded, StepByStep } from './SheetContents';
-import { tapTarget } from './sizes';
 
 export type FeedbackData = {
   category: 'work' | 'everyday' | null;

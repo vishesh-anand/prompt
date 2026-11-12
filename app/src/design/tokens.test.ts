@@ -3,7 +3,7 @@
 import tokens from '../../../design-system/tokens.json';
 
 import { dark, light, type ColorToken } from './colors';
-import { radius, recordButtonSize, recordCircle, screenMargin, space } from './spacing';
+import { answerLine, radius, recordButtonSize, recordCircle, screenMargin, space, tapTarget } from './spacing';
 import { typography, type TextVariant } from './typography';
 
 type Entry = { name: string; value: string };
@@ -53,5 +53,10 @@ describe('design-system/tokens.json', () => {
     expect(px(sizes['record-button'] ?? '')).toBe(recordButtonSize);
     expect(px(sizes['record-circle-core'] ?? '')).toBe(recordCircle.core);
     expect(px(sizes['record-ring-stroke'] ?? '')).toBe(recordCircle.ringStroke);
+    expect(px(sizes['tap-target'] ?? '')).toBe(tapTarget);
+    expect(px(sizes['answer-line'] ?? '')).toBe(answerLine.height);
+    expect(px(sizes['answer-line-compare'] ?? '')).toBe(answerLine.compareHeight);
+    expect(px(sizes['answer-line-gap'] ?? '')).toBe(answerLine.gap);
+    expect(px(sizes['answer-line-outline'] ?? '')).toBe(answerLine.outline);
   });
 });

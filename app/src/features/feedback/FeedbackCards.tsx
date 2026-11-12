@@ -1,12 +1,11 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Card, Text, radius, space, useTheme } from '@/design';
+import { Card, Text, radius, space, useTheme , capsuleRadius, tapTarget } from '@/design';
 import { clock } from '@/lib/clock';
 import type { Coaching } from '@/lib/schemas/coaching';
 import { curly } from '@/lib/typography';
 
 import { tipMomentLine } from './feedbackText';
-import { capsuleRadius, tapTarget } from './sizes';
 import { TimeButton } from './TimeButton';
 
 // The cards and rows of the feedback screen (DESIGN.md, Feedback reveal, parts 5 to 7).

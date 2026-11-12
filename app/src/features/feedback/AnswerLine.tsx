@@ -1,10 +1,9 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Text, space, useTheme } from '@/design';
+import { Text, space, useTheme , answerLine, tapTarget } from '@/design';
 import type { AnswerMap } from '@/lib/schemas/map';
 
 import { segments, spokenShape, stepWords } from './answerShape';
-import { answerLine, tapTarget } from './sizes';
 
 type Props = { steps: AnswerMap['steps']; speakingSeconds: number; timeRanOut: boolean; onOpen: () => void };
 

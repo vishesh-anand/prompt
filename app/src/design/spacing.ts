@@ -26,3 +26,11 @@ export const recordCircle = {
   core: 176,
   ringStroke: 3,
 } as const;
+
+// Every tap target is at least 44 points tall (Apple's minimum). Quiet buttons are capsules: fully rounded at that height.
+export const tapTarget = 44;
+export const capsuleRadius = tapTarget / 2;
+
+// The answer line (DESIGN.md, Feedback reveal and Before and after): one bar, a rounded segment per step, 3 apart;
+// outlined segments use a 1.5 line. 10 tall on the feedback screen, 12 on the before-and-after.
+export const answerLine = { height: 10, compareHeight: 12, gap: 3, outline: 1.5 } as const;

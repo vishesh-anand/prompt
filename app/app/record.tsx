@@ -2,12 +2,11 @@ import { Redirect, Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Button, Screen, Text, space } from '@/design';
+import { Button, Screen, Text, space , tapTarget } from '@/design';
 import { useAnswerFlow } from '@/features/answers/useAnswerFlow';
 import { RecordingCircle } from '@/features/recording/RecordingCircle';
 import { tooShortLength } from '@/features/recording/tooShortLength';
 import { useMicPermission } from '@/features/recording/useMicPermission';
-import { tapTarget } from '@/features/feedback/sizes';
 
 export default function Record() {
   const router = useRouter();
