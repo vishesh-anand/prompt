@@ -1,18 +1,20 @@
 import { isFirstRetry, previousTry, tryLabel, tryNumber } from './tries';
 
-const row = (id: string, retry_of: string | null, minute: number) => ({ id, question_id: 1, retry_of, created_at: `2026-11-12T10:${String(minute).padStart(2, '0')}:00Z` });
-// Newest first, as useHistory returns it.
-const history = [row('c', 'a', 30), row('x', null, 20), row('b', 'a', 10), row('a', null, 5), row('old', 'z', 1), row('z', null, 0)];
+// The retries of question "a", oldest first.
+const retries = [
+  { id: 'b', created_at: '2026-11-12T10:10:00Z' },
+  { id: 'c', created_at: '2026-11-12T10:30:00Z' },
+];
 
 describe('which try this is', () => {
-  it('a first attempt is the first try', () => expect(tryNumber(history, { id: 'a', retry_of: null })).toBe(1));
+  it('a first attempt is the first try', () => expect(tryNumber(retries, { id: 'a', retry_of: null })).toBe(1));
   it('retries count up on their question', () => {
-    expect(tryNumber(history, { id: 'b', retry_of: 'a' })).toBe(2);
-    expect(tryNumber(history, { id: 'c', retry_of: 'a' })).toBe(3);
+    expect(tryNumber(retries, { id: 'b', retry_of: 'a' })).toBe(2);
+    expect(tryNumber(retries, { id: 'c', retry_of: 'a' })).toBe(3);
   });
-  it('a retry the history doesn’t have yet is the second try', () => {
+  it('a retry the rows don’t have yet is the newest', () => {
+    expect(tryNumber(retries, { id: 'n', retry_of: 'a' })).toBe(4);
     expect(tryNumber(undefined, { id: 'n', retry_of: 'a' })).toBe(2);
-    expect(tryNumber(history, { id: 'n', retry_of: 'a' })).toBe(2);
   });
   it('says it in words', () => {
     expect(tryLabel(2)).toBe('second try');
@@ -21,24 +23,23 @@ describe('which try this is', () => {
   });
 });
 
-describe('the first retry ever', () => {
-  it('is the earliest retry in the whole history', () => {
-    expect(isFirstRetry(history, { id: 'old', retry_of: 'z' })).toBe(true);
-    expect(isFirstRetry(history, { id: 'b', retry_of: 'a' })).toBe(false);
-  });
-  it('is never a first attempt, and not when history is unknown', () => {
-    expect(isFirstRetry(history, { id: 'a', retry_of: null })).toBe(false);
-    expect(isFirstRetry(undefined, { id: 'b', retry_of: 'a' })).toBe(false);
-  });
-});
-
 describe('the try whose tip a retry carried', () => {
   it('is the first attempt for a second try, and the previous retry after that', () => {
-    expect(previousTry(history, { id: 'b', retry_of: 'a' })).toBe('a');
-    expect(previousTry(history, { id: 'c', retry_of: 'a' })).toBe('b');
+    expect(previousTry(retries, { id: 'b', retry_of: 'a' })).toBe('a');
+    expect(previousTry(retries, { id: 'c', retry_of: 'a' })).toBe('b');
   });
-  it('is the first attempt when history doesn’t know the answer yet', () => {
-    expect(previousTry(undefined, { id: 'c', retry_of: 'a' })).toBe('a');
+  it('for a retry the rows don’t have yet, the newest one they do', () => expect(previousTry(retries, { id: 'n', retry_of: 'a' })).toBe('c'));
+  it('is the first attempt without rows', () => expect(previousTry(undefined, { id: 'c', retry_of: 'a' })).toBe('a'));
+  it('is nothing for a first attempt', () => expect(previousTry(retries, { id: 'a', retry_of: null })).toBeNull());
+});
+
+describe('the first retry ever', () => {
+  it('is the earliest retry', () => {
+    expect(isFirstRetry('b', { id: 'b', retry_of: 'a' })).toBe(true);
+    expect(isFirstRetry('b', { id: 'c', retry_of: 'a' })).toBe(false);
   });
-  it('is nothing for a first attempt', () => expect(previousTry(history, { id: 'a', retry_of: null })).toBeNull());
+  it('is never a first attempt, and not while unknown', () => {
+    expect(isFirstRetry('a', { id: 'a', retry_of: null })).toBe(false);
+    expect(isFirstRetry(undefined, { id: 'b', retry_of: 'a' })).toBe(false);
+  });
 });

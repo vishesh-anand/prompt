@@ -7,13 +7,14 @@ import { supabase } from '@/lib/supabase';
 let channelCount = 0;
 
 // One answer, kept fresh: whenever the pipeline saves a stage, Supabase tells us and we load the row again.
-// With no id (a first attempt that isn't known yet) it waits and loads nothing.
-export function useAnswer(answerId: string | null) {
+// With no id (a first attempt that isn't known yet) it waits and loads nothing. `live: false` reads the row once (or
+// from the cache) without a realtime channel, for an answer that is finished and only read, like the tip a retry carries.
+export function useAnswer(answerId: string | null, { live = true }: { live?: boolean } = {}) {
   const queryClient = useQueryClient();
   const queryKey = ['answer', answerId];
 
   useEffect(() => {
-    if (answerId === null) return;
+    if (answerId === null || !live) return;
     const refresh = () => void queryClient.invalidateQueries({ queryKey: ['answer', answerId] });
     // Each subscription gets its own channel name: Supabase hands back the existing channel for a repeated name, and a
     // channel that is already subscribed refuses new listeners. The feedback and compare screens both watch one answer.
@@ -25,7 +26,7 @@ export function useAnswer(answerId: string | null) {
         if (status === 'SUBSCRIBED') refresh();
       });
     return () => void supabase.removeChannel(channel);
-  }, [answerId, queryClient]);
+  }, [answerId, live, queryClient]);
 
   return useQuery({
     queryKey,

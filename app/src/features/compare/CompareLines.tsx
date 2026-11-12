@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Text, answerLine, space, tapTarget, useTheme } from '@/design';
+import { Text, answerLine, space, tapTarget } from '@/design';
 import { spokenShape } from '@/features/feedback/answerShape';
-import type { Segment } from '@/features/feedback/answerShape';
+import { SegmentBar, Swatch } from '@/features/feedback/SegmentBar';
 import { clock } from '@/lib/clock';
 import type { AnswerMap } from '@/lib/schemas/map';
 
@@ -52,11 +52,7 @@ function Line({ t }: { t: LineTry }) {
   return (
     <View style={styles.line} onLayout={(e) => setBox(e.nativeEvent.layout.width)}>
       <Text variant="label">{t.title}</Text>
-      <View style={[styles.bar, { width: `${width * 100}%` }]}>
-        {segments.map((segment, i) => (
-          <SegmentView key={i} segment={segment} grow />
-        ))}
-      </View>
+      <SegmentBar segments={segments} height={answerLine.compareHeight} width={`${width * 100}%`} />
       <View style={styles.pointRow}>
         <View style={{ marginLeft: left, opacity: label === null && pointAt !== null ? 0 : 1 }} onLayout={(e) => setLabel(e.nativeEvent.layout.width)}>
           <Text variant="label" color="textPrimary" strong tabular>
@@ -65,22 +61,6 @@ function Line({ t }: { t: LineTry }) {
         </View>
       </View>
     </View>
-  );
-}
-
-// One step's segment, or a key swatch: off track solid textSecondary, the point solid textPrimary, the rest outlined.
-// The colours mean the same in light and dark.
-function SegmentView({ segment, grow }: { segment: Pick<Segment, 'style'> & { share?: number }; grow?: boolean }) {
-  const { colors } = useTheme();
-  return (
-    <View
-      style={[
-        grow ? [styles.segment, { flexGrow: segment.share ?? 1 }] : styles.swatch,
-        segment.style === 'offTrack' && { backgroundColor: colors.textSecondary },
-        segment.style === 'point' && { backgroundColor: colors.textPrimary },
-        segment.style === 'outline' && { borderWidth: answerLine.outline, borderColor: colors.textSecondary },
-      ]}
-    />
   );
 }
 
@@ -94,7 +74,7 @@ function Key() {
     <View style={styles.key}>
       {items.map((item) => (
         <View key={item.text} style={styles.keyItem}>
-          <SegmentView segment={{ style: item.style }} />
+          <Swatch kind={item.style} height={answerLine.compareHeight} />
           <Text variant="label" color="textPrimary">
             {item.text}
           </Text>
@@ -107,13 +87,9 @@ function Key() {
 const styles = StyleSheet.create({
   block: { gap: space.lg },
   line: { gap: space.xs },
-  bar: { flexDirection: 'row', gap: answerLine.gap, height: answerLine.compareHeight },
-  // flexBasis 0, so each segment's width is its share of the time; a very short step still shows as a sliver.
-  segment: { flexBasis: 0, minWidth: answerLine.compareHeight / 2, borderRadius: answerLine.compareHeight / 2 },
   pointRow: { flexDirection: 'row' },
   scale: { flexDirection: 'row', justifyContent: 'space-between' },
   key: { flexDirection: 'row', flexWrap: 'wrap', columnGap: space.lg, rowGap: space.sm },
   keyItem: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  swatch: { width: answerLine.compareHeight * 2, height: answerLine.compareHeight, borderRadius: answerLine.compareHeight / 2 },
   open: { minHeight: tapTarget, justifyContent: 'center' },
 });

@@ -98,6 +98,13 @@ describe('watching an answer', () => {
     expect(supabase.getChannels()).toHaveLength(0);
   });
 
+  // The record screen reads the tip a retry carries this way: the answer is finished, so no channel is needed.
+  it('read once (not live) it loads the answer without opening a channel', async () => {
+    const { result } = await renderHook(() => useAnswer('a1', { live: false }), { wrapper: wrapper() });
+    await waitFor(() => expect(result.current.data?.id).toBe('a1'));
+    expect(supabase.getChannels()).toHaveLength(0);
+  });
+
   it('with no answer id it watches nothing and loads nothing', async () => {
     const { result } = await renderHook(() => useAnswer(null), { wrapper: wrapper() });
     expect(supabase.getChannels()).toHaveLength(0);

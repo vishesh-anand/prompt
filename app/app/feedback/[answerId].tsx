@@ -2,14 +2,13 @@ import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { Button, Screen, Text, space } from '@/design';
-import { tryNumber } from '@/features/compare/tries';
+import { useTries } from '@/features/compare/useTries';
 import { FeedbackReveal } from '@/features/feedback/FeedbackReveal';
 import { ListeningCircle } from '@/features/feedback/ListeningCircle';
 import { nextConfirmation, useConfirmListener } from '@/features/feedback/useConfirmListener';
 import { useFeedback } from '@/features/feedback/useFeedback';
 import { useFeedbackAudio } from '@/features/feedback/useFeedbackAudio';
 import { useFlagFeedback } from '@/features/feedback/useFlagFeedback';
-import { useHistory } from '@/features/history/useHistory';
 
 // Results appear here as the server saves each stage: how the answer was built first, then the tip and the rest.
 // The one filled button sits below the scroll, within thumb reach.
@@ -18,8 +17,8 @@ export default function Feedback() {
   const router = useRouter();
   const { answer, question, view, metrics, map, coaching, timeRanOut, finished, next, stalled, retry } = useFeedback(answerId);
   const flag = useFlagFeedback(answerId);
-  // Which try this is, for the top bar. The history is the list Home already loaded.
-  const history = useHistory();
+  // Which try this is, for the top bar.
+  const tries = useTries(answer.data);
   const confirm = useConfirmListener(answerId);
   const audio = useFeedbackAudio(answer.data?.audio_path, map?.firstWordAtSeconds);
 
@@ -54,7 +53,7 @@ export default function Feedback() {
           <FeedbackReveal
             data={{
               category: question?.category ?? null,
-              tryNumber: tryNumber(history.data, answer.data),
+              tryNumber: tries.tryNumber,
               question: question?.text ?? null,
               map,
               metrics,

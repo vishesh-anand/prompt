@@ -1,9 +1,10 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Text, space, useTheme, answerLine, tapTarget } from '@/design';
+import { Text, answerLine, space, tapTarget } from '@/design';
 import type { AnswerMap } from '@/lib/schemas/map';
 
 import { segments, spokenShape, stepWords } from './answerShape';
+import { SegmentBar } from './SegmentBar';
 
 type Props = { steps: AnswerMap['steps']; speakingSeconds: number; timeRanOut: boolean; onOpen: () => void };
 
@@ -11,7 +12,6 @@ type Props = { steps: AnswerMap['steps']; speakingSeconds: number; timeRanOut: b
 // textSecondary, the point solid textPrimary, the rest outlined. The segments carry no text; the steps are written
 // underneath, so they survive large text and short steps. The whole block is one button that opens Step by step.
 export function AnswerLine({ steps, speakingSeconds, timeRanOut, onOpen }: Props) {
-  const { colors } = useTheme();
   const words = stepWords(steps, timeRanOut);
   return (
     <Pressable
@@ -20,20 +20,7 @@ export function AnswerLine({ steps, speakingSeconds, timeRanOut, onOpen }: Props
       accessibilityLabel={`${spokenShape(steps, timeRanOut)} Opens step by step.`}
       onPress={onOpen}
       style={({ pressed }) => [styles.block, { opacity: pressed ? 0.6 : 1 }]}>
-      <View style={styles.bar}>
-        {segments(steps, speakingSeconds).map((segment, i) => (
-          <View
-            key={i}
-            style={[
-              styles.segment,
-              { flexGrow: segment.share },
-              segment.style === 'offTrack' && { backgroundColor: colors.textSecondary },
-              segment.style === 'point' && { backgroundColor: colors.textPrimary },
-              segment.style === 'outline' && { borderWidth: answerLine.outline, borderColor: colors.textSecondary },
-            ]}
-          />
-        ))}
-      </View>
+      <SegmentBar segments={segments(steps, speakingSeconds)} height={answerLine.height} />
       <Text variant="label" color="textPrimary">
         {words.map((word, i) => (
           <Text key={i} variant="label" color="textPrimary" strong={word.isPoint} tabular={word.isPoint}>
@@ -53,8 +40,5 @@ export function AnswerLine({ steps, speakingSeconds, timeRanOut, onOpen }: Props
 
 const styles = StyleSheet.create({
   block: { gap: space.sm },
-  bar: { flexDirection: 'row', gap: answerLine.gap, height: answerLine.height },
-  // flexBasis 0, so each segment's width is its share of the time; a very short step still shows as a sliver.
-  segment: { flexBasis: 0, minWidth: answerLine.height / 2, borderRadius: answerLine.height / 2 },
   open: { minHeight: tapTarget, justifyContent: 'center' },
 });
