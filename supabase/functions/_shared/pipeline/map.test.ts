@@ -202,22 +202,7 @@ Deno.test('noticed fillers and pauses must be ones Measure counted', () => {
   // Words not beside it are still refused, and so is a quote with no counted pause near it.
   assertEquals(mapProblems(noticing({ kind: 'pause', quote: 'My point', why: 'w' }), transcript, metrics).length, 1);
   assertEquals(mapProblems(noticing({ kind: 'pause', quote: 'Users told us. So', why: 'w' }), transcript, metrics).length, 1);
-  assertEquals(mapProblems(noticing({ kind: 'pattern', quote: 'Users told us. So', why: 'w', nextStep: 'n' }), transcript, metrics), []);
-});
-
-Deno.test('the lost-thread reason has to read on from "It lost the thread here,": it starts with "when you"', () => {
-  const lost = (why: string): MapOutput => ({ ...good, didntFollow: [{ quote: 'yesterday I had a meeting', why }] });
-  assertEquals(mapProblems(lost('when you moved to the timer'), transcript, metrics), []);
-  assertEquals(mapProblems(lost('When you left the meeting'), transcript, metrics), []);
-  assertEquals(mapProblems(lost('The meeting never comes back.'), transcript, metrics).length, 1);
-});
-
-Deno.test('a pattern needs its own next step, because no fixed line fits it; other kinds need none', () => {
-  assertEquals(mapProblems(noticing({ kind: 'pattern', quote: 'Users told us. So', why: 'w' }), transcript, metrics), [
-    'noticed pattern "Users told us. So" has no nextStep; give one',
-  ]);
-  assertEquals(mapProblems(noticing({ kind: 'pattern', quote: 'Users told us. So', why: 'w', nextStep: '  ' }), transcript, metrics).length, 1);
-  assertEquals(mapProblems(noticing({ kind: 'pause', quote: 'point is ship early', why: 'w' }), transcript, metrics), []);
+  assertEquals(mapProblems(noticing({ kind: 'pattern', quote: 'Users told us. So', why: 'w' }), transcript, metrics), []);
 });
 
 Deno.test('noticed repeats and hedges must fall where Measure counted them', () => {

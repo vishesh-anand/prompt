@@ -113,16 +113,6 @@ export function mapProblems(output: MapOutput, transcript: Transcript, metrics: 
     else if (locate(transcript, quote, found.last + 1) !== null) problems.push(`"${quote}" appears more than once; quote words that appear only once`);
   }
 
-  // The screen writes "It lost the thread here, " in front of this clause (map prompt v9), so it must read on from it.
-  for (const item of output.didntFollow) {
-    if (!/^when you\b/i.test(item.why.trim())) problems.push(`didntFollow why "${item.why}" must start with "when you"`);
-  }
-
-  // A pattern has no fixed next step on the phone, so the map must give one (map prompt v9).
-  for (const item of output.noticed) {
-    if (item.kind === 'pattern' && (item.nextStep ?? '').trim() === '') problems.push(`noticed pattern "${item.quote}" has no nextStep; give one`);
-  }
-
   // What a listener noticed is chosen from what Measure counted, never added to it.
   for (const item of output.noticed) {
     const found = locate(transcript, item.quote);
