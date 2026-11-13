@@ -123,7 +123,7 @@ Only in these moments. Nowhere else.
 - A thin ring around the circle fills up as the time runs out (2 minutes, or 90 seconds on a retry). No big countdown numbers.
 - On a retry, the one instruction from the tip sits under the question, in the standard font, quieter than the question.
 - One button: tap the circle to stop.
-- Until you start, a small text "Cancel" sits at the top to leave. It goes away once recording starts, so it never throws away a take and nothing else is on screen while you speak.
+- Until you start, a small text "Cancel" sits at the top to leave. It goes away once recording starts, so it never throws away a take and nothing else is on screen while you speak. It shows on the first answer in first-time setup too (decided in step E): cancelling leaves you on Home, and your first real answer becomes the starting point.
 - Wherever the circle is a button outside this screen (Home), it carries a short word or a microphone symbol, so it's clear what it does.
 - Background stays calm. Nothing else on screen.
 
